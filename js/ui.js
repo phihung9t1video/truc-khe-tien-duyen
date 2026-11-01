@@ -73,7 +73,8 @@ function tipContent(key){const [k,v]=key.split(':');
   if(k==='item'){const it=player.inv.find(x=>x.uid===+v);return it?itemHTML(it):'';}
   if(k==='eq'){const it=player.eq[v];return it?itemHTML(it,null)+'<div style="color:#aaa;margin-top:3px">Nhấp để tháo ra</div>':`<div class="tn">${SLOTNAME[v]}</div>Chưa trang bị`;}
   return'';}
-document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-tip]');const tip=$('tip');if(!el){tip.hidden=true;return;}const h=tipContent(el.dataset.tip);if(!h){tip.hidden=true;return;}tip.innerHTML=h;tip.hidden=false;});
+const IS_TOUCH='ontouchstart' in window||navigator.maxTouchPoints>0;let tipT=0;
+document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-tip]');const tip=$('tip');if(!el){tip.hidden=true;return;}const h=tipContent(el.dataset.tip);if(!h){tip.hidden=true;return;}tip.innerHTML=h;tip.hidden=false;if(IS_TOUCH){clearTimeout(tipT);tipT=setTimeout(()=>tip.hidden=true,2200);}});
 document.addEventListener('mousemove',e=>{const tip=$('tip');if(tip.hidden)return;const w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.min(innerWidth-w-8,e.clientX+16)+'px';tip.style.top=Math.max(8,Math.min(innerHeight-h-8,e.clientY-h-12))+'px';});
 
 // ===================== BẢNG =====================

@@ -1,0 +1,16 @@
+{
+  "name": "truc-khe-tien-duyen",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "web": "node tools/build-web.mjs",
+    "android": "node tools/build-web.mjs && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3"
+  }
+}
