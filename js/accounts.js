@@ -3,12 +3,18 @@
 // Mỗi máy giữ tối đa 6 tài khoản (tên đăng nhập + mật khẩu). Mỗi tài khoản có nhân vật và danh tính online riêng,
 // nên mở nhiều tab là chơi được nhiều tài khoản cùng lúc. Mật khẩu chỉ lưu dạng băm (SHA-256 + muối) trên máy này.
 const ACC_MAX=6,ACC_KEY='tk_accounts',LEGACY_SKEY='trukhe_tienduyen_v2';
-const GM_HASH='b29310c675bb32a878d8653ac9e8a37f2f22997602acfa7232de17a972f0be93';
+// Tài khoản GM duy nhất của game. Chỉ lưu dấu kiểm tra băm chậm (PBKDF2 400.000 vòng), không lưu mật khẩu.
+// Danh tính online của GM cũng suy ra từ mật khẩu nên đăng nhập ở máy nào cũng là cùng một nhân vật trên mạng.
+const GM_USER='khatmau01',GM_SALT='tk-khatmau01-v1',GM_CHECK='5d9289b09f3d7a9a356e55ebff87ff546f9c3f012ca20b391961b6b5b4132493';
 const ACC={cur:null};
 const accList=()=>{try{const a=JSON.parse(localStorage.getItem(ACC_KEY));return Array.isArray(a)?a:[];}catch(e){return[];}};
 const accWrite=a=>localStorage.setItem(ACC_KEY,JSON.stringify(a));
 const accFind=u=>accList().find(a=>a.user===u);
-const isGM=()=>!!(ACC.cur&&ACC.cur.gm);
+const isGM=()=>!!(ACC.cur&&ACC.cur.gm&&ACC.cur.user===GM_USER);
+async function gmDerive(pw){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
+  const b=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode(GM_SALT),iterations:400000},key,512));
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',ids=Array.from(b.slice(32),x=>A[x%32]).join('');
+  return{check:Array.from(b.slice(0,32),x=>x.toString(16).padStart(2,'0')).join(''),id:ids.slice(0,8),sec:ids.slice(8,20)};}
 function accUpdate(fields){if(!ACC.cur)return;const a=accList(),i=a.findIndex(x=>x.user===ACC.cur.user);if(i<0)return;Object.assign(a[i],fields);Object.assign(ACC.cur,fields);accWrite(a);}
 async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('');}
 const rndStr=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b%32]).join('');
@@ -25,7 +31,9 @@ const _save0=save;
 save=function(){_save0();if(ACC.cur&&player.sect){const c=ACC.cur;if(c.name!==player.name||c.lv!==player.lv||c.sect!==player.sect)accUpdate({name:player.name,lv:player.lv,sect:player.sect});}};
 // GM không đưa lên bảng xếp hạng
 const _cloudSave0=cloudSave;
-cloudSave=async function(silent){if(isGM()){if(!silent)log('Tài khoản GM không lưu lên bảng xếp hạng','#ffb36b');return false;}return _cloudSave0(silent);};
+cloudSave=async function(silent){if(!isGM())return _cloudSave0(silent);if(!netEnabled()||!player.sect)return false;save();
+  try{await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:JSON.parse(localStorage.getItem(SKEY))});if(!silent)log('Đã lưu nhân vật GM lên mạng (không hiện trên bảng xếp hạng)','#8fd8ff');return true;}
+  catch(e){if(!silent)log('Chưa lưu lên mạng được (máy chủ chưa bật bảng lưu trữ)','#ff9a8a');return false;}};
 // mã khôi phục: tải nhân vật trên mạng vào tài khoản đang đăng nhập
 cloudLoad=async function(code){if(!netEnabled())throw new Error('off');const m=String(code).trim().toUpperCase().match(/^([A-Z0-9]{8})-([A-Z0-9]{12})$/);if(!m)throw new Error('ma');
   const data=await rpc('tk_load',{p_id:m[1],p_secret:m[2]});if(!data)throw new Error('khong');
@@ -39,13 +47,20 @@ async function accRegister(user,pw,pw2,gmCode,useLegacy){
   if(pw!==pw2)return'Hai lần nhập mật khẩu không khớp';
   const a=accList();if(a.length>=ACC_MAX)return`Máy này đã có đủ ${ACC_MAX} tài khoản. Xóa bớt một tài khoản để tạo mới.`;
   if(a.some(x=>x.user===user))return'Tên đăng nhập này đã có trên máy';
-  let gm=false;if(gmCode&&String(gmCode).trim()){gm=(await sha('tk-gm:'+String(gmCode).trim().toUpperCase()))===GM_HASH;if(!gm)return'Mã GM không đúng';}
+  if(user===GM_USER)return'Tên đăng nhập này đã có người dùng';const gm=false;
   const salt=rndStr(16),acc={user,salt,hash:await sha(salt+':'+pw),netId:rndStr(8),netSecret:rndStr(12),gm,created:Date.now(),name:'',lv:0,sect:''};
   if(useLegacy){const old=localStorage.getItem(LEGACY_SKEY);if(old){localStorage.setItem('tk_save_'+user,old);localStorage.removeItem(LEGACY_SKEY);
     const id=localStorage.getItem('tk_net_id'),sec=localStorage.getItem('tk_net_secret');if(id&&sec){acc.netId=id;acc.netSecret=sec;}
     try{const s=JSON.parse(old);acc.name=s.name;acc.lv=s.lv;acc.sect=s.sect;}catch(e){}}}
   a.push(acc);accWrite(a);return acc;}
-async function accCheck(user,pw){const acc=accFind(String(user||'').trim().toLowerCase());if(!acc)return'Không có tài khoản này trên máy';
+async function accCheck(user,pw){user=String(user||'').trim().toLowerCase();
+  if(user===GM_USER){const d=await gmDerive(String(pw));if(d.check!==GM_CHECK)return'Sai mật khẩu';if(await accInUse(GM_USER))return'Tài khoản này đang được mở ở một tab khác';
+    let a=accList(),acc=a.find(x=>x.user===GM_USER);
+    if(!acc){const salt=rndStr(16);acc={user:GM_USER,salt,hash:await sha(salt+':'+pw),netId:d.id,netSecret:d.sec,gm:true,created:Date.now(),name:'',lv:0,sect:''};a.push(acc);accWrite(a);}
+    else if(acc.netId!==d.id||!acc.gm){acc.netId=d.id;acc.netSecret=d.sec;acc.gm=true;accWrite(a);}
+    if(!localStorage.getItem('tk_save_'+GM_USER)&&netEnabled()){try{const data=await rpc('tk_load',{p_id:d.id,p_secret:d.sec});if(data)localStorage.setItem('tk_save_'+GM_USER,JSON.stringify(data));}catch(e){}}
+    return acc;}
+  const acc=accFind(user);if(!acc)return'Không có tài khoản này trên máy';
   if((await sha(acc.salt+':'+pw))!==acc.hash)return'Sai mật khẩu';if(await accInUse(acc.user))return'Tài khoản này đang được mở ở một tab khác';return acc;}
 function accDelete(user){accWrite(accList().filter(a=>a.user!==user));localStorage.removeItem('tk_save_'+user);}
 
@@ -58,7 +73,7 @@ function accShowLogin(msg){const box=$('startMenu');const a=accList(),legacy=loc
     <button class="btn big" id="lgGo">Vào game</button>
     <button class="btn" id="lgNew">Tạo tài khoản mới (${a.length}/${ACC_MAX})</button>
     ${ls&&ls.name?`<button class="btn gray" id="lgLegacy">Tạo tài khoản cho nhân vật cũ: ${esc(ls.name)} · cấp ${ls.lv|0}</button>`:''}
-    ${a.length?`<div class="accl">${a.map(x=>`<div class="accr" data-u="${x.user}"><b>${esc(x.user)}</b>${x.gm?' <span class="gmtag">GM</span>':''} <span>${x.name?esc(x.name)+' · '+(SECTS[x.sect]?SECTS[x.sect].name:'')+' · cấp '+(x.lv|0):'chưa có nhân vật'}</span><button data-del="${x.user}" title="Xóa tài khoản">✕</button></div>`).join('')}</div>`:''}`;
+    ${a.length?`<div class="accl">${a.map(x=>`<div class="accr" data-u="${x.user}"><b>${esc(x.user)}</b>${x.gm&&x.user===GM_USER?' <span class="gmtag">GM</span>':''} <span>${x.name?esc(x.name)+' · '+(SECTS[x.sect]?SECTS[x.sect].name:'')+' · cấp '+(x.lv|0):'chưa có nhân vật'}</span><button data-del="${x.user}" title="Xóa tài khoản">✕</button></div>`).join('')}</div>`:''}`;
   const go=async()=>{$('lgMsg').textContent='Đang kiểm tra...';const r=await accCheck($('lgUser').value,$('lgPass').value);if(typeof r==='string'){$('lgMsg').textContent=r;return;}
     accLogin(r);auInit();const s=loadSave();if(s){applySave(s);enterGame(false);}else{box.hidden=true;$('create').hidden=false;}};
   $('lgGo').onclick=go;$('lgPass').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')go();};$('lgUser').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')$('lgPass').focus();};
@@ -72,12 +87,11 @@ function accShowRegister(legacy){const box=$('startMenu');
     <input id="rgUser" placeholder="Tên đăng nhập (3–16 ký tự không dấu)" maxlength="16" autocomplete="username" spellcheck="false">
     <input id="rgPass" type="password" placeholder="Mật khẩu (ít nhất 4 ký tự)" maxlength="40" autocomplete="new-password">
     <input id="rgPass2" type="password" placeholder="Nhập lại mật khẩu" maxlength="40" autocomplete="new-password">
-    <input id="rgGm" placeholder="Mã GM (để trống nếu không có)" maxlength="24" spellcheck="false">
     <div id="lgMsg" style="color:#bbb">Tài khoản lưu trên máy này. Hãy nhớ mật khẩu: quên thì không lấy lại được.</div>
     <button class="btn big" id="rgGo">${legacy?'Tạo tài khoản và chơi tiếp':'Tạo tài khoản và tạo nhân vật'}</button><button class="btn gray" id="rgBack">Quay lại</button>`;
   box.querySelectorAll('input').forEach(i=>i.onkeydown=e=>e.stopPropagation());
   $('rgBack').onclick=()=>accShowLogin();
-  $('rgGo').onclick=async()=>{$('lgMsg').textContent='Đang tạo...';const r=await accRegister($('rgUser').value,$('rgPass').value,$('rgPass2').value,$('rgGm').value,legacy);
+  $('rgGo').onclick=async()=>{$('lgMsg').textContent='Đang tạo...';const r=await accRegister($('rgUser').value,$('rgPass').value,$('rgPass2').value,'',legacy);
     if(typeof r==='string'){$('lgMsg').style.color='#ffb36b';$('lgMsg').textContent=r;return;}
     accLogin(r);auInit();if(r.gm)toast('Đã tạo tài khoản GM','#ffd23f');const s=loadSave();if(s){applySave(s);enterGame(false);}else{box.hidden=true;$('create').hidden=false;}};}
 // tạo nhân vật xong: nút Quay lại về màn hình đăng nhập (đăng xuất)

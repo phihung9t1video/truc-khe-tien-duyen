@@ -140,7 +140,7 @@ setInterval(()=>{if(started)renderParty();},700);
 function updateNetUI(){if(!$('netStat'))return;if(!netEnabled()){$('chatBox').hidden=true;return;}$('chatBox').hidden=false;
   const n=NET.world.size+(NET.status==='on'?1:0);$('netStat').innerHTML=NET.status==='on'?`<span style="color:#7dff9a">●</span> Đang online: <b>${n}</b> · Cùng vùng: <b>${NET.others.size}</b>`:'<span style="color:#ff8a7a">●</span> Đang kết nối...';}
 async function renderTop(){const b=$('topList');b.innerHTML='Đang tải...';
-  try{const rows=await fetchTop();b.innerHTML=rows&&rows.length?'<table><tr><th>#</th><th>Tên</th><th>Môn phái</th><th>Cấp</th></tr>'+rows.map((r,i)=>`<tr${r.name===player.name?' class="me"':''}><td>${i+1}</td><td>${esc(r.name)}</td><td>${SECTS[r.sect]?SECTS[r.sect].name:esc(r.sect)}</td><td>${r.lv}</td></tr>`).join('')+'</table>':'Chưa có ai trên bảng xếp hạng. Hãy là người đầu tiên!';}
+  try{const rows=(await fetchTop()||[]).filter(r=>r.sect!=='GM');b.innerHTML=rows&&rows.length?'<table><tr><th>#</th><th>Tên</th><th>Môn phái</th><th>Cấp</th></tr>'+rows.map((r,i)=>`<tr${r.name===player.name?' class="me"':''}><td>${i+1}</td><td>${esc(r.name)}</td><td>${SECTS[r.sect]?SECTS[r.sect].name:esc(r.sect)}</td><td>${r.lv}</td></tr>`).join('')+'</table>':'Chưa có ai trên bảng xếp hạng. Hãy là người đầu tiên!';}
   catch(e){b.innerHTML='Bảng xếp hạng chưa được bật trên máy chủ (cần chạy file supabase/schema.sql).';}}
 $('chatIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){netSendChat(e.target.value);e.target.value='';}});
 $('chatSend').onclick=()=>{netSendChat($('chatIn').value);$('chatIn').value='';};
