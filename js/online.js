@@ -24,7 +24,7 @@ function netConnect(){
   ws.onclose=()=>{NET.ws=null;NET.status='off';NET.others.clear();NET.retryT=8;};
   ws.onerror=()=>{};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}
-    if(m.event!=='broadcast'||!m.payload)return;const ev=m.payload.event,p=m.payload.payload;if(!p||p.id===NET.id)return;
+    if(m.event!=='broadcast'||!m.payload)return;const ev=m.payload.event,p=m.payload.payload;if(!p)return;if(ev==='akick'){if(typeof accOnKick==='function')accOnKick(p);return;}if(p.id===NET.id)return;
     if(ev==='pos'){const o=NET.others.get(p.id);if(o){Object.assign(o,p,{tx:p.x,ty:p.y,seen:nowT});}else NET.others.set(p.id,Object.assign({},p,{tx:p.x,ty:p.y,seen:nowT,look:null}));
       const oo=NET.others.get(p.id);oo.look=buildLook(p.sect,p.gender,{armor:{rar:p.ar||0}},Array.isArray(p.ap)?{h:p.ap[0],hc:p.ap[1],sk:p.ap[2],ey:p.ap[3],acc:p.ap[4],cl:p.ap[5],bd:p.ap[6]}:null);oo.wv=weaponVis({rar:p.wr||0,tier:p.wt||0},SECTS[p.sect].wtype,p.rf||0);}
     else if(ev==='bye'){NET.others.delete(p.id);if(m.topic==='realtime:tk_world')NET.world.delete(p.id);}

@@ -56,8 +56,7 @@ async function accSync(silent){const c=ACC.cur;if(c&&isGM())return gmCloud(silen
 async function accSyncRun(silent){const c=ACC.cur;save();const d=localData();if(!d)return false;
   const r=await rpcx('tk_acc_save',{p_user:c.user,p_token:c.token,p_data:d,p_ts:d.ts||Date.now()});
   if(r.ok){accUpdate({syncedTs:d.ts});if(!silent)log('Đã lưu nhân vật lên máy chủ','#8fd8ff');return true;}
-  if(r.msg==='session'){ACC.lost=true;removeEventListener('beforeunload',save);liveLeave();
-    openDlg('Tài khoản đăng nhập ở nơi khác',`Tài khoản <b>${esc(c.user)}</b> vừa được đăng nhập ở một máy khác. Máy này dừng lại để hai nơi không ghi đè nhân vật của nhau.`,[{t:'Về màn hình đăng nhập',fn:()=>{sessionStorage.removeItem('tk_cur');location.reload();}}]);return false;}
+  if(r.msg==='session'){accKicked();return false;}
   if(!silent)log('Chưa lưu lên máy chủ được (mất mạng?), sẽ thử lại sau','#ff9a8a');return false;}
 setInterval(()=>{if(started&&ACC.cur&&(ACC.cur.server||isGM()))accSync(true);},30000);
 addEventListener('beforeunload',()=>{const c=ACC.cur;if(c&&isGM()&&netEnabled()&&player.sect){try{save();const d=localData();if(d)fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/tk_save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify({p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:d})});}catch(e){}return;}
@@ -73,7 +72,18 @@ cloudLoad=async function(code){if(!netEnabled())throw new Error('off');const m=S
   const data=await rpc('tk_load',{p_id:m[1],p_secret:m[2]});if(!data)throw new Error('khong');
   if(!(ACC.cur&&ACC.cur.server))accUpdate({netId:m[1],netSecret:m[2]});netIdent();localStorage.setItem(SKEY,JSON.stringify(data));return data;};
 
-function accLogin(acc){ACC.cur=acc;ACC.lost=false;SKEY='tk_save_'+acc.user;sessionStorage.setItem('tk_cur',acc.user);netIdent();liveBeat();}
+function accLogin(acc){ACC.cur=acc;ACC.lost=false;ACC.sid=rndStr(12);ACC.announced=false;SKEY='tk_save_'+acc.user;sessionStorage.setItem('tk_cur',acc.user);netIdent();liveBeat();accAnnounce();}
+// ===== một tài khoản chỉ chơi ở một nơi: đăng nhập nơi mới thì nơi cũ văng ra ngay =====
+// Vừa đăng nhập (và khi kết nối lại mạng), máy báo cho mọi nơi "tài khoản X đang ở phiên S"; máy nào đang mở X với phiên khác thì tự thoát.
+function accAnnounce(){if(!ACC.cur||ACC.lost)return;if(NET.status!=='on'){ACC.announced=false;return;}netCast('tk_world','akick',{user:ACC.cur.user,sid:ACC.sid,t:Date.now()});ACC.announced=true;}
+setInterval(()=>{if(ACC.cur&&!ACC.lost&&!ACC.announced&&NET.status==='on')accAnnounce();},1000); // chỉ báo một lần sau khi đăng nhập
+function accOnKick(p){if(!ACC.cur||ACC.lost||p.user!==ACC.cur.user||p.sid===ACC.sid)return;accKicked();}
+function accKicked(){if(ACC.lost)return;const u=ACC.cur?ACC.cur.user:'';ACC.lost=true;removeEventListener('beforeunload',save);liveLeave();auto=false;autoRest=false;navGoal=null;
+  try{if(typeof netLeaveParty==='function'&&typeof inParty==='function'&&inParty())netLeaveParty();}catch(e){}
+  try{if(NET.status==='on')netCast(NET.mapRoom,'bye',{id:NET.id});if(NET.ws){NET.ws.onclose=null;NET.ws.close();}NET.ws=null;NET.status='off';NET.retryT=1e9;}catch(e){}
+  started=false;PANELS.forEach(x=>$(x).hidden=true);
+  openDlg('Tài khoản đăng nhập ở nơi khác',`Tài khoản <b>${esc(u)}</b> vừa được đăng nhập ở một máy khác, nên máy này đã thoát ra.<br>Nếu không phải bạn đăng nhập, hãy đổi mật khẩu ngay.`,[{t:'Về màn hình đăng nhập',fn:()=>{sessionStorage.removeItem('tk_cur');location.reload();}}]);
+  const b=[...document.querySelectorAll('#dlgB .btn')].find(x=>x.textContent==='Đóng');if(b)b.remove();}
 const userOk=u=>/^[a-z0-9_]{3,16}$/.test(u);
 // nhận dữ liệu từ máy chủ: lấy bản mới hơn giữa máy chủ và bản sao trên máy
 function mergeServerData(user,data,ts){const key='tk_save_'+user;let loc=null;try{loc=JSON.parse(localStorage.getItem(key));}catch(e){}
