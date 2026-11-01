@@ -180,7 +180,12 @@ button{font-family:inherit}
 #partyBox .ph{color:#ffd77a;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 #partyBox .ph button{font-size:11px;padding:2px 8px;background:#3a2a2a;color:#fcc;border:1px solid #7a4a4a;border-radius:4px;cursor:pointer}
 #duelBar{position:absolute;left:50%;top:92px;transform:translateX(-50%);padding:5px 16px;background:rgba(80,10,10,.75);border:1px solid #ff6a5a;border-radius:16px;color:#ffe0d8;font-size:14px;white-space:nowrap;pointer-events:none}
-#partyBox .pm{margin:3px 0}#partyBox .bar{height:7px;margin-top:2px}
+#partyBox .pm{margin:3px 0}
+.dkbar{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;color:#ffd77a;margin:-2px -2px 3px 0;line-height:1}
+.dkbar .dkt{opacity:.85;cursor:pointer}.dkb{background:rgba(0,0,0,.35);color:#ffe9b0;border:1px solid #6b5a40;border-radius:4px;font-size:11px;width:20px;height:18px;padding:0;margin-left:3px;cursor:pointer;line-height:15px}
+.dkb:hover{border-color:var(--gold)}.dk-min>:not(.dkbar){display:none!important}.dk-min .dkbar{margin-bottom:-2px}.dk-hide{display:none!important}
+#miniwrap.dk-min{width:auto;height:auto;padding:4px 6px}#log .dkbar{pointer-events:auto}
+#dockTray{position:absolute;left:10px;bottom:6px;display:flex;gap:4px;flex-wrap:wrap;z-index:5}#dockTray button{font-size:11px;padding:3px 8px;background:rgba(30,22,40,.85);color:#ffe9b0;border:1px solid var(--gold2);border-radius:12px;cursor:pointer}#partyBox .bar{height:7px;margin-top:2px}
 .sect{border:1px solid #5a4a30;border-radius:8px;padding:8px 11px;cursor:pointer;background:rgba(0,0,0,.35)}
 .sect:hover{border-color:#8a7040}
 .sect.sel{border-color:var(--gold);background:rgba(232,198,106,.12);box-shadow:0 0 12px rgba(232,198,106,.3)}
@@ -343,6 +348,7 @@ button{font-family:inherit}
 <script src="js/update.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/social.js"></script>
+<script src="js/dock.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/pets.js"></script>
 <script src="js/appearance.js"></script>

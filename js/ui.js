@@ -1,6 +1,6 @@
 'use strict';
 // ===================== THÔNG BÁO =====================
-function log(msg,col='#f4ead6'){const L=$('log'),d=document.createElement('div');d.textContent=msg;d.style.color=col;L.appendChild(d);while(L.children.length>7)L.firstChild.remove();
+function log(msg,col='#f4ead6'){const L=$('logBody')||$('log'),d=document.createElement('div');d.textContent=msg;d.style.color=col;L.appendChild(d);while(L.children.length>7)L.firstChild.remove();
   setTimeout(()=>{d.style.transition='opacity 1s';d.style.opacity=0;setTimeout(()=>d.remove(),1000);},7000);}
 function toast(msg,col){const d=document.createElement('div');d.textContent=msg;if(col)d.style.color=col;$('toast').appendChild(d);while($('toast').children.length>3)$('toast').firstChild.remove();setTimeout(()=>d.remove(),3000);}
 
@@ -49,7 +49,7 @@ function updateUI(){if(!player.sect||!$('hpc'))return;const st=stats();
   if(!q)qh='<b>Nhiệm vụ</b><br>Đã hoàn thành toàn bộ cốt truyện!<br><span class="go">Tiếp tục tu luyện, săn trang bị Truyền thuyết</span>';
   else{const o=questObjective(),where=o&&o.map!==curMapId?`<br><span style="color:#ffb36b">Ở ${MAPS[o.map].name}</span>`:'';
     qh=`<b>${q.title}</b><br>${q.short}${q.type==='talk'?'':`: <b>${qProgress()}/${q.n}</b>`}`+(qDone()&&q.type!=='talk'?`<br><span style="color:#7dff9a">✔ Về gặp ${npcName(q.giver)} nhận thưởng</span>`:'')+where+`<br><span class="go">➤ Nhấp để tự tìm đường</span>`;}
-  if(qh!==lastQ){$('quest').innerHTML=qh;lastQ=qh;}
+  if(qh!==lastQ){($('questBody')||$('quest')).innerHTML=qh;lastQ=qh;}
   const bh=player.buffs.map(b=>`<div class="buff" style="color:${b.col}" title="${b.name}">${b.icon}<span>${Math.ceil(b.t)}</span></div>`).join('')+(player.slowT>0?'<div class="buff" style="color:#9fe8ff" title="Bị làm chậm">❄</div>':'');
   if(bh!==lastBuff){$('buffs').innerHTML=bh;lastBuff=bh;}
   const rg=regionName();if(rg!==lastReg){lastReg=rg;$('region').textContent=rg;$('region').style.opacity=1;regT=3;}
@@ -130,8 +130,9 @@ function renderSet(){resetArm=false;$('optMusic').checked=AU.music;$('optSfx').c
 // ---------- chat, online, xếp hạng ----------
 function renderChat(){const b=$('chatLog');if(!b)return;b.innerHTML=NET.chat.slice(-8).map(c=>`<div><b style="color:${c.name==='Hệ thống'?'#ffb36b':c.name===player.name?'#9fffb0':'#8fd8ff'}">${esc(c.name)}${c.lv?' ['+c.lv+']':''}:</b> ${esc(c.text)}</div>`).join('');b.scrollTop=b.scrollHeight;}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function renderParty(){const b=$('partyBox');if(!b)return;if(typeof inParty!=='function'||!inParty()){b.hidden=true;return;}b.hidden=false;
-  const rows=PARTY.members.filter(m=>m.id!==NET.id).map(m=>{const s=PARTY.st.get(m.id)||{},o=NET.others.get(m.id),hp=o&&o.hf!=null?o.hf:s.hp,S=SECTS[s.sect||(o&&o.sect)];
+function renderParty(){const box=$('partyBox');if(!box)return;if(typeof inParty!=='function'||!inParty()){box.hidden=true;return;}box.hidden=false;const b=$('partyBody')||box;
+  const meRow=(()=>{const st=stats(),S=SECTS[player.sect];return`<div class="pm"><b style="color:${S.color}">${PARTY.leader===NET.id?'★ ':''}${esc(player.name)}</b> <span style="color:#9fffb0">(bạn)</span> <span style="color:#ccc">${player.lv}</span><div class="bar hp"><i style="width:${Math.max(0,Math.min(1,player.hp/st.maxhp))*100}%"></i></div></div>`;})();
+  const rows=meRow+PARTY.members.filter(m=>m.id!==NET.id).map(m=>{const s=PARTY.st.get(m.id)||{},o=NET.others.get(m.id),hp=o&&o.hf!=null?o.hf:s.hp,S=SECTS[s.sect||(o&&o.sect)];
     const far=s.map&&s.map!==curMapId?` <span style="color:#999">(${MAPS[s.map]?MAPS[s.map].name:''})</span>`:'';
     return`<div class="pm"><b style="color:${S?S.color:'#fff'}">${m.id===PARTY.leader?'★ ':''}${esc(m.name)}</b> <span style="color:#ccc">${s.lv||(o&&o.lv)||''}</span>${far}<div class="bar hp"><i style="width:${Math.max(0,Math.min(1,hp==null?1:hp))*100}%"></i></div></div>`;}).join('');
   b.innerHTML=`<div class="ph">Tổ đội ${PARTY.members.length}/${PARTY_MAX}${isLeader()?' · Bạn là đội trưởng':''}<button id="pLeave">Rời đội</button></div>${rows||'<div style="color:#999">Đang chờ đồng đội...</div>'}`;
@@ -429,7 +430,9 @@ function drawStartBg(dt){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.
 loadMap('trukhe');
 showStart();
 let last=performance.now();
-function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+let lastLoopWall=Date.now();
+setInterval(()=>{if(Date.now()-lastLoopWall>1500&&typeof netTick==='function')netTick(1);},1000);
+function loop(now){lastLoopWall=Date.now();const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(started){update(dt);draw(dt);}else{nowT+=dt;drawStartBg(dt);}
   if(typeof netTick==='function')netTick(dt);
   requestAnimationFrame(loop);}

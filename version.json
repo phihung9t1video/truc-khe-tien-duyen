@@ -1,6 +1,6 @@
 {
-  "version": "1.3.3",
-  "notes": "Danh sách người chơi online ở mọi bản đồ, giao dịch không cần đứng gần, GM cấp tối đa và tiền tối đa, nhân vật GM tự lưu lên máy chủ",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.3/www.zip",
-  "sha256": "0c2ce79b76e9adfbbf54890b3710fb6fbf0323e97cb01026e745c7a2dafc2e66"
+  "version": "1.3.4",
+  "notes": "Khung tổ đội hiện đủ cả bản thân, không còn bị văng khỏi đội khi app chạy nền; các khung chat, tổ đội, nhiệm vụ, bản đồ nhỏ, nhật ký có nút thu gọn và đóng",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.4/www.zip",
+  "sha256": "8b4ed1bae0f3be90ede0320e2f6b215268fb5c712bf624978885b33fc55b6f03"
 }

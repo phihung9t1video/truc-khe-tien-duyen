@@ -113,14 +113,14 @@ function partyOnMsg(ev,p){
     log(`${p.name} đã vào tổ đội`,'#9fffb0');partyBroadcastSet();return;}
   if(ev==='pset'){const mine=Array.isArray(p.members)&&p.members.some(m=>m.id===NET.id);
     if(mine){if(inParty()&&PARTY.leader!==p.id)return;
-      const fresh=!inParty();PARTY.leader=p.id;PARTY.members=p.members.slice(0,PARTY_MAX).map(m=>({id:String(m.id),name:String(m.name).slice(0,14)}));PARTY.lastSet=nowT;
+      const fresh=!inParty();PARTY.leader=p.id;PARTY.members=p.members.slice(0,PARTY_MAX).map(m=>({id:String(m.id),name:String(m.name).slice(0,14)}));PARTY.lastSet=Date.now();
       if(fresh){log('Đã vào tổ đội','#9fffb0');toast('Đã vào tổ đội','#9fffb0');}if(typeof renderParty==='function')renderParty();}
     else if(inParty()&&PARTY.leader===p.id&&!isLeader())partyReset('Bạn đã bị mời ra khỏi tổ đội');return;}
   if(!isMate(p.id))return;
   if(ev==='pleave'){const nm=(PARTY.members.find(m=>m.id===p.id)||{}).name||'';PARTY.members=PARTY.members.filter(m=>m.id!==p.id);PARTY.st.delete(p.id);log(`${nm} đã rời tổ đội`,'#ffb36b');
     if(PARTY.members.length<=1){partyReset('Tổ đội đã giải tán');return;}
     if(PARTY.leader===p.id)PARTY.leader=PARTY.members[0].id;if(isLeader())partyBroadcastSet();if(typeof renderParty==='function')renderParty();return;}
-  if(ev==='pst'){PARTY.st.set(p.id,{name:p.name,lv:p.lv,hp:p.hp,map:p.map,sect:p.sect,dead:p.dead,seen:nowT});return;}
+  if(ev==='pst'){PARTY.st.set(p.id,{name:p.name,lv:p.lv,hp:p.hp,map:p.map,sect:p.sect,dead:p.dead,seen:Date.now()});return;}
   if(ev==='pheal'&&Array.isArray(p.to)&&p.to.includes(NET.id)){recvHeal(+p.pct||0,p.hot||null,p.name);return;}
   if(ev==='pbuff'&&Array.isArray(p.to)&&p.to.includes(NET.id)&&p.buff){const b=p.buff;recvBuff({id:String(b.id),dur:+b.dur||5,defm:+b.defm||0,pct:+b.pct||0,icon:b.icon,col:b.col,name:String(b.name||'')},p.name);return;}
   if(ev==='pkill'&&p.map===curMapId&&!player.dead&&Math.hypot(player.x-p.x,player.y-p.y)<700){const e=Math.max(1,Math.round((+p.exp||0)*0.3));
@@ -136,8 +136,8 @@ function netPartyKill(e,x,y){if(inParty()&&NET.status==='on')netCast('tk_world',
 function partyTick(dt){if(!inParty())return;
   PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=2;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0});}
   if(isLeader()){PARTY.setT-=dt;
-    const gone=PARTY.members.filter(m=>m.id!==NET.id&&(!PARTY.st.has(m.id)?false:nowT-PARTY.st.get(m.id).seen>40));
+    const gone=PARTY.members.filter(m=>m.id!==NET.id&&(!PARTY.st.has(m.id)?false:Date.now()-PARTY.st.get(m.id).seen>120000));
     if(gone.length){PARTY.members=PARTY.members.filter(m=>!gone.includes(m));for(const g of gone)log(`${g.name} mất kết nối, rời tổ đội`,'#ffb36b');
       if(PARTY.members.length<=1){partyReset('Tổ đội đã giải tán');return;}partyBroadcastSet();}
     if(PARTY.setT<=0)partyBroadcastSet();}
-  else if(nowT-PARTY.lastSet>30)partyReset('Mất liên lạc với đội trưởng, tổ đội đã giải tán');}
+  else if(Date.now()-PARTY.lastSet>90000)partyReset('Mất liên lạc với đội trưởng, tổ đội đã giải tán');}
