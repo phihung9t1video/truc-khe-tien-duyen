@@ -18,10 +18,10 @@ const hasBuff=id=>player.buffs.some(b=>b.id===id);
 function refreshLook(){playerLook=buildLook(player.sect,player.gender,player.eq);playerW=weaponVis(player.eq.weapon,SECTS[player.sect].wtype,wRef());}
 
 function resetRuntime(){Object.assign(player,{path:[],target:null,npc:null,pend:null,gather:null,channel:0,atkCd:0,atkAnim:0,repath:0,moving:false,dead:false,
-  combatT:0,cds:[0,0,0,0],potCd:0,hitFlash:0,dir:'down',face:1,buffs:[],flying:false,navFly:false,slowT:0});}
+  combatT:0,cds:[0,0,0,0],potCd:0,hitFlash:0,dir:'down',face:1,buffs:[],flying:false,navFly:false,slowT:0,stunT:0});}
 function newPlayer(name,gender,sect){
   Object.assign(player,{name,gender,sect,lv:1,exp:0,gold:30,hpPot:6,mpPot:6,inv:[],eq:emptyEq(),
-    flyUnlocked:false,qi:0,qc:0,qNote:-1,kills:0,map:'trukhe'});
+    flyUnlocked:false,qi:0,qc:0,qNote:-1,kills:0,pvp:{w:0,l:0,d:0},friends:[],mount:null,mounts:[],mountOn:true,exp2T:0,tp:0,pet:null,pets:[],petOn:true,petExp:{},map:'trukhe'});
   resetRuntime();
   player.eq.weapon=makeItem('weapon',0,0,SECTS[sect].wtype);
   player.eq.armor=makeItem('armor',0,0);
@@ -30,6 +30,7 @@ function newPlayer(name,gender,sect){
 
 // ===================== BẢN ĐỒ =====================
 function loadMap(id,px,py){
+  partyAPI('duelOnMap');
   curMapId=id;CM=MAPS[id];TH=THEMES[CM.theme];player.map=id;
   genMap(CM);renderMap();
   seed=CM.gen.seed+7;TREES=[];
@@ -73,7 +74,8 @@ function makeItem(slot,tier,rar,wtype){tier=clamp(tier,0,MAXTIER);const m=RARITY
 }
 function eqKeyFor(it){if(it.slot!=='ring')return it.slot;if(!player.eq.ring1)return'ring1';if(!player.eq.ring2)return'ring2';return itemScore(player.eq.ring1)<=itemScore(player.eq.ring2)?'ring1':'ring2';}
 function itemScore(it){if(!it)return 0;const s=it.st;return(s.atk||0)*2+(s.def||0)*1.6+(s.hp||0)*0.12+(s.mp||0)*0.08+(s.crit||0)*3+(s.spd||0)*1.2;}
-function isUpgrade(it){return it.lvReq<=player.lv&&itemScore(it)>itemScore(player.eq[eqKeyFor(it)]);}
+const wtypeOk=it=>it.slot!=='weapon'||!it.wtype||it.wtype===SECTS[player.sect].wtype;
+function isUpgrade(it){return it.lvReq<=player.lv&&wtypeOk(it)&&itemScore(it)>itemScore(player.eq[eqKeyFor(it)]);}
 function addItem(it,silent){
   if(player.inv.length>=BAG_MAX){let wi=-1,ws=Infinity;player.inv.forEach((x,i)=>{const s=itemScore(x)*(1+x.rar)+(isUpgrade(x)?1e6:0);if(s<ws){ws=s;wi=i;}});
     if(wi<0||itemScore(it)*(1+it.rar)+(isUpgrade(it)?1e6:0)<=ws){player.gold+=it.price;log(`Túi đầy, tự bán ${it.name} được ${it.price} lượng`,'#ffd977');return;}
@@ -85,6 +87,7 @@ function addItem(it,silent){
 }
 function equipItem(uid){const i=player.inv.findIndex(x=>x.uid===uid);if(i<0)return;const it=player.inv[i];
   if(it.lvReq>player.lv){log(`Cần đạt cấp ${it.lvReq} mới dùng được ${it.name}`,'#ff9a8a');return;}
+  if(!wtypeOk(it)){log(`${it.name} không phải binh khí của ${SECTS[player.sect].name}`,'#ff9a8a');return;}
   const key=eqKeyFor(it),old=player.eq[key];player.inv.splice(i,1);
   if(old&&(old.ref||0)>(it.ref||0)){const r=old.ref;old.ref=it.ref||0;it.ref=r;log(`Chuyển cường hóa +${r} từ ${old.name} sang ${it.name}`,'#ffd23f');}
   if(old)player.inv.push(old);player.eq[key]=it;
@@ -114,8 +117,9 @@ function stats(){const S=SECTS[player.sect].base,l=player.lv;
   const s={maxhp:S.hp+S.hpL*l,maxmp:S.mp+S.mpL*l,atk:S.atk+S.atkL*l,def:S.def+S.defL*l,crit:0.05+(SECTS[player.sect].crit||0),spd:0};
   for(const k of EQ_KEYS){const it=player.eq[k];if(!it)continue;const st=it.st,rb=refBonus(it);s.maxhp+=(st.hp||0)+(rb.hp||0);s.maxmp+=(st.mp||0)+(rb.mp||0);s.atk+=(st.atk||0)+(rb.atk||0);s.def+=(st.def||0)+(rb.def||0);s.crit+=(st.crit||0)/100;s.spd+=(st.spd||0)/100;}
   for(const b of player.buffs){if(b.atk)s.atk*=1+b.atk;if(b.defm)s.def*=1+b.defm;if(b.crit)s.crit+=b.crit;}
+  const MT_=player.mount&&typeof MOUNTS!=='undefined'?MOUNTS[player.mount]:null;if(MT_){s.maxhp*=1+MT_.hp;s.def*=1+MT_.def;}
   s.maxhp=Math.round(s.maxhp);s.maxmp=Math.round(s.maxmp);s.atk=Math.round(s.atk);s.def=Math.round(s.def);
-  s.move=150*(1+s.spd)*(player.flying?1.7:1)*(player.slowT>0?0.6:1);return s;}
+  s.move=150*(1+s.spd)*(player.flying?1.7:player.riding&&MT_?1+MT_.spd:1)*(player.slowT>0?0.6:1);return s;}
 
 // ===================== HIỆU ỨNG =====================
 function addText(x,y,txt,col,size=14,serif){fx.push({k:'t',x:x+rnd(-6,6),y,txt,col,size,t:0,life:1.1,serif});}
@@ -139,6 +143,7 @@ function nearestMob(r){let b=null,bd=r;for(const m of mobs){if(m.dead)continue;c
 // ===================== CHIẾN ĐẤU =====================
 function dmgCalc(atk,def,mult=1,crit=0.08){let v=atk*mult*rnd(0.9,1.1)-def*0.5;v=Math.max(1,v);const c=Math.random()<crit;if(c)v*=1.8;return{v:Math.round(v),crit:c};}
 function hurtMob(m,r){if(m.dead)return;const em=elMul(SECTS[player.sect].el,m.t.el);let v=Math.max(1,Math.round(r.v*em*(m.markT>0?1+m.markAmt:1)));
+  if(m.isFoe){partyAPI('pvpSendHit',m,v,r.crit);return;}
   m.hp-=v;m.hitFlash=0.12;player.combatT=5;
   addText(m.x,m.y-m.t.hh-6,(r.crit?'Bạo kích ':'')+v+(em>1?' ▲':em<1?' ▼':''),r.crit?'#ffd23f':em>1?'#ffe9a0':'#ffffff',r.crit?19:14);
   sfx(r.crit?'crit':'hit');if(r.crit)shakeT=Math.max(shakeT,0.08);
@@ -160,9 +165,9 @@ function killMob(m){m.dead=true;m.fade=0.6;m.respawn=m.t.boss?90:12;player.kills
   if(m.t.boss){toast(`Đã hạ gục ${m.t.name}!`,'#ffd23f');shakeT=0.6;for(const o of mobs)if(o.summoned&&!o.dead){o.dead=true;o.fade=0.6;}}
   qOnKill(m);
   if(player.target===m){player.target=null;player.pend=null;}
-  partyAPI('netPartyKill',e,m.x,m.y);
+  partyAPI('netPartyKill',e,m.x,m.y);partyAPI('petOnKill',m);
   gainExp(e);}
-function gainExp(e){if(player.lv>=MAXLV)return;player.exp+=e;
+function gainExp(e){if(player.lv>=MAXLV)return;if(player.exp2T>0)e*=2;player.exp+=e;
   while(player.lv<MAXLV&&player.exp>=expNeed(player.lv)){player.exp-=expNeed(player.lv);player.lv++;const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;
     fx.push({k:'beam',x:player.x,y:player.y,t:0,life:1.2,col:'rgba(255,230,140,.9)'});addRing(player.x,player.y-20,80,'#ffe27a',0.9);addParts(player.x,player.y-20,'#ffe27a',30,150);
     addText(player.x,player.y-80,'ĐỘT PHÁ CẤP '+player.lv,'#ffe27a',22,true);toast(`Đột phá! Đạt cấp ${player.lv}`);sfx('level');
@@ -183,7 +188,7 @@ function hurtPlayer(r,src){if(player.dead)return;
   player.hp-=v;player.combatT=5;player.hitFlash=0.12;sfx('hurt');
   addText(player.x,player.y-58,'-'+v,r.crit?'#ff3b3b':'#ff8a7a',r.crit?18:14);
   if(player.hp<=0){player.hp=0;die();}}
-function die(){player.dead=true;player.path=[];player.target=null;player.npc=null;player.pend=null;player.gather=null;player.flying=false;auto=false;autoRest=false;navGoal=null;
+function die(){partyAPI('duelOnDeath');player.dead=true;player.path=[];player.target=null;player.npc=null;player.pend=null;player.gather=null;player.flying=false;auto=false;autoRest=false;navGoal=null;
   const loss=Math.floor(player.exp*0.1);player.exp-=loss;sfx('die');
   $('deadTxt').textContent=`Bị mất ${loss} kinh nghiệm. Hãy về ${CM.safeName} dưỡng thương rồi quay lại.`;$('dead').hidden=false;
   for(const m of mobs)if(m.state==='chase')m.state='return';}
@@ -344,12 +349,12 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
   const m=autoPick(pref);if(m){player.target=m;player.repath=0;return;}
   const z=pref?CM.zones[pref]:bestZone();
   if(z&&!player.path.length){const zx=z.x*T+16,zy=z.y*T+16;if(Math.hypot(player.x-zx,player.y-zy)>Math.max(z.r,2)*T)moveTo(zx,zy);}}
-function autoBuy(){let a=0,b=0;while(player.hpPot<20&&player.gold>=30){player.gold-=30;player.hpPot+=5;a+=5;}while(player.mpPot<10&&player.gold>=30){player.gold-=30;player.mpPot+=5;b+=5;}
+function autoBuy(){if(typeof autoMount==='function')autoMount();partyAPI('autoPet');let a=0,b=0;while(player.hpPot<20&&player.gold>=30){player.gold-=30;player.hpPot+=5;a+=5;}while(player.mpPot<10&&player.gold>=30){player.gold-=30;player.mpPot+=5;b+=5;}
   if(a||b){log('Tự mua '+a+' Kim Sang Dược, '+b+' Ngưng Thần Đan','#ff9a8a');sfx('coin');}
   if(player.inv.length>20){const n0=player.inv.length;player.inv=player.inv.filter(x=>{if(x.rar<=1&&!isUpgrade(x)){player.gold+=x.price;return false;}return true;});if(player.inv.length<n0)log('Tự bán '+(n0-player.inv.length)+' món đồ thừa','#ffd977');}
   for(let n=0;n<40;n++){let best=null,bs=1e9;for(const k of EQ_KEYS){const it=player.eq[k];if(!it||(it.ref||0)>=10)continue;const sc=(it.ref||0)*(k==='weapon'?1:2)+(k==='weapon'?0:1);if(sc<bs){bs=sc;best=it;}}
     if(!best||player.gold<refCost(best)*3)break;if(refineItem(best.uid,true))log(`Tự cường hóa ${best.name} lên +${best.ref}`,'#ffd23f');}}
-function autoFly(){if(!player.flyUnlocked)return;
+function autoFly(){if(!player.flyUnlocked)return;if(typeof mountObj==='function'&&mountObj()&&mountObj().spd>=0.7){if(player.flying)setFly(false);return;}
   const dest=player.target&&!player.target.dead?player.target:player.npc||player.gather||(player.path.length?player.path[player.path.length-1]:null);
   if(!dest){if(player.flying)setFly(false);return;}
   const d=dist(player,dest);
@@ -365,6 +370,9 @@ function updatePlayer(dt){const st=stats();
   const inV=inSafe(player),hr=inV?0.12:(player.combatT<=0?0.03:0.004);
   player.hp=Math.min(st.maxhp,player.hp+st.maxhp*hr*dt);
   player.mp=Math.min(st.maxmp,player.mp+st.maxmp*(inV?0.12:0.02)*dt);
+  if(player.exp2T>0)player.exp2T-=dt;
+  if(typeof updateRiding==='function'){updateRiding();const M=mountObj();if(M&&M.spd>=0.7&&player.flying&&player.navFly)setFly(false);}
+  if(player.stunT>0){player.stunT-=dt;player.path=[];player.moving=false;return;}
   if(mouse.down&&mouse.hold){mouse.holdT-=dt;if(mouse.holdT<=0){mouse.holdT=0.2;const w=toWorld(mouse.x,mouse.y);moveTo(w.x,w.y);}}
   if(auto){autoThink(dt);autoFly();}
   if(player.npc){const n=player.npc;
@@ -395,6 +403,7 @@ const ESHOT_COL={efire:['#ff8a3d','#ff3a1a'],eice:['#bff0ff','#7fd0ff'],edark:['
 function enemyShoot(m,kind,ang,mult){const a=ang!=null?ang:Math.atan2(player.y-14-(m.y-m.t.hh/2),player.x-m.x);
   eshots.push({kind,x:m.x,y:m.y-m.t.hh/2,vx:Math.cos(a),vy:Math.sin(a),spd:kind==='eice'?300:260,atk:m.atk*(mult||1),travel:0,el:m.t.el,m});}
 function updateMob(m,dt){
+  if(m.isFoe){partyAPI('foeTick',m,dt);return;}
   if(m.dead){if(m.fade>0)m.fade-=dt;if(m.summoned)return;m.respawn-=dt;if(m.respawn<=0)spawnMob(m);return;}
   m.atkCd-=dt;m.atkAnim-=dt;m.hitFlash-=dt;m.repath-=dt;
   if(m.burnT>0){m.burnT-=dt;m.burnTick-=dt;if(m.burnTick<=0){m.burnTick=0.5;hurtMob(m,{v:m.burnDmg,crit:false});if(m.dead)return;}const pz=m.burnKind==='poison';if(Math.random()<0.4)fx.push({k:'p',x:m.x+rnd(-8,8),y:m.y-rnd(4,20),vx:0,vy:-40,col:pz?(Math.random()<.5?'#9fff6a':'#4ac03a'):(Math.random()<.5?'#ffb040':'#ff5a1a'),t:0,life:0.5,sz:2});}
@@ -431,7 +440,7 @@ function updateMob(m,dt){
     if(m.atkCd<=0){m.atkCd=t.cd;m.atkAnim=0.25;
       if(t.ranged){enemyShoot(m,t.shot||'eice');sfx('ice');}else hurtPlayer(dmgCalc(m.atk,stats().def),{el:t.el,m});
       if(!player.dead&&(!player.target||player.target.dead)&&!player.npc&&!player.gather&&!player.path.length&&!autoRest){player.target=m;player.repath=0;}}}}
-function separate(){for(let i=0;i<mobs.length;i++){const a=mobs[i];if(a.dead)continue;for(let j=i+1;j<mobs.length;j++){const b=mobs[j];if(b.dead)continue;
+function separate(){for(let i=0;i<mobs.length;i++){const a=mobs[i];if(a.dead||a.isFoe)continue;for(let j=i+1;j<mobs.length;j++){const b=mobs[j];if(b.dead||b.isFoe)continue;
   const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||0.01,min=(a.t.boss||b.t.boss)?40:22;if(d<min){const p=(min-d)/2,ux=dx/d*p,uy=dy/d*p;
     if(canStand(a.x-ux,a.y-uy)){a.x-=ux;a.y-=uy;}if(canStand(b.x+ux,b.y+uy)){b.x+=ux;b.y+=uy;}}}}}
 
@@ -464,7 +473,7 @@ function updateFx(dt){for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;if(f
 let uiT=0,saveT=0;
 function update(dt){nowT+=dt;
   for(let i=timers.length-1;i>=0;i--){const tm=timers[i];tm.t-=dt;if(tm.t<=0){timers.splice(i,1);tm.fn();}}
-  updatePlayer(dt);for(const m of mobs)updateMob(m,dt);
+  updatePlayer(dt);for(const m of mobs)updateMob(m,dt);partyAPI('duelTick',dt);partyAPI('petTick',dt);
   for(let i=mobs.length-1;i>=0;i--){const m=mobs[i];if(m.summoned&&m.dead&&m.fade<=0)mobs.splice(i,1);}
   separate();updateShots(dt);updateFx(dt);
   for(const h of herbs)if(h.dead){h.respawn-=dt;if(h.respawn<=0)h.dead=false;}
@@ -472,14 +481,14 @@ function update(dt){nowT+=dt;
   saveT-=dt;if(saveT<=0){saveT=10;save();}}
 
 // ===================== LƯU / TẢI =====================
-const SKEY='trukhe_tienduyen_v2';
+let SKEY='trukhe_tienduyen_v2'; // đổi theo tài khoản khi đăng nhập (accounts.js)
 function save(){if(!player.sect)return;try{localStorage.setItem(SKEY,JSON.stringify({v:3,name:player.name,gender:player.gender,sect:player.sect,lv:player.lv,exp:player.exp,gold:player.gold,
-  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,
+  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,exp2T:player.exp2T,tp:player.tp,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,
   map:curMapId,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SKEY));return s&&(s.v===2||s.v===3)&&SECTS[s.sect]?s:null;}catch(e){return null;}}
 function applySave(s){
   Object.assign(player,{name:s.name,gender:s.gender,sect:s.sect,lv:s.lv,exp:s.exp,gold:s.gold,hpPot:s.hpPot,mpPot:s.mpPot,inv:s.inv||[],
-    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0});
+    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,exp2T:s.exp2T||0,tp:s.tp||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{}});
   resetRuntime();
   delete player.eq.jade;delete player.refine;
   if(s.refine&&player.eq.weapon&&!player.eq.weapon.ref)player.eq.weapon.ref=s.refine; // bản cũ: cường hóa gắn với nhân vật -> chuyển vào vũ khí đang cầm

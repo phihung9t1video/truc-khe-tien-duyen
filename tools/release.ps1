@@ -15,6 +15,7 @@ if (-not $Version) { $Version = "$(Read-Host 'Nhap phien ban moi (vi du 1.0.1), 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { Fail 'Phien ban phai co dang so.so.so' }
 if (-not $Notes) { $Notes = "$(Read-Host 'Ghi chu thay doi')".Trim() ; if (-not $Notes) { $Notes = "Ban $Version" } }
 
+$env:APP_NOTES = $Notes
 Step "Build APK $Version"
 try { & "$PSScriptRoot\build-apk.ps1" -Version $Version } catch { Fail $_.Exception.Message }
 # Tu day chi goi git/gh va tu kiem tra ma loi; PowerShell 5.1 coi dong loi cua chuong trinh ngoai la loi dung han neu de 'Stop'

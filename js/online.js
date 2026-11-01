@@ -30,7 +30,9 @@ function netConnect(){
     else if(ev==='bye')NET.others.delete(p.id);
     else if(ev==='hello'){NET.world.set(p.id,{name:p.name,lv:p.lv,map:p.map,seen:nowT});}
     else if(ev==='chat'){netAddChat(p.name,String(p.text||'').slice(0,120),p.lv);}
-    else if(ev[0]==='p')partyOnMsg(ev,p);};}
+    else if(ev[0]==='p')partyOnMsg(ev,p);
+    else if(ev[0]==='d'&&typeof duelOnMsg==='function')duelOnMsg(ev,p);
+    else if((ev==='wsp'||ev[0]==='f'||ev[0]==='t')&&typeof socialOnMsg==='function')socialOnMsg(ev,p);};}
 function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId;if(NET.mapRoom===room)return;
   if(NET.mapRoom){netCast(NET.mapRoom,'bye',{id:NET.id});netLeave(NET.mapRoom);}NET.others.clear();NET.mapRoom=room;netJoin(room);NET.sendT=0;}
 function netHello(){if(!player.sect)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId});}
@@ -49,7 +51,7 @@ function netTick(dt){
   NET.helloT-=dt;if(NET.helloT<=0){NET.helloT=10;netHello();}
   NET.sendT-=dt;if(NET.sendT<=0){NET.sendT=0.35;const w=player.eq.weapon,a=player.eq.armor;
     netCast(NET.mapRoom,'pos',{id:NET.id,name:player.name,sect:player.sect,gender:player.gender,lv:player.lv,x:Math.round(player.x),y:Math.round(player.y),dir:player.dir,face:player.face,
-      mv:player.moving?1:0,fl:player.flying?1:0,at:player.atkAnim>0?1:0,dead:player.dead?1:0,wr:w?w.rar:0,wt:w?w.tier:0,rf:wRef(),ar:a?a.rar:0,cs:player.combo||0,hf:Math.round(player.hp/stats().maxhp*100)/100});}
+      mv:player.moving?1:0,fl:player.flying?1:0,at:player.atkAnim>0?1:0,dead:player.dead?1:0,wr:w?w.rar:0,wt:w?w.tier:0,rf:wRef(),ar:a?a.rar:0,cs:player.combo||0,hf:Math.round(player.hp/stats().maxhp*100)/100,mh:stats().maxhp,df:stats().def,st:player.stunT>0?1:0,mt:player.riding?player.mount:0,pt:player.petOn&&player.pet?player.pet:0,gm:typeof isGM==='function'&&isGM()?1:0});}
   for(const [k,o] of NET.others){if(nowT-o.seen>6){NET.others.delete(k);continue;}
     const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>400){o.x=o.tx;o.y=o.ty;}else{const s=Math.min(1,dt*8);o.x+=dx*s;o.y+=dy*s;}o.atk=o.at?(o.atk>0?o.atk-dt:0.25):0;}
   for(const [k,o] of NET.world)if(nowT-o.seen>25)NET.world.delete(k);
@@ -60,10 +62,14 @@ function drawOthers(list){if(!NET.others.size)return;
     const fy=o.fl?-16-Math.sin(nowT*3)*3:0;drawShadow(o.x,o.y,o.fl?10:13,o.fl?0.18:0.3);
     if(o.dead){ctx.save();ctx.globalAlpha=0.5;}
     if(o.fl)drawFlySword(o.x,o.y+fy+1,o.dir==='side'?o.face:1,o.wv.type==='sword'?o.wv.col:'#bfe0ff',o.wv.glow||'#9fd3ff');
-    drawChibi(o.look,o.x,o.y+fy,1,o.dir||'down',o.face||1,!!o.mv&&!o.fl,o.atk||0,false,Object.assign({},o.wv,{style:o.cs||0}),o.x*0.01);
+    const rM=o.mt&&typeof MOUNTS!=='undefined'&&MOUNTS[o.mt];let rdy=0;if(rM){drawSteed(o.mt,o.x,o.y,o.face||1,!!o.mv,o.x*0.01);rdy=rM.kind==='crane'?-40:-24;}
+    drawChibi(o.look,o.x,o.y+fy+rdy,1,rM?'side':(o.dir||'down'),o.face||1,!!o.mv&&!o.fl&&!rM,o.atk||0,false,Object.assign({},o.wv,{style:o.cs||0}),o.x*0.01);
     if(o.dead)ctx.restore();
-    const mate=isMate(o.id);label(`${mate?'[Đội] ':''}${o.name} · ${o.lv}`,o.x,o.y-68+fy,mate?'#9fffb0':'#8fd8ff',11);
-    if(mate&&o.hf!=null)hpBar(o.x,o.y-64+fy,34,o.hf,'#5fe07a');}});}}
+    const mate=isMate(o.id),foe=typeof DUEL!=='undefined'&&DUEL.state==='on'&&DUEL.id===o.id;
+    if(foe&&player.target===DUEL.foe){ctx.strokeStyle='#ff4040';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(o.x,o.y,20,8,0,0,Math.PI*2);ctx.stroke();}
+    label(`${o.gm?'[GM] ':''}${foe?'[Tỷ thí] ':mate?'[Đội] ':''}${o.name} · ${o.lv}`,o.x,o.y-68+fy+rdy,o.gm?'#ffd23f':foe?'#ff8a7a':mate?'#9fffb0':'#8fd8ff',11);
+    if((mate||foe)&&o.hf!=null)hpBar(o.x,o.y-64+fy,34,o.hf,foe?'#e0402a':'#5fe07a');
+    if(o.st)for(let k=0;k<3;k++){const a=nowT*5+k*2.1;label('★',o.x+Math.cos(a)*12,o.y-80+fy+Math.sin(a)*3,'#ffe27a',9);}}});}}
 // ===================== BẢNG XẾP HẠNG & LƯU ĐÁM MÂY (cần chạy supabase/schema.sql) =====================
 async function rpc(fn,args){const r=await fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify(args)});
   if(!r.ok){NET.rpcOk=false;throw new Error('rpc '+r.status);}NET.rpcOk=true;const t=await r.text();return t?JSON.parse(t):null;}

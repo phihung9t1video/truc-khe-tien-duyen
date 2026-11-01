@@ -41,6 +41,31 @@ button{font-family:inherit}
 .buff span{position:absolute;bottom:-1px;right:2px;font-size:9px;color:#fff;text-shadow:0 0 2px #000}
 #tframe{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:320px;padding:6px 12px;text-align:center}
 #tname{font-weight:bold;font-size:13px}
+#tport{position:absolute;left:6px;top:6px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold2);background:radial-gradient(#3e5f80,#121a26);cursor:pointer}
+#tframe[data-other]:not([data-other=""]){padding-left:58px;min-height:52px;cursor:context-menu}
+#pmenu{position:fixed;z-index:150;min-width:190px;padding:4px;background:linear-gradient(#2e2236,#1a1220);border:1px solid var(--gold2);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.6)}
+#pmenu .pmh{color:#ffd77a;font-weight:bold;padding:4px 8px 6px;border-bottom:1px solid #4a3e2a;margin-bottom:3px}
+#pmenu button{display:block;width:100%;text-align:left;padding:7px 10px;background:none;border:0;color:#f4ead6;font-size:13.5px;cursor:pointer;border-radius:5px;font-family:inherit}
+#pmenu button:hover{background:rgba(232,198,106,.18)}
+#chatIn.wsp{border-color:#c890ff;background:rgba(60,20,80,.6)}
+#panelShop{width:600px}#shopGold{margin:6px 0;font-size:13px}#shopBody{max-height:56vh;overflow-y:auto}
+.shr{display:flex;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.07)}.shi{font-size:24px;width:34px;text-align:center;text-shadow:0 0 8px currentColor}
+.shd{flex:1;font-size:13px;line-height:1.4}.shd span{color:#aaa;font-size:12px}.shp{text-align:right;font-size:12.5px;min-width:130px}
+.shp button{display:block;margin:4px 0 0 auto;padding:4px 14px;background:linear-gradient(#6b4a22,#4a3016);color:#fff;border:1px solid var(--gold2);border-radius:5px;cursor:pointer}.shp button:disabled{opacity:.4;cursor:default}
+.shm{width:60px;height:42px}.shgm{font-size:12.5px;color:#ccc;padding:4px 2px 6px}.shgm select{background:#2a2232;color:#fff;border:1px solid var(--gold2);border-radius:4px;padding:2px}
+.gmtag{background:#c9a227;color:#2a1a00;font-weight:bold;font-size:10.5px;padding:0 5px;border-radius:4px}
+#bagUse{margin-top:8px;font-size:13px}#bagUse button{padding:2px 10px;background:#3e2e48;color:#ffe9b0;border:1px solid var(--gold2);border-radius:4px;cursor:pointer}
+.acch{color:#ffd77a;font-size:18px;margin-bottom:6px;text-align:center}
+#startMenu input{display:block;width:100%;box-sizing:border-box;margin:5px 0;padding:8px 10px;background:rgba(0,0,0,.5);border:1px solid var(--gold2);border-radius:6px;color:#fff;font-size:14px;font-family:inherit;user-select:text}
+#lgMsg{min-height:18px;font-size:12.5px;color:#ffb36b;margin:2px 0}.accl{margin-top:8px;max-height:150px;overflow-y:auto}
+.accr{padding:5px 6px;border:1px solid #4a3e2a;border-radius:6px;margin-top:4px;cursor:pointer;font-size:12.5px;position:relative}.accr span{color:#aaa}.accr:hover{border-color:var(--gold)}
+.accr button{position:absolute;right:4px;top:3px;background:none;border:0;color:#c88;cursor:pointer;font-size:13px}
+#crRestore{margin-top:6px;font-size:12.5px}#crRestore a{color:#9fd3ff}#crCode{padding:5px 8px;background:rgba(0,0,0,.5);border:1px solid var(--gold2);border-radius:5px;color:#fff;margin-top:4px;width:240px;text-transform:uppercase}
+#panelFriends{width:440px}.frow{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}.frow button{font-size:11px;padding:2px 8px;background:#3e2e48;color:#ffe9b0;border:1px solid var(--gold2);border-radius:4px;cursor:pointer}
+#panelTrade{width:640px}#trWrap{display:flex;gap:12px}#trWrap>div{flex:1}#trWrap h4{margin:2px 0 5px;color:#ffd77a;font-size:13px}
+.trGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}#trBag{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-height:150px;overflow-y:auto;margin-top:6px}
+#trMyGold{width:120px;padding:4px 6px;background:rgba(0,0,0,.5);border:1px solid var(--gold2);border-radius:5px;color:#fff;user-select:text}
+#trBtns{display:flex;gap:8px;margin-top:8px}#trBtns .btn{margin:0}#trState{margin-top:6px;font-size:12.5px;color:#ccc}
 #tstatus{font-size:11px;color:#9fe8ff;min-height:13px}
 #region{position:absolute;left:50%;top:84px;transform:translateX(-50%);font-size:30px;font-weight:bold;color:#ffe9a8;text-shadow:0 2px 6px #000,0 0 14px rgba(255,200,100,.45);transition:opacity .8s;white-space:nowrap;letter-spacing:2px}
 #topright{position:absolute;right:10px;top:10px;width:224px}
@@ -151,6 +176,7 @@ button{font-family:inherit}
 #partyBox{position:absolute;left:10px;top:112px;width:220px;padding:6px 8px;font-size:12px}
 #partyBox .ph{color:#ffd77a;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
 #partyBox .ph button{font-size:11px;padding:2px 8px;background:#3a2a2a;color:#fcc;border:1px solid #7a4a4a;border-radius:4px;cursor:pointer}
+#duelBar{position:absolute;left:50%;top:92px;transform:translateX(-50%);padding:5px 16px;background:rgba(80,10,10,.75);border:1px solid #ff6a5a;border-radius:16px;color:#ffe0d8;font-size:14px;white-space:nowrap;pointer-events:none}
 #partyBox .pm{margin:3px 0}#partyBox .bar{height:7px;margin-top:2px}
 .sect{border:1px solid #5a4a30;border-radius:8px;padding:8px 11px;cursor:pointer;background:rgba(0,0,0,.35)}
 .sect:hover{border-color:#8a7040}
@@ -202,11 +228,13 @@ button{font-family:inherit}
   </div>
   <div id="buffs"></div>
   <div id="partyBox" class="panel" hidden></div>
-  <div id="tframe" class="panel" hidden><div id="tname"></div><div class="bar hp"><i id="thpb"></i><span id="thpt"></span></div><div id="tstatus"></div></div>
+  <div id="duelBar" hidden></div>
+  <div id="pmenu" hidden></div>
+  <div id="tframe" class="panel" hidden><canvas id="tport" width="128" height="128" hidden></canvas><div id="tname"></div><div class="bar hp"><i id="thpb"></i><span id="thpt"></span></div><div id="tstatus"></div></div>
   <div id="region" class="serif"></div>
   <div id="topright">
     <div id="miniwrap" class="panel"><canvas id="mini" width="192" height="144" title="Nhấp để đi tới đó"></canvas><button id="miniBig" title="Xem toàn bộ bản đồ (M)">⛶</button><div id="miniName"></div></div>
-    <div id="menuBtns"><button id="btnChar">Nhân vật</button><button id="btnBag">Túi đồ</button><button id="btnMap">Bản đồ</button><button id="btnTop">Xếp hạng</button><button id="btnSet">Cài đặt</button><button id="btnHelp">?</button></div>
+    <div id="menuBtns"><button id="btnChar">Nhân vật</button><button id="btnBag">Túi đồ</button><button id="btnMap">Bản đồ</button><button id="btnShop">Cửa hàng</button><button id="btnFriends">Bạn bè</button><button id="btnTop">Xếp hạng</button><button id="btnSet">Cài đặt</button><button id="btnHelp">?</button></div>
     <div id="quest" class="panel"></div>
   </div>
   <div id="hotbar" class="panel"></div>
@@ -237,6 +265,19 @@ button{font-family:inherit}
 
   <div id="panelTop" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Bảng xếp hạng</h3><div id="topList"></div><div style="font-size:12px;color:#999;margin-top:8px">Nhân vật được lưu lên mạng mỗi phút khi đang online.</div></div>
 
+  <div id="panelShop" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Cửa hàng</h3>
+    <div class="tabs"><button id="shTab_item" class="sel">Vật phẩm</button><button id="shTab_eq">Trang bị</button><button id="shTab_mount">Thú cưỡi</button></div>
+    <div id="shopGold"></div><div id="shopBody"></div></div>
+
+  <div id="panelFriends" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Bạn bè</h3><div id="friendList"></div></div>
+
+  <div id="panelTrade" class="panel modal" hidden><button class="close">✕</button><h3 class="serif" id="trTitle">Giao dịch</h3>
+    <div id="trWrap"><div><h4>Bạn đưa (nhấp để bỏ ra)</h4><div class="trGrid" id="trMine"></div><div style="margin-top:5px;font-size:13px">Lượng: <input id="trMyGold" type="number" min="0" placeholder="0"></div></div>
+      <div><h4>Nhận về</h4><div class="trGrid" id="trTheirs"></div><div style="margin-top:5px;font-size:13px">Lượng: <b id="trTheirGold" style="color:#ffd977"></b></div></div></div>
+    <h4 style="margin:8px 0 0;color:#ffd77a;font-size:13px">Túi đồ của bạn (nhấp để đưa vào giao dịch)</h4><div id="trBag"></div>
+    <div id="trState"></div><div id="trBtns"><button class="btn" id="trLock">Khóa đồ</button><button class="btn" id="trOk">Đồng ý giao dịch</button><button class="btn gray" id="trCancel">Hủy</button></div>
+    <div style="font-size:12px;color:#999;margin-top:6px">Cả hai bấm Khóa đồ, kiểm tra kỹ, rồi cùng bấm Đồng ý. Đồ đang mặc không giao dịch được; muốn đưa thì tháo ra trước.</div></div>
+
   <div id="panelSet" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Cài đặt</h3>
     <div class="setrow"><span>Nhạc nền</span><input type="checkbox" id="optMusic"></div>
     <div class="setrow"><span>Âm thanh hiệu ứng</span><input type="checkbox" id="optSfx"></div>
@@ -251,6 +292,9 @@ button{font-family:inherit}
       <li><b>Nhấp người trong làng</b>: nhận và trả nhiệm vụ, chữa thương, mua thuốc, bán đồ.</li>
       <li><b>Cường hóa</b>: mở bảng Nhân vật, nhấp vào món đang mặc. Mỗi món cường hóa riêng; thay đồ mới thì cường hóa tự chuyển sang.</li>
       <li><b>Tổ đội</b>: nhấp vào người chơi khác (tên xanh) để mời. Dược sư Bách Thảo Cốc hồi máu được cho cả đội.</li>
+      <li><b>Người chơi khác</b>: nhấp để chọn (hiện ở khung trên cùng), nhấp chuột phải vào khung đó hoặc vào nhân vật để mời tổ đội, kết bạn, giao dịch, tuyên chiến, nhắn riêng.</li>
+      <li><b>Cửa hàng</b>: mua thuốc, Song bội kinh nghiệm, Hồi thành phù, trang bị, thú cưỡi và thú nuôi. Thú cưỡi tự xuống khi đánh nhau. Thần thú có kỹ năng riêng, đánh trùm có thể được tặng.</li>
+      <li><b>Tỷ thí</b>: chọn Tuyên chiến (cấp 10 trở lên). Thua không mất gì. Khắc chế ngũ hành có tác dụng khi đấu nhau.</li>
       <li><b>Ngũ hành</b>: Kim khắc Mộc, Mộc khắc Thổ, Thổ khắc Thủy và Ám, Thủy khắc Hỏa, Hỏa khắc Kim, Ám khắc Hỏa và Mộc. Đánh hệ mình khắc: thêm 20% sát thương (số có ▲).</li>
       <li><b>Nhấp bảng nhiệm vụ</b>: tự tìm đường, kể cả sang vùng khác.</li>
       <li><b>Bản đồ</b> (nút ⛶ hoặc phím M): xem toàn cảnh khu vực và thế giới, nhấp để tự đi tới.</li>
@@ -283,6 +327,7 @@ button{font-family:inherit}
 <div id="rotate">Hãy xoay ngang điện thoại để chơi<br>⟳</div>
 <div id="tip" class="panel" hidden></div>
 
+<script src="js/version.js"></script>
 <script src="js/data.js"></script>
 <script src="js/core.js"></script>
 <script src="js/art.js"></script>
@@ -290,6 +335,12 @@ button{font-family:inherit}
 <script src="js/game.js"></script>
 <script src="js/online-config.js"></script>
 <script src="js/online.js"></script>
+<script src="js/pvp.js"></script>
+<script src="js/update.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/social.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/pets.js"></script>
+<script src="js/accounts.js"></script>
 </body>
 </html>

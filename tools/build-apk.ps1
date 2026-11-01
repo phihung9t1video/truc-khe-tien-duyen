@@ -11,11 +11,11 @@ if (-not (Test-Path 'android\local.properties')) { "sdk.dir=$($sdk -replace '\\'
 $keyTxt = Join-Path $Root 'android-keys\MAT-KHAU-KHOA-KY.txt'
 if (-not (Test-Path $keyTxt)) { throw 'Khong thay khoa ky APK trong thu muc android-keys' }
 $pw = ((Get-Content $keyTxt | Select-String 'Mat khau').ToString() -split ':', 2)[1].Trim()
-& node tools\build-web.mjs
-& npx cap sync android | Out-Null
 $p = $Version.Split('.') | ForEach-Object { [int]$_ }
 $env:APP_VERSION_CODE = $p[0] * 10000 + $p[1] * 100 + $p[2]
 $env:APP_VERSION_NAME = $Version
+& node tools\build-web.mjs
+& npx cap sync android | Out-Null
 $env:KEYSTORE_FILE = Join-Path $Root 'android-keys\truckhe.jks'
 $env:KEYSTORE_PASSWORD = $pw; $env:KEY_PASSWORD = $pw; $env:KEY_ALIAS = 'truckhe'
 Push-Location android
