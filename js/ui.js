@@ -120,14 +120,17 @@ function renderChar(full){withCtx($('charPrev'),()=>{
    <div>Bạo kích <b>${(st.crit*100).toFixed(0)}%</b></div><div>Tốc độ <b>+${(st.spd*100).toFixed(0)}%</b></div><div>Ngũ hành <b style="color:${EL[S.el].c}">${EL[S.el].n}</b></div><div>Quái đã hạ <b>${player.kills.toLocaleString('vi-VN')}</b></div><div>Tỷ thí thắng / thua <b>${(player.pvp||{}).w||0} / ${(player.pvp||{}).l||0}</b></div><div>Phiên bản <b>${window.APP_VERSION||''}</b></div>`;
   document.querySelectorAll('#panelChar .eqbox').forEach(el=>{el.classList.toggle('sel',el.dataset.slot===eqSel);el.onclick=()=>{if(player.eq[el.dataset.slot]){eqSel=el.dataset.slot;sfx('click');$('tip').hidden=true;renderChar(true);}else openPanel('panelBag');};});
   renderEqDetail();}
-let bagSel=null;
+let bagSel=null,bagSellMode=false;
 function renderBag(){const g=$('bagGrid');let h='';
   for(let i=0;i<BAG_MAX;i++){const it=player.inv[i];
     if(!it){h+='<div class="cell" style="cursor:default"></div>';continue;}
     const ic=it.slot==='weapon'?WICON[it.wtype]:SLOTICON[it.slot];
     h+=`<div class="cell${bagSel===it.uid?' sel':''}" data-tip="item:${it.uid}" data-uid="${it.uid}" style="border-color:${RARITY[it.rar].c}66"><div class="ic" style="color:${RARITY[it.rar].c}">${ic}</div><span style="color:${RARITY[it.rar].c}">${it.name}</span><span class="tb">B${it.tier+1}${it.ref?' +'+it.ref:''}</span>${isUpgrade(it)?'<span class="up">▲</span>':''}</div>`;}
   g.innerHTML=h;
-  g.querySelectorAll('.cell[data-uid]').forEach(el=>el.onclick=()=>{bagSel=+el.dataset.uid;renderBag();});
+  g.querySelectorAll('.cell[data-uid]').forEach(el=>el.onclick=()=>{const uid=+el.dataset.uid;
+    if(bagSellMode){const it=player.inv.find(x=>x.uid===uid);if(!it)return;if((it.rar>=3||it.set)&&!confirm('Bán '+it.name+' ('+RARITY[it.rar].n+') được '+it.price+' lượng?'))return;$('tip').hidden=true;bagSel=null;sellItem(uid);renderBag();return;}
+    bagSel=uid;renderBag();});
+  g.classList.toggle('sellmode',bagSellMode);const sb=$('sellModeBtn');if(sb){sb.textContent=bagSellMode?'Bán nhanh: ĐANG BẬT (bấm món để bán)':'Bán nhanh: TẮT';sb.classList.toggle('on',bagSellMode);}
   const it=player.inv.find(x=>x.uid===bagSel);
   $('bagDetail').innerHTML=it?`<div style="flex:1">${itemHTML(it)}</div><div style="width:150px"><button class="btn" id="bEq">Trang bị</button><button class="btn" id="bRef" title="${(it.ref||0)<REF_MAX?'Tốn '+refCost(it).toLocaleString('vi-VN')+' lượng, tỉ lệ '+refRate(it.ref||0)+'%':'Tối đa'}">Cường hóa${(it.ref||0)<REF_MAX?' +'+((it.ref||0)+1):''}</button><button class="btn gray" id="bSell">Bán ${it.price} lượng</button></div>`:'<div style="color:#999">Nhấp vào một món đồ để xem và trang bị. Dấu <b style="color:#7f7">▲</b> là đồ tốt hơn đồ đang mặc.</div>';
   if(it){$('bRef').onclick=()=>{if(refineItem(it.uid)!==null)renderBag();};$('bEq').onclick=()=>{equipItem(it.uid);bagSel=null;$('tip').hidden=true;renderBag();};$('bSell').onclick=()=>{sellItem(it.uid);bagSel=null;$('tip').hidden=true;renderBag();};}
@@ -317,7 +320,7 @@ $('btnChar').onclick=()=>openPanel('panelChar');$('btnBag').onclick=()=>openPane
 $('miniBig').onclick=()=>openPanel('panelMap');
 $('portrait').onclick=()=>openPanel('panelChar');$('pname').onclick=()=>openPanel('panelChar');
 document.querySelectorAll('.close').forEach(b=>b.onclick=()=>{b.parentElement.hidden=true;$('tip').hidden=true;sfx('click');});
-$('sellJunkBtn').onclick=sellJunk;
+$('sellJunkBtn').onclick=sellJunk;$('sellModeBtn').onclick=()=>{bagSellMode=!bagSellMode;bagSel=null;sfx('click');renderBag();};
 $('optMusic').onchange=e=>{auSet('music',e.target.checked);save();};$('optSfx').onchange=e=>{auSet('sfx',e.target.checked);save();};
 $('resetBtn').onclick=()=>{if(!resetArm){resetArm=true;$('resetBtn').textContent='Bấm lần nữa để XÓA toàn bộ tiến trình';return;}removeEventListener('beforeunload',save);localStorage.removeItem(SKEY);location.reload();};
 $('reviveBtn').onclick=revive;

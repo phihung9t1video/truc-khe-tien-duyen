@@ -136,7 +136,7 @@ button{font-family:inherit}
 .cell .tb{position:absolute;left:4px;top:2px;color:#ffd77a;font-size:8.5px}
 #bagDetail{display:flex;gap:10px;margin-top:10px;min-height:96px;padding:8px;border:1px solid #4a3e2a;border-radius:8px;background:rgba(0,0,0,.3);font-size:12.5px;line-height:1.5}
 #bagFoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;gap:10px}
-#bagFoot .btn{width:auto;margin:0}
+#bagFoot .btn{width:auto;margin:0}#sellModeBtn.on{background:linear-gradient(#8a2a1a,#5a1a10);border-color:#ff8a6a;color:#fff}#bagGrid.sellmode .cell[data-uid]{cursor:pointer;outline:1px dashed #ff8a6a}#bagGrid.sellmode .cell[data-uid]:hover{background:rgba(255,90,60,.25)}
 /* bản đồ */
 #panelMap{width:810px}
 .tabs{display:flex;gap:6px;margin-bottom:8px}
@@ -265,7 +265,7 @@ button{font-family:inherit}
 
   <div id="panelBag" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Túi đồ</h3>
     <div id="bagGrid"></div><div id="bagDetail"></div>
-    <div id="bagFoot"><span id="bagGold"></span><button class="btn gray" id="sellJunkBtn">Bán đồ Thường & Tinh xảo</button></div></div>
+    <div id="bagFoot"><span id="bagGold"></span><button class="btn gray" id="sellModeBtn">Bán nhanh: TẮT</button><button class="btn gray" id="sellJunkBtn">Bán đồ Thường & Tinh xảo</button></div></div>
 
   <div id="panelMap" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Bản đồ</h3>
     <div class="tabs"><button id="tabArea" class="sel">Khu vực hiện tại</button><button id="tabWorld">Thế giới</button></div>
@@ -335,24 +335,24 @@ button{font-family:inherit}
 <div id="rotate">Hãy xoay ngang điện thoại để chơi<br>⟳</div>
 <div id="tip" class="panel" hidden></div>
 
-<script src="js/version.js?v=1.3.13"></script>
-<script src="js/data.js?v=1.3.13"></script>
-<script src="js/data2.js?v=1.3.13"></script>
-<script src="js/core.js?v=1.3.13"></script>
-<script src="js/art.js?v=1.3.13"></script>
-<script src="js/audio.js?v=1.3.13"></script>
-<script src="js/game.js?v=1.3.13"></script>
-<script src="js/online-config.js?v=1.3.13"></script>
-<script src="js/online.js?v=1.3.13"></script>
-<script src="js/mobsync.js?v=1.3.13"></script>
-<script src="js/pvp.js?v=1.3.13"></script>
-<script src="js/update.js?v=1.3.13"></script>
-<script src="js/ui.js?v=1.3.13"></script>
-<script src="js/social.js?v=1.3.13"></script>
-<script src="js/dock.js?v=1.3.13"></script>
-<script src="js/shop.js?v=1.3.13"></script>
-<script src="js/pets.js?v=1.3.13"></script>
-<script src="js/appearance.js?v=1.3.13"></script>
-<script src="js/accounts.js?v=1.3.13"></script>
+<script src="js/version.js?v=1.3.14"></script>
+<script src="js/data.js?v=1.3.14"></script>
+<script src="js/data2.js?v=1.3.14"></script>
+<script src="js/core.js?v=1.3.14"></script>
+<script src="js/art.js?v=1.3.14"></script>
+<script src="js/audio.js?v=1.3.14"></script>
+<script src="js/game.js?v=1.3.14"></script>
+<script src="js/online-config.js?v=1.3.14"></script>
+<script src="js/online.js?v=1.3.14"></script>
+<script src="js/mobsync.js?v=1.3.14"></script>
+<script src="js/pvp.js?v=1.3.14"></script>
+<script src="js/update.js?v=1.3.14"></script>
+<script src="js/ui.js?v=1.3.14"></script>
+<script src="js/social.js?v=1.3.14"></script>
+<script src="js/dock.js?v=1.3.14"></script>
+<script src="js/shop.js?v=1.3.14"></script>
+<script src="js/pets.js?v=1.3.14"></script>
+<script src="js/appearance.js?v=1.3.14"></script>
+<script src="js/accounts.js?v=1.3.14"></script>
 </body>
 </html>

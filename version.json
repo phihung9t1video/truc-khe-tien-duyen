@@ -1,6 +1,6 @@
 {
-  "version": "1.3.13",
-  "notes": "Bỏ tự đánh trả khi bị quái đánh; cửa hàng bán vũ khí của cả 6 phái; biểu tượng trang bị bằng hình vẽ",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.13/www.zip",
-  "sha256": "4b7a57d6c0c13fd4da5890cf1bac33a7f1da7c129482c12cb4d338364efa5f9b"
+  "version": "1.3.14",
+  "notes": "Túi đồ có nút Bán nhanh: bật lên rồi bấm món nào là bán món đó; cửa hàng bán vũ khí đủ 6 phái; biểu tượng trang bị bằng hình vẽ",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.14/www.zip",
+  "sha256": "af233c15da3245336ab75cd30ec335cd8cd6ba05d507e890edbe685d18a362cb"
 }
