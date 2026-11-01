@@ -11,9 +11,9 @@ function Step([string]$m) { Write-Host ''; Write-Host "==> $m" -ForegroundColor 
 & gh auth status *> $null; if ($LASTEXITCODE -ne 0) { Fail 'Chua dang nhap GitHub. Chay: gh auth login' }
 $cur = (Get-Content package.json -Raw | ConvertFrom-Json).version
 Write-Host "Phien ban hien tai: $cur"
-if (-not $Version) { $Version = (Read-Host 'Nhap phien ban moi (vi du 1.0.1), Enter de giu nguyen').Trim(); if (-not $Version) { $Version = $cur } }
+if (-not $Version) { $Version = "$(Read-Host 'Nhap phien ban moi (vi du 1.0.1), Enter de giu nguyen')".Trim(); if (-not $Version) { $Version = $cur } }
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { Fail 'Phien ban phai co dang so.so.so' }
-if (-not $Notes) { $Notes = Read-Host 'Ghi chu thay doi' ; if (-not $Notes) { $Notes = "Ban $Version" } }
+if (-not $Notes) { $Notes = "$(Read-Host 'Ghi chu thay doi')".Trim() ; if (-not $Notes) { $Notes = "Ban $Version" } }
 
 Step "Build APK $Version"
 try { & "$PSScriptRoot\build-apk.ps1" -Version $Version } catch { Fail $_.Exception.Message }
