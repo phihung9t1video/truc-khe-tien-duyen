@@ -31,15 +31,19 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
     if(gm)h+=`<div class="shr"><span class="shi" style="color:${SETS.trunglau.col}">✦</span><div class="shd"><b style="color:${SETS.trunglau.col}">Bộ ${SETS.trunglau.name}</b><br><span>5 món Thần thoại mạnh nhất, có điểm thưởng khi mặc đủ bộ</span></div><div class="shp">${priceTxt(0)}<button id="gmSetBtn">Nhận cả bộ</button></div></div>`;
     if(gm)h+=`<div class="shgm">Bậc <select id="gmTier">${TIER_PRE.map((n,i)=>`<option value="${i}"${i===gmTier?' selected':''}>${i+1} · ${n}</option>`).join('')}</select> Độ hiếm <select id="gmRar">${RARITY.map((r,i)=>`<option value="${i}"${i===gmRar?' selected':''}>${r.n}</option>`).join('')}</select></div>`;
     else h+=`<div class="shgm">Bán đồ <b style="color:${RARITY[1].c}">Tinh xảo</b> bậc ${tier+1} (${TIER_PRE[tier]}), hợp với cấp của bạn. Đồ Hiếm và Truyền thuyết phải đánh quái, đánh trùm mới có.</div>`;
-    h+=EQ_SHOP.map(sl=>{const wt=SECTS[player.sect].wtype,nm=TIER_PRE[tier]+' '+(sl==='weapon'?SLOT_SUF[wt]:SLOT_SUF[sl]),ic=sl==='weapon'?WICON[wt]:SLOTICON[sl];
-      return`<div class="shr"><span class="shi" style="color:${RARITY[rar].c}">${ic}</span><div class="shd"><b style="color:${RARITY[rar].c}">${nm}</b><br><span>${SLOTNAME[sl]} · yêu cầu cấp ${TIER_LV[tier]}</span></div><div class="shp">${priceTxt(eqPrice(tier,rar))}<button data-eq="${sl}">Mua</button></div></div>`;}).join('');}
+    const rows=[];const mine=SECTS[player.sect].wtype;
+    for(const S of [SECTS[player.sect],...Object.values(SECTS).filter(x=>x!==SECTS[player.sect])])rows.push(['weapon',S.wtype,S]);
+    for(const sl of EQ_SHOP)if(sl!=='weapon')rows.push([sl,null,null]);
+    h+=rows.map(([sl,wt,S])=>{const nm=TIER_PRE[tier]+' '+(wt?SLOT_SUF[wt]:SLOT_SUF[sl]),ic=wt?WICON[wt]:SLOTICON[sl];
+      const who=wt?(wt===mine?' · <b style="color:#9fffb0">phái của bạn</b>':` · <span style="color:${S.color}">${S.name}</span> (bạn không dùng được, để giao dịch)`):'';
+      return`<div class="shr"><span class="shi" style="color:${RARITY[rar].c}">${ic}</span><div class="shd"><b style="color:${RARITY[rar].c}">${nm}</b><br><span>${SLOTNAME[sl]} · yêu cầu cấp ${TIER_LV[tier]}${who}</span></div><div class="shp">${priceTxt(eqPrice(tier,rar))}<button data-eq="${sl}" data-wt="${wt||''}">Mua</button></div></div>`;}).join('');}
   else h=Object.entries(MOUNTS).map(([k,m])=>{const own=(player.mounts||[]).includes(k),cur=player.mount===k,lock=!isGM()&&player.lv<m.lv;
     return`<div class="shr"><canvas class="shm" width="120" height="84" data-mv="${k}"></canvas><div class="shd"><b>${m.name}</b> <span style="color:${lock?'#ff7a6a':'#9f9'}">cấp ${m.lv}</span><br><span>${m.desc} Sinh lực +${Math.round(m.hp*100)}%${m.def?', phòng thủ +'+Math.round(m.def*100)+'%':''}.</span></div>
       <div class="shp">${own?(cur?'<b style="color:#9fffb0">Đang dùng</b>':`<button data-use="${k}">Dùng</button>`):`${priceTxt(m.price)}<button data-mount="${k}" ${lock?'disabled':''}>Mua</button>`}</div></div>`;}).join('');
   b.innerHTML=h;
   b.querySelectorAll('[data-buy]').forEach(e=>e.onclick=()=>{const it=SHOP_ITEMS.find(x=>x.id===e.dataset.buy);if(!shopPay(it.price))return;it.buy();sfx('coin');log(`Đã mua ${it.name}`,'#ffd977');save();renderShop();});
   b.querySelectorAll('[data-eq]').forEach(e=>e.onclick=()=>{if(player.inv.length>=BAG_MAX)return log('Túi đồ đã đầy','#ff9a8a');const gm=isGM(),tier=gm?gmTier:shopTierFor(player.lv),rar=gm?gmRar:1;
-    if(!shopPay(eqPrice(tier,rar)))return;const it=makeItem(e.dataset.eq,tier,rar,SECTS[player.sect].wtype);if(gm)it.lvReq=1;addItem(it);save();renderShop();});
+    if(!shopPay(eqPrice(tier,rar)))return;const it=makeItem(e.dataset.eq,tier,rar,e.dataset.wt||SECTS[player.sect].wtype);if(gm)it.lvReq=1;addItem(it);save();renderShop();});
   b.querySelectorAll('[data-mount]').forEach(e=>e.onclick=()=>{const k=e.dataset.mount,m=MOUNTS[k];if(!isGM()&&player.lv<m.lv)return;if(!shopPay(m.price))return;
     player.mounts=player.mounts||[];player.mounts.push(k);setMount(k);toast(`Đã mua thú cưỡi ${m.name}`,'#ffd23f');sfx('level');save();renderShop();});
   b.querySelectorAll('[data-use]').forEach(e=>e.onclick=()=>{setMount(e.dataset.use);save();renderShop();});

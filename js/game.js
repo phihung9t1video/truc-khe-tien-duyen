@@ -318,13 +318,14 @@ function moveTo(x,y){const p=pathPts(player.x,player.y,x,y);if(p){player.path=p;
 // quái quanh điểm luyện (bán kính ~16 ô), bỏ qua trùm và bầy tinh anh khi đi một mình, quái quá cấp
 function anchorZone(x,y){let best=null,bd=Infinity;for(const k in CM.zones){const t=MT[k];if(t.boss)continue;const z=CM.zones[k],d=Math.hypot(z.x*T+16-x,z.y*T+16-y);if(d<bd){bd=d;best=k;}}return best;}
 function autoPickNear(A){if(!A.zone)A.zone=anchorZone(A.x,A.y);let best=null,bd=Infinity;for(const m of mobs){if(m.dead||m.state==='return'||m.isFoe)continue;const d=dist(m,player);
-    if(m.state==='chase'&&d<140){if(d*0.05<bd){bd=d*0.05;best=m;}continue;}
-    if(m.type!==A.zone)continue;if(d<bd){bd=d;best=m;}}return best;}
+    if(m.type!==A.zone)continue;
+    if(m.state==='chase'&&d<140){if(d*0.05<bd){bd=d*0.05;best=m;}continue;}if(d<bd){bd=d;best=m;}}return best;}
 function autoPick(pref){let best=null,bd=Infinity;
   for(const m of mobs){if(m.dead||m.state==='return'||m.isFoe)continue;
     let d=dist(m,player);
+    if(pref&&m.type!==pref)continue;
     if(m.state==='chase'&&d<140){d*=0.05;}
-    else{if(pref&&m.type!==pref)continue;if(soloAvoid(m.t)&&pref!==m.type)continue;if(m.t.boss&&pref!==m.type)continue;if(m.lv>player.lv+2&&pref!==m.type)continue;}
+    else{if(soloAvoid(m.t)&&pref!==m.type)continue;if(m.t.boss&&pref!==m.type)continue;if(m.lv>player.lv+2&&pref!==m.type)continue;}
     if(d<bd){bd=d;best=m;}}
   return best;}
 function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk=skillList();
@@ -464,7 +465,7 @@ function updateMob(m,dt){
   }else{m.path=[];m.moving=false;m.face=player.x>=m.x?1:-1;m.dir='side';
     if(m.atkCd<=0){m.atkCd=t.cd;m.atkAnim=0.25;
       if(t.ranged){enemyShoot(m,t.shot||'eice');sfx('ice');}else hurtPlayer(dmgCalc(m.atk,stats().def),{el:t.el,m});
-      if(!player.dead&&(!player.target||player.target.dead)&&!player.npc&&!player.gather&&!player.path.length&&!autoRest&&!(typeof PARTY!=='undefined'&&PARTY.follow&&PARTY.far)){player.target=m;player.repath=0;}}}}
+      }}}
 function separate(){for(let i=0;i<mobs.length;i++){const a=mobs[i];if(a.dead||a.isFoe)continue;for(let j=i+1;j<mobs.length;j++){const b=mobs[j];if(b.dead||b.isFoe)continue;
   const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||0.01,min=(a.t.boss||b.t.boss)?40:22;if(d<min){const p=(min-d)/2,ux=dx/d*p,uy=dy/d*p;
     if(canStand(a.x-ux,a.y-uy)){a.x-=ux;a.y-=uy;}if(canStand(b.x+ux,b.y+uy)){b.x+=ux;b.y+=uy;}}}}}

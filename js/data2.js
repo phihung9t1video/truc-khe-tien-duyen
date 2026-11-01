@@ -110,3 +110,26 @@ for(const id in MAPS)for(const n of MAPS[id].npcs)NPC_INDEX[n.id]=Object.assign(
 const SETS={trunglau:{name:'Trùng Lâu',col:'#ff4a6a',pieces:['weapon','armor','amulet','necklace','ring'],
   suf:{armor:'Bào',amulet:'Ngọc',necklace:'Liên',ring:'Giới',sword:'Kiếm',fan:'Phiến',flute:'Tiêu',staff:'Trượng',hammer:'Chùy',dagger:'Song Chủy'},
   bonus:{2:{atk:0.08},3:{hp:0.12,def:0.1},5:{atk:0.15,crit:0.1}},desc:{2:'Công lực +8%',3:'Sinh lực +12%, phòng thủ +10%',5:'Công lực +15%, bạo kích +10%'}}};
+
+// ===================== BIỂU TƯỢNG TRANG BỊ (hình vẽ) =====================
+const svgIcon=inner=>'<svg class="gi" viewBox="0 0 24 24" width="1.2em" height="1.2em" fill="currentColor" stroke="currentColor" stroke-width="0" style="vertical-align:-0.22em">'+inner+'</svg>';
+const ICON_DK='stroke="#000" stroke-opacity=".4" fill="none"';
+Object.assign(WICON,{
+  sword:svgIcon('<path d="M20 2.5 21.5 4 10.5 15 9 13.5Z"/><path d="M5.5 12.5 11.5 18.5 10 20 4 14Z"/><path d="M7.5 16.5 3.2 20.8" stroke-width="2.6" stroke-linecap="round" fill="none"/>'),
+  fan:svgIcon('<path d="M12 21 2.5 9.5A13 13 0 0 1 21.5 9.5Z"/><path d="M12 21V7.5M12 21 7 8.6M12 21 17 8.6M12 21 3.8 11.5M12 21 20.2 11.5" '+ICON_DK+' stroke-width=".9"/><circle cx="12" cy="20.6" r="1.5"/>'),
+  flute:svgIcon('<rect x="2" y="10" width="20" height="4.2" rx="2.1"/><g fill="#000" fill-opacity=".45"><circle cx="8" cy="12.1" r="1"/><circle cx="11.3" cy="12.1" r="1"/><circle cx="14.6" cy="12.1" r="1"/><circle cx="17.9" cy="12.1" r="1"/></g><path d="M4.5 14.2q-1.5 3.5.8 7" fill="none" stroke-width="1.4"/>'),
+  staff:svgIcon('<rect x="10.9" y="7.5" width="2.3" height="14.5" rx="1.1"/><circle cx="12" cy="5" r="3.4"/><path d="M7.5 8.6q4.5-2.6 9 0" fill="none" stroke-width="1.4"/>'),
+  hammer:svgIcon('<rect x="10.8" y="9" width="2.4" height="13" rx="1.1"/><rect x="4.5" y="2.8" width="15" height="7.2" rx="1.6"/><path d="M4.5 6.4h15" '+ICON_DK+' stroke-width="1"/>'),
+  dagger:svgIcon('<path d="M18.5 2 20 3.5 12 11.5 10.5 10Z"/><path d="M5.5 2 4 3.5 12 11.5 13.5 10Z"/><path d="M9.5 12.5 4.5 17.5M14.5 12.5 19.5 17.5" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M7.5 10.5 10.5 13.5M16.5 10.5 13.5 13.5" stroke-width="1.8" fill="none"/>')});
+Object.assign(SLOTICON,{
+  weapon:WICON.sword,
+  helmet:svgIcon('<path d="M4 15.5a8 8 0 0 1 16 0v1.5H4z"/><rect x="2.8" y="16.4" width="18.4" height="2.8" rx="1.2"/><path d="M12 3.2v4.3" stroke-width="2"/><circle cx="12" cy="3" r="1.7"/>'),
+  armor:svgIcon('<path d="M8 3h8l4.5 4.2-3 2.3V21h-11V9.5l-3-2.3Z"/><path d="M12 3.2 9.5 7.5 12 21" '+ICON_DK+' stroke-width="1"/><rect x="6.6" y="11" width="10.8" height="1.9" fill="#000" fill-opacity=".3"/>'),
+  vest:svgIcon('<path d="M6 3.5h3.2L12 5.6l2.8-2.1H18l2.2 4.2-2 2V21H5.8V9.7l-2-2Z"/><path d="M8 12h8M8 15h8M8 18h8" '+ICON_DK+' stroke-width="1.1"/>'),
+  gloves:svgIcon('<path d="M7 21.5v-8l-2.2-3.2V6h2.1v4.2h1V4h2.1v6.2h1V3.2h2.1v7h1V5h2.1v8.4l-1.1 3.2v4.9Z"/>'),
+  wrist:svgIcon('<path d="M6 4.5h12l-1.2 15H7.2Z"/><path d="M6.8 9h10.4M7.1 13.5h9.8" '+ICON_DK+' stroke-width="1.2"/><circle cx="12" cy="17" r="1.2" fill="#000" fill-opacity=".35"/>'),
+  boots:svgIcon('<path d="M7 2.8h6.4V14l7.1 3.1v4.4H4.6v-4.2L7 16Z"/><path d="M4.6 19.4h15.9" '+ICON_DK+' stroke-width="1"/>'),
+  amulet:svgIcon('<rect x="6.8" y="2" width="10.4" height="20" rx="1.2"/><path d="M9.5 6h5M12 6v12M9.5 10.2l5 4.2M14.5 10.2l-5 4.2" '+ICON_DK+' stroke-width="1.2"/>'),
+  necklace:svgIcon('<path d="M4.5 2.5Q12 16.5 19.5 2.5" fill="none" stroke-width="1.7"/><path d="M12 13l3.2 4.2L12 21.5l-3.2-4.3Z"/>'),
+  ring:svgIcon('<circle cx="12" cy="15.2" r="6" fill="none" stroke-width="2.4"/><path d="M12 2.5l3.2 3.2L12 9 8.8 5.7Z"/>')});
+SLOTICON.ring1=SLOTICON.ring;SLOTICON.ring2=SLOTICON.ring;
