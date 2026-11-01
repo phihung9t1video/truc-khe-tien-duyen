@@ -1,6 +1,6 @@
 {
-  "version": "1.3.4",
-  "notes": "Khung tổ đội hiện đủ cả bản thân, không còn bị văng khỏi đội khi app chạy nền; các khung chat, tổ đội, nhiệm vụ, bản đồ nhỏ, nhật ký có nút thu gọn và đóng",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.4/www.zip",
-  "sha256": "8b4ed1bae0f3be90ede0320e2f6b215268fb5c712bf624978885b33fc55b6f03"
+  "version": "1.3.5",
+  "notes": "Chạy nền vẫn tự động đánh quái và online, chơi nhiều cửa sổ cùng lúc, giảm dữ liệu mạng khi đứng yên",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.5/www.zip",
+  "sha256": "bf8fcadbf7667314d18ef5e535facea11f36a5cdb424c5500280a44f2556d316"
 }

@@ -430,8 +430,12 @@ function drawStartBg(dt){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.
 loadMap('trukhe');
 showStart();
 let last=performance.now();
-let lastLoopWall=Date.now();
-setInterval(()=>{if(Date.now()-lastLoopWall>1500&&typeof netTick==='function')netTick(1);},1000);
+let lastLoopWall=Date.now(),bgLast=Date.now();
+setInterval(()=>{const now=Date.now();
+  if(now-lastLoopWall>1500){const el=Math.min(120,(now-bgLast)/1000);bgLast=now;
+    if(started){let t=el;try{while(t>0){const s=Math.min(0.05,t);update(s);t-=s;}}catch(e){}}
+    if(typeof netTick==='function')netTick(el);}
+  else bgLast=now;},1000);
 function loop(now){lastLoopWall=Date.now();const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(started){update(dt);draw(dt);}else{nowT+=dt;drawStartBg(dt);}
   if(typeof netTick==='function')netTick(dt);
