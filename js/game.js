@@ -460,7 +460,7 @@ function updateMob(m,dt){
   }else{m.path=[];m.moving=false;m.face=player.x>=m.x?1:-1;m.dir='side';
     if(m.atkCd<=0){m.atkCd=t.cd;m.atkAnim=0.25;
       if(t.ranged){enemyShoot(m,t.shot||'eice');sfx('ice');}else hurtPlayer(dmgCalc(m.atk,stats().def),{el:t.el,m});
-      if(!player.dead&&(!player.target||player.target.dead)&&!player.npc&&!player.gather&&!player.path.length&&!autoRest){player.target=m;player.repath=0;}}}}
+      if(!player.dead&&(!player.target||player.target.dead)&&!player.npc&&!player.gather&&!player.path.length&&!autoRest&&!(typeof PARTY!=='undefined'&&PARTY.follow&&PARTY.far)){player.target=m;player.repath=0;}}}}
 function separate(){for(let i=0;i<mobs.length;i++){const a=mobs[i];if(a.dead||a.isFoe)continue;for(let j=i+1;j<mobs.length;j++){const b=mobs[j];if(b.dead||b.isFoe)continue;
   const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||0.01,min=(a.t.boss||b.t.boss)?40:22;if(d<min){const p=(min-d)/2,ux=dx/d*p,uy=dy/d*p;
     if(canStand(a.x-ux,a.y-uy)){a.x-=ux;a.y-=uy;}if(canStand(b.x+ux,b.y+uy)){b.x+=ux;b.y+=uy;}}}}}

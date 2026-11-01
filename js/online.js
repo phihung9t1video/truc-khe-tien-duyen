@@ -167,10 +167,10 @@ function followAsk(p){if(PARTY.follow){jumpTo({map:p.map,x:+p.x,y:+p.y});return;
     [{t:'Đồng ý',fn:()=>{closeDlg();if(jumpTo({map:p.map,x:+p.x,y:+p.y})){PARTY.follow=true;toast('Theo đội','#9fffb0');if(typeof renderParty==='function')renderParty();}}},{t:'Từ chối',gray:true,fn:closeDlg}]);}
 function leaderTransfer(id){if(!isLeader()||id===NET.id)return;netCast('tk_world','plead',{id:NET.id,to:id});PARTY.leader=id;const nm=(PARTY.members.find(m=>m.id===id)||{}).name;log(`Đã chuyển đội trưởng cho ${nm}`,'#9fffb0');if(typeof renderParty==='function')renderParty();}
 // mỗi khung hình: đội viên đang theo thì bám theo đội trưởng; trả về true khi đang chạy theo (tạm dừng tự động)
-function followTick(dt){if(!PARTY.follow)return false;if(!inParty()||isLeader()){PARTY.follow=false;return false;}if(player.dead)return false;
+function followTick(dt){PARTY.far=false;if(!PARTY.follow)return false;if(!inParty()||isLeader()){PARTY.follow=false;return false;}if(player.dead)return false;
   const p=leaderPos();if(!p)return false;
-  if(p.map!==curMapId){if(Date.now()-(PARTY.lastJump||0)>3000){PARTY.lastJump=Date.now();jumpTo(p);}return true;}
+  if(p.map!==curMapId){PARTY.far=true;if(Date.now()-(PARTY.lastJump||0)>3000){PARTY.lastJump=Date.now();jumpTo(p);}return true;}
   const d=Math.hypot(p.x-player.x,p.y-player.y);
   if(d>700){jumpTo(p);return true;}
-  if(d>120){PARTY.folRe-=dt;if(PARTY.folRe<=0||!player.path.length){PARTY.folRe=0.6;player.target=null;moveTo(p.x+rnd(-20,20),p.y+rnd(8,20));if(player.flyUnlocked&&d>320&&!player.flying){setFly(true);player.navFly=true;}}return true;}
+  if(d>120){PARTY.far=true;player.target=null;player.pend=null;PARTY.folRe-=dt;if(PARTY.folRe<=0||!player.path.length){PARTY.folRe=0.6;player.target=null;moveTo(p.x+rnd(-20,20),p.y+rnd(8,20));if(player.flyUnlocked&&d>320&&!player.flying){setFly(true);player.navFly=true;}}return true;}
   return false;}
