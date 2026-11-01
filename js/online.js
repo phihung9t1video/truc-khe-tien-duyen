@@ -27,15 +27,17 @@ function netConnect(){
     if(m.event!=='broadcast'||!m.payload)return;const ev=m.payload.event,p=m.payload.payload;if(!p||p.id===NET.id)return;
     if(ev==='pos'){const o=NET.others.get(p.id);if(o){Object.assign(o,p,{tx:p.x,ty:p.y,seen:nowT});}else NET.others.set(p.id,Object.assign({},p,{tx:p.x,ty:p.y,seen:nowT,look:null}));
       const oo=NET.others.get(p.id);oo.look=buildLook(p.sect,p.gender,{armor:{rar:p.ar||0}},Array.isArray(p.ap)?{h:p.ap[0],hc:p.ap[1],sk:p.ap[2],ey:p.ap[3],acc:p.ap[4],cl:p.ap[5],bd:p.ap[6]}:null);oo.wv=weaponVis({rar:p.wr||0,tier:p.wt||0},SECTS[p.sect].wtype,p.rf||0);}
-    else if(ev==='bye')NET.others.delete(p.id);
-    else if(ev==='hello'){NET.world.set(p.id,{name:p.name,lv:p.lv,map:p.map,seen:nowT});}
+    else if(ev==='bye'){NET.others.delete(p.id);if(m.topic==='realtime:tk_world')NET.world.delete(p.id);}
+    else if(ev==='hello'){const isNew=!NET.world.has(p.id);NET.world.set(p.id,{id:p.id,name:String(p.name||'').slice(0,14),lv:p.lv|0,map:p.map,sect:p.sect,gm:p.gm?1:0,seen:nowT});
+      if(isNew&&nowT-(NET.lastHelloBack||-9)>2){NET.lastHelloBack=nowT;netHello();}}
     else if(ev==='chat'){netAddChat(p.name,String(p.text||'').slice(0,120),p.lv);}
     else if(ev[0]==='p')partyOnMsg(ev,p);
     else if(ev[0]==='d'&&typeof duelOnMsg==='function')duelOnMsg(ev,p);
     else if((ev==='wsp'||ev[0]==='f'||ev[0]==='t')&&typeof socialOnMsg==='function')socialOnMsg(ev,p);};}
+addEventListener('pagehide',()=>{try{if(NET.status==='on')netCast('tk_world','bye',{id:NET.id});}catch(e){}});
 function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId;if(NET.mapRoom===room)return;
   if(NET.mapRoom){netCast(NET.mapRoom,'bye',{id:NET.id});netLeave(NET.mapRoom);}NET.others.clear();NET.mapRoom=room;netJoin(room);NET.sendT=0;}
-function netHello(){if(!player.sect)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId});}
+function netHello(){if(!player.sect||!started)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId,sect:player.sect,gm:typeof isGM==='function'&&isGM()?1:0});}
 function netAddChat(name,text,lv){NET.chat.push({name,text,lv,t:Date.now()});if(NET.chat.length>40)NET.chat.shift();if(typeof renderChat==='function')renderChat();}
 function netSendChat(text){text=text.replace(/\s+/g,' ').trim().slice(0,120);if(!text)return;
   if(NET.status!=='on'){netAddChat('Hệ thống','Chưa kết nối mạng, không gửi được.',0);return;}

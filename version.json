@@ -1,6 +1,6 @@
 {
-  "version": "1.3.2",
-  "notes": "Tài khoản lưu trên máy chủ: đăng nhập ở máy nào cũng được, mỗi máy chơi tối đa 6 nhân vật cùng lúc, đổi mật khẩu",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.2/www.zip",
-  "sha256": "fa57205d4f695270d60dcf63ada1d55b7e6b6fa18596a787254d9dc819c6e051"
+  "version": "1.3.3",
+  "notes": "Danh sách người chơi online ở mọi bản đồ, giao dịch không cần đứng gần, GM cấp tối đa và tiền tối đa, nhân vật GM tự lưu lên máy chủ",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.3/www.zip",
+  "sha256": "0c2ce79b76e9adfbbf54890b3710fb6fbf0323e97cb01026e745c7a2dafc2e66"
 }

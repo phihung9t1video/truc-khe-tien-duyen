@@ -40,7 +40,24 @@ function friendAdd(id,name){player.friends=player.friends||[];if(!isFriend(id))p
 function friendRemove(id){player.friends=(player.friends||[]).filter(f=>f.id!==id);save();log('Đã xóa khỏi danh sách bạn bè','#ccc');if(!$('panelFriends').hidden)renderFriends();}
 function friendReq(o){if(NET.status!=='on')return log('Chưa kết nối mạng','#ff9a8a');if(isFriend(o.id))return;
   netCast('tk_world','freq',{id:NET.id,name:player.name,lv:player.lv,to:o.id});log(`Đã gửi lời mời kết bạn tới ${o.name}`,'#9fd3ff');}
-function renderFriends(){const L=player.friends||[];const b=$('friendList');
+let friendTab='online';
+function onlineRows(){const rows=[...NET.world.values()].filter(o=>o.id!==NET.id).sort((a,b)=>(b.map===curMapId)-(a.map===curMapId)||b.lv-a.lv);
+  if(NET.status!=='on')return'<div style="color:#ff9a8a">Chưa kết nối mạng.</div>';
+  if(!rows.length)return'<div style="color:#999">Chưa có ai khác đang online. Người chơi ở mọi máy (web, điện thoại) cùng hiện ở đây khi vào game.</div>';
+  return rows.map(o=>{const S=SECTS[o.sect],same=o.map===curMapId,M=MAPS[o.map];
+    return`<div class="frow"><span style="color:#7dff9a">●</span> <b style="color:${o.gm?'#ffd23f':S?S.color:'#fff'}">${o.gm?'[GM] ':''}${esc(o.name)}</b> <span style="color:#aaa">cấp ${o.lv} · ${S?S.name:''} · ${same?'<b style="color:#9fffb0">cùng vùng</b>':M?M.name:''}</span>${isFriend(o.id)?' <span style="color:#9fd3ff">(bạn bè)</span>':''}${isMate(o.id)?' <span style="color:#9fffb0">(đồng đội)</span>':''}
+      <div style="margin-top:3px"><button data-ow="${o.id}">Nhắn</button> ${isFriend(o.id)?'':`<button data-of="${o.id}">Kết bạn</button> `}${isMate(o.id)?'':`<button data-op="${o.id}">Mời tổ đội</button> `}<button data-ot="${o.id}">Giao dịch</button> ${same?`<button data-os="${o.id}">Chọn</button>`:M?`<button data-og="${o.id}">Đi tới</button>`:''}</div></div>`;}).join('');}
+function renderFriends(){$('fTabOnline').classList.toggle('sel',friendTab==='online');$('fTabFriends').classList.toggle('sel',friendTab==='friends');
+  if(friendTab==='online'){const b=$('friendList');b.innerHTML=onlineRows();const get=id=>NET.world.get(id);
+    b.querySelectorAll('[data-ow]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.ow);if(o){whisperTo(o.id,o.name);$('panelFriends').hidden=true;}});
+    b.querySelectorAll('[data-of]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.of);if(o)friendReq(o);});
+    b.querySelectorAll('[data-op]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.op);if(o)netInvite(o);});
+    b.querySelectorAll('[data-ot]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.ot);if(o){$('panelFriends').hidden=true;tradeReq(o);}});
+    b.querySelectorAll('[data-os]').forEach(e=>e.onclick=()=>{const o=NET.others.get(e.dataset.os);if(o){selectOther(o);$('panelFriends').hidden=true;}else log('Người này đang ở xa, hãy lại gần','#ffb36b');});
+    b.querySelectorAll('[data-og]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.og);if(!o||!MAPS[o.map])return;if(auto){auto=false;}player.target=null;player.npc=null;player.gather=null;
+      if(navTo(o.map,null,null)){log(`Đang tìm đường tới ${MAPS[o.map].name} gặp ${o.name}...`,'#8fd8ff');$('panelFriends').hidden=true;}});
+    return;}
+  const L=player.friends||[];const b=$('friendList');
   if(!L.length){b.innerHTML='<div style="color:#999">Chưa có bạn bè. Nhấp vào người chơi khác, nhấp chuột phải vào khung tên trên cùng rồi chọn Kết bạn.</div>';return;}
   b.innerHTML=L.map(f=>{const w=NET.world.get(f.id),near=NET.others.get(f.id),on=!!(w||near),map=w&&MAPS[w.map]?MAPS[w.map].name:near?CM.name:'';
     return`<div class="frow"><span style="color:${on?'#7dff9a':'#777'}">●</span> <b>${esc(f.name)}</b> <span style="color:#aaa">${on?`cấp ${(w||near).lv|0} · ${map}`:'không online'}</span>
@@ -64,7 +81,7 @@ renderChat=function(){const b=$('chatLog');if(!b)return;b.innerHTML=NET.chat.sli
 // ---------- giao dịch ----------
 const TRADE_MAX=6;
 const TRD={id:null,name:'',state:null,my:[],myGold:0,their:[],theirGold:0,myLock:false,theirLock:false,myOk:false,theirOk:false,lost:0,t:0};
-function tradeRoom(){return NET.mapRoom;}
+function tradeRoom(){return 'tk_world';}
 function tradeReset(){Object.assign(TRD,{id:null,name:'',state:null,my:[],myGold:0,their:[],theirGold:0,myLock:false,theirLock:false,myOk:false,theirOk:false,lost:0,t:0});$('panelTrade').hidden=true;}
 function tradeReq(o){if(isGM())return log('Tài khoản GM không giao dịch được với người khác','#ffb36b');if(NET.status!=='on')return log('Chưa kết nối mạng','#ff9a8a');if(TRD.state)return log('Bạn đang giao dịch với người khác','#ffb36b');
   netCast(tradeRoom(),'treq',{id:NET.id,name:player.name,to:o.id});Object.assign(TRD,{id:o.id,name:o.name,state:'ask',t:20});log(`Đã gửi lời mời giao dịch tới ${o.name}`,'#9fd3ff');}
@@ -132,7 +149,7 @@ function socialOnMsg(ev,p){if(p.to!==NET.id)return;
   else if(ev==='tcan'){log(`${TRD.name} đã hủy giao dịch`,'#ccc');tradeReset();}}
 function socialTick(dt){
   if(TRD.state==='ask'){TRD.t-=dt;if(TRD.t<=0){log(`${TRD.name} không trả lời lời mời giao dịch`,'#ccc');tradeReset();}}
-  else if(TRD.state==='open'){if(NET.others.has(TRD.id))TRD.lost=0;else{TRD.lost+=dt;if(TRD.lost>8){log(`${TRD.name} đã rời đi, giao dịch bị hủy`,'#ccc');tradeReset();}}}}
+  else if(TRD.state==='open'){if(NET.others.has(TRD.id)||NET.world.has(TRD.id))TRD.lost=0;else{TRD.lost+=dt;if(TRD.lost>8){log(`${TRD.name} đã rời đi, giao dịch bị hủy`,'#ccc');tradeReset();}}}}
 setInterval(()=>socialTick(0.5),500);
 // chú giải cho món trong khung giao dịch
 const _tip=tipContent;
@@ -140,4 +157,8 @@ tipContent=function(key){const [k,v]=key.split(':');if(k!=='tr')return _tip(key)
   if(String(v)[0]==='t'){const x=TRD.their[+String(v).slice(1)];const it=cleanItem(x);return it?itemHTML(it,null):'';}
   const it=player.inv.find(x=>x.uid===+v);return it?itemHTML(it):'';};
 $('btnFriends').onclick=()=>{openPanel('panelFriends');renderFriends();};
+(()=>{const t=document.createElement('div');t.className='tabs';t.innerHTML='<button id="fTabOnline" class="sel">Đang online</button><button id="fTabFriends">Bạn bè</button>';$('friendList').before(t);
+  $('fTabOnline').onclick=()=>{friendTab='online';sfx('click');renderFriends();};$('fTabFriends').onclick=()=>{friendTab='friends';sfx('click');renderFriends();};
+  $('netStat').style.cursor='pointer';$('netStat').title='Xem ai đang online';$('netStat').onclick=()=>{friendTab='online';openPanel('panelFriends');renderFriends();};
+  setInterval(()=>{if(!$('panelFriends').hidden&&friendTab==='online')renderFriends();},3000);})();
 PANELS.push('panelFriends');

@@ -47,7 +47,11 @@ const _save0=save;
 save=function(){_save0();if(ACC.cur&&player.sect){const c=ACC.cur;if(c.name!==player.name||c.lv!==player.lv||c.sect!==player.sect)accUpdate({name:player.name,lv:player.lv,sect:player.sect});}};
 const localData=()=>{try{return JSON.parse(localStorage.getItem(SKEY));}catch(e){return null;}};
 // đẩy nhân vật lên máy chủ (tài khoản máy chủ)
-async function accSync(silent){const c=ACC.cur;if(!c||!c.server||!c.token||ACC.lost||!player.sect)return false;
+// nhân vật GM lưu vào bảng tk_players theo danh tính suy ra từ mật khẩu (không lên bảng xếp hạng)
+async function gmCloud(silent){if(!netEnabled()||!player.sect)return false;save();const d=localData();if(!d)return false;
+  try{const ok=await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:d});if(!silent)log(ok?'Đã lưu nhân vật GM lên máy chủ':'Máy chủ từ chối lưu nhân vật GM',ok?'#8fd8ff':'#ff9a8a');return !!ok;}
+  catch(e){if(!silent)log('Chưa lưu lên máy chủ được (mất mạng?)','#ff9a8a');return false;}}
+async function accSync(silent){const c=ACC.cur;if(c&&isGM())return gmCloud(silent);if(!c||!c.server||!c.token||ACC.lost||!player.sect)return false;
   if(ACC.syncing){ACC.again=true;return ACC.syncing;}ACC.syncing=accSyncRun(silent).finally(()=>{ACC.syncing=false;if(ACC.again){ACC.again=false;accSync(true);}});return ACC.syncing;}
 async function accSyncRun(silent){const c=ACC.cur;save();const d=localData();if(!d)return false;
   const r=await rpcx('tk_acc_save',{p_user:c.user,p_token:c.token,p_data:d,p_ts:d.ts||Date.now()});
@@ -55,12 +59,13 @@ async function accSyncRun(silent){const c=ACC.cur;save();const d=localData();if(
   if(r.msg==='session'){ACC.lost=true;removeEventListener('beforeunload',save);liveLeave();
     openDlg('Tài khoản đăng nhập ở nơi khác',`Tài khoản <b>${esc(c.user)}</b> vừa được đăng nhập ở một máy khác. Máy này dừng lại để hai nơi không ghi đè nhân vật của nhau.`,[{t:'Về màn hình đăng nhập',fn:()=>{sessionStorage.removeItem('tk_cur');location.reload();}}]);return false;}
   if(!silent)log('Chưa lưu lên máy chủ được (mất mạng?), sẽ thử lại sau','#ff9a8a');return false;}
-setInterval(()=>{if(started&&ACC.cur&&ACC.cur.server)accSync(true);},30000);
-addEventListener('beforeunload',()=>{const c=ACC.cur;if(!c||!c.server||!c.token||ACC.lost||!netEnabled())return;try{save();const d=localData();if(!d)return;
+setInterval(()=>{if(started&&ACC.cur&&(ACC.cur.server||isGM()))accSync(true);},30000);
+addEventListener('beforeunload',()=>{const c=ACC.cur;if(c&&isGM()&&netEnabled()&&player.sect){try{save();const d=localData();if(d)fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/tk_save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify({p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:d})});}catch(e){}return;}
+  if(!c||!c.server||!c.token||ACC.lost||!netEnabled())return;try{save();const d=localData();if(!d)return;
   fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/tk_acc_save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify({p_user:c.user,p_token:c.token,p_data:d,p_ts:d.ts||Date.now()})});}catch(e){}});
 // nút Xếp hạng gọi cloudSave: tài khoản máy chủ lưu vào tk_accounts; GM lưu riêng (không lên bảng xếp hạng)
 const _cloudSave0=cloudSave;
-cloudSave=async function(silent){if(ACC.cur&&ACC.cur.server)return accSync(silent);if(!isGM())return _cloudSave0(silent);if(!netEnabled()||!player.sect)return false;save();
+cloudSave=async function(silent){if(ACC.cur&&(ACC.cur.server||isGM()))return accSync(silent);if(!isGM())return _cloudSave0(silent);if(!netEnabled()||!player.sect)return false;save();
   try{await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:JSON.parse(localStorage.getItem(SKEY))});if(!silent)log('Đã lưu nhân vật GM lên mạng (không hiện trên bảng xếp hạng)','#8fd8ff');return true;}
   catch(e){if(!silent)log('Chưa lưu lên mạng được (máy chủ chưa bật bảng lưu trữ)','#ff9a8a');return false;}};
 // mã khôi phục: tải nhân vật trên mạng vào tài khoản đang đăng nhập
@@ -151,7 +156,12 @@ function accShowRegister(legacy){const box=$('startMenu');
     if(!r.server)toast('Máy chủ chưa bật tài khoản: tạm lưu trên máy này','#ffb36b');enterAfterLogin(r);};}
 // tạo nhân vật xong thì đẩy lên máy chủ ngay
 const _enterGame0=enterGame;
-enterGame=function(isNew){_enterGame0(isNew);if(isNew)setTimeout(()=>accSync(true),1000);};
+const GM_GOLD=999999999;
+function gmBoost(){if(!isGM()||!player.sect)return;let ch=false;
+  if(player.lv<MAXLV){player.lv=MAXLV;player.exp=0;ch=true;}if(player.gold<GM_GOLD){player.gold=GM_GOLD;ch=true;}if(!player.flyUnlocked){player.flyUnlocked=true;ch=true;}
+  if(ch){const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;refreshPanels();}}
+setInterval(()=>{if(started)gmBoost();},1000);
+enterGame=function(isNew){_enterGame0(isNew);if(isGM()){gmBoost();toast(`GM: cấp ${MAXLV}, ${GM_GOLD.toLocaleString('vi-VN')} lượng`,'#ffd23f');save();}if(isNew)setTimeout(()=>accSync(true),1000);};
 // nút Quay lại ở bước tạo nhân vật: về màn hình đăng nhập
 $('backBtn').onclick=()=>{$('create').hidden=true;$('startMenu').hidden=false;ACC.cur=null;liveLeave();accShowLogin();};
 // mã khôi phục ở bước tạo nhân vật

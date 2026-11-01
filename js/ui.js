@@ -138,7 +138,7 @@ function renderParty(){const b=$('partyBox');if(!b)return;if(typeof inParty!=='f
   $('pLeave').onclick=()=>{sfx('click');netLeaveParty();};}
 setInterval(()=>{if(started)renderParty();},700);
 function updateNetUI(){if(!$('netStat'))return;if(!netEnabled()){$('chatBox').hidden=true;return;}$('chatBox').hidden=false;
-  const n=NET.world.size+(NET.status==='on'?1:0);$('netStat').innerHTML=NET.status==='on'?`<span style="color:#7dff9a">●</span> Đang online: <b>${n}</b> · Cùng vùng: <b>${NET.others.size}</b>`:'<span style="color:#ff8a7a">●</span> Đang kết nối...';}
+  const n=NET.world.size+(NET.status==='on'?1:0);$('netStat').innerHTML=NET.status==='on'?`<span style="color:#7dff9a">●</span> Đang online: <b>${n}</b> <span style="color:#8fd8ff;text-decoration:underline">(xem)</span> · Cùng vùng: <b>${NET.others.size}</b>`:'<span style="color:#ff8a7a">●</span> Đang kết nối...';}
 async function renderTop(){const b=$('topList');b.innerHTML='Đang tải...';
   try{const rows=(await fetchTop()||[]).filter(r=>r.sect!=='GM');b.innerHTML=rows&&rows.length?'<table><tr><th>#</th><th>Tên</th><th>Môn phái</th><th>Cấp</th></tr>'+rows.map((r,i)=>`<tr${r.name===player.name?' class="me"':''}><td>${i+1}</td><td>${esc(r.name)}</td><td>${SECTS[r.sect]?SECTS[r.sect].name:esc(r.sect)}</td><td>${r.lv}</td></tr>`).join('')+'</table>':'Chưa có ai trên bảng xếp hạng. Hãy là người đầu tiên!';}
   catch(e){b.innerHTML='Bảng xếp hạng chưa được bật trên máy chủ (cần chạy file supabase/schema.sql).';}}
@@ -179,14 +179,16 @@ function drawWorldMap(){const c=ctx;const g=c.createLinearGradient(0,0,0,BMH);g.
   seed=11;for(let i=0;i<60;i++){c.fillStyle=`rgba(255,255,255,${0.04+srand()*0.08})`;c.beginPath();c.ellipse(srand()*BMW,srand()*BMH,30+srand()*90,10+srand()*30,0,0,Math.PI*2);c.fill();}
   const N=WNODES(),byId={};N.forEach(n=>byId[n.id]=n);
   c.lineWidth=3;c.setLineDash([8,6]);c.strokeStyle='rgba(200,220,255,.5)';for(const n of N)for(const p of n.M.portals){const o=byId[p.to];if(!o)continue;c.beginPath();c.moveTo(n.x,n.y);c.lineTo(o.x,o.y);c.stroke();}c.setLineDash([]);
-  const COL={spring:'#6fcf5a',marsh:'#4fb8a0',snow:'#cfe6ff',desert:'#e8b860',dark:'#9a6ad0',heaven:'#ffe08a'};
+  const COL={spring:'#6fcf5a',marsh:'#4fb8a0',snow:'#cfe6ff',desert:'#e8b860',dark:'#9a6ad0',heaven:'#ffe08a',volcano:'#ff7a3a',sea:'#3ab0e0',star:'#a890ff'};
   for(const n of N){const lk=player.lv<n.M.minLv,cur=n.id===curMapId,r=cur?34:28;
     if(cur){c.fillStyle='rgba(255,230,140,.25)';c.beginPath();c.arc(n.x,n.y,r+12+Math.sin(nowT*3)*3,0,Math.PI*2);c.fill();}
     const gg=c.createRadialGradient(n.x-8,n.y-8,4,n.x,n.y,r);gg.addColorStop(0,'#ffffff');gg.addColorStop(1,lk?'#555a66':COL[n.M.theme]||'#aaa');c.fillStyle=gg;c.beginPath();c.arc(n.x,n.y,r,0,Math.PI*2);c.fill();
     c.strokeStyle=cur?'#ffe08a':'rgba(0,0,0,.5)';c.lineWidth=cur?3:1.5;c.stroke();
     c.textAlign='center';c.font='bold 16px "Palatino Linotype","Times New Roman",serif';c.lineWidth=4;c.strokeStyle='rgba(0,0,0,.85)';c.strokeText(n.M.name,n.x,n.y+r+20);c.fillStyle=lk?'#aaa':'#ffe9b0';c.fillText(n.M.name,n.x,n.y+r+20);
     const sub=`Cấp ${n.M.lvText}${lk?' · Chưa mở':''}`;c.font='bold 12px "Segoe UI",Arial';c.strokeText(sub,n.x,n.y+r+36);c.fillStyle=lk?'#ff9a8a':'#bfe8ff';c.fillText(sub,n.x,n.y+r+36);
-    if(cur){c.fillStyle='#ffe08a';c.fillText('● Bạn đang ở đây',n.x,n.y-r-10);}}
+    if(cur){c.fillStyle='#ffe08a';c.fillText('● Bạn đang ở đây',n.x,n.y-r-10);}
+    const cnt=typeof NET!=='undefined'?[...NET.world.values()].filter(o=>o.map===n.id).length:0;
+    if(cnt){c.font='bold 13px "Segoe UI",Arial';const tx=`👥 ${cnt}`,w=c.measureText(tx).width+12;c.fillStyle='rgba(20,90,40,.9)';c.beginPath();c.roundRect(n.x+r-6,n.y-r-4,w,20,10);c.fill();c.fillStyle='#d8ffd8';c.textAlign='left';c.fillText(tx,n.x+r,n.y-r+11);c.textAlign='center';}}
   $('mapHint').textContent='Nhấp vào một vùng để tự tìm đường qua các Truyền Tống Trận tới đó.';}
 $('bigMap').addEventListener('mousedown',e=>{if(!started||player.dead)return;const r=$('bigMap').getBoundingClientRect(),mx=(e.clientX-r.left)/r.width*BMW,my=(e.clientY-r.top)/r.height*BMH;
   if(mapTab==='area'){const k=BMW/(MW*T);groundMove(mx/k,my/k);if(player.flyUnlocked&&Math.hypot(player.x-mx/k,player.y-my/k)>320){setFly(true);player.navFly=true;}$('panelMap').hidden=true;}

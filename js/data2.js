@@ -45,7 +45,7 @@ MAPS.longcung=cloneMap('vanmong',{name:'Bích Hải Long Cung',lvText:'70–80',
   mobs:['giaolong','vebinh','haiyeu','longvuong'],regions:['Giao Long Đàm','Vệ Binh Doanh','Hải Yêu Trại','Long Vương Điện','San Hô Đàm'],
   npcs:[{id:'seasage',name:'Quy Thừa Tướng',look:'fisher'},{id:'seahealer',name:'Bạng Tiên Tử',look:'fairy'},{id:'seasmith',name:'Long Cung Thiết Tượng',look:'ironsmith'}],
   portals:[{x:5.5,y:24.5,to:'hoadiem',tx:57.5,ty:26.5,minLv:1},{x:32.5,y:3.5,to:'tinhha',tx:32.5,ty:42.5,minLv:80}]});
-MAPS.tinhha=cloneMap('langtieu',{name:'Cửu Thiên Tinh Hà',lvText:'80–90',minLv:80,theme:'star',wx:0.93,wy:0.14,seed:81818,safeName:'Tinh Thần Điện',herb:'Tinh Thần Hoa',
+MAPS.tinhha=cloneMap('langtieu',{name:'Cửu Thiên Tinh Hà',lvText:'80–90',minLv:80,theme:'star',wx:0.84,wy:0.13,seed:81818,safeName:'Tinh Thần Điện',herb:'Tinh Thần Hoa',
   mobs:['tinhlinh','tinhho','thienma','hondon'],regions:['Tinh Linh Nhai','Tinh Hồ Uyển','Thiên Ma Doanh','Hỗn Độn Đài','Tinh Hải'],
   npcs:[{id:'starsage',name:'Tử Vi Tinh Quân',look:'immortal'},{id:'starhealer',name:'Chức Nữ',look:'fairy'},{id:'starsmith',name:'Thiên Xảo Tinh Tượng',look:'celestialsmith'}],
   portals:[{x:29.5,y:43.5,to:'longcung',tx:32.5,ty:6.5,minLv:1}]});
