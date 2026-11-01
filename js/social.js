@@ -83,7 +83,7 @@ const TRADE_MAX=6;
 const TRD={id:null,name:'',state:null,my:[],myGold:0,their:[],theirGold:0,myLock:false,theirLock:false,myOk:false,theirOk:false,lost:0,t:0};
 function tradeRoom(){return 'tk_world';}
 function tradeReset(){Object.assign(TRD,{id:null,name:'',state:null,my:[],myGold:0,their:[],theirGold:0,myLock:false,theirLock:false,myOk:false,theirOk:false,lost:0,t:0});$('panelTrade').hidden=true;}
-function tradeReq(o){if(isGM())return log('Tài khoản GM không giao dịch được với người khác','#ffb36b');if(NET.status!=='on')return log('Chưa kết nối mạng','#ff9a8a');if(TRD.state)return log('Bạn đang giao dịch với người khác','#ffb36b');
+function tradeReq(o){if(NET.status!=='on')return log('Chưa kết nối mạng','#ff9a8a');if(TRD.state)return log('Bạn đang giao dịch với người khác','#ffb36b');
   netCast(tradeRoom(),'treq',{id:NET.id,name:player.name,to:o.id});Object.assign(TRD,{id:o.id,name:o.name,state:'ask',t:20});log(`Đã gửi lời mời giao dịch tới ${o.name}`,'#9fd3ff');}
 function tradeOpen(){TRD.state='open';PANELS.forEach(p=>$(p).hidden=true);$('panelTrade').hidden=false;renderTrade();sfx('click');}
 function tradeSendOffer(){TRD.myLock=false;TRD.theirLock=false;TRD.myOk=false;TRD.theirOk=false;
@@ -136,7 +136,7 @@ function socialOnMsg(ev,p){if(p.to!==NET.id)return;
        {t:'Từ chối',gray:true,fn:()=>{netCast('tk_world','fno',{id:NET.id,name:player.name,to:p.id});closeDlg();}}]);return;}
   if(ev==='facc'){if(!isFriend(p.id)){friendAdd(p.id,p.name);log(`${p.name} đã đồng ý kết bạn`,'#9fd3ff');}return;}
   if(ev==='fno'){log(`${p.name} đã từ chối kết bạn`,'#ccc');return;}
-  if(ev==='treq'){if(TRD.state||isGM()){netCast(tradeRoom(),'tno',{id:NET.id,name:player.name,to:p.id,busy:1});return;}
+  if(ev==='treq'){if(TRD.state){netCast(tradeRoom(),'tno',{id:NET.id,name:player.name,to:p.id,busy:1});return;}
     openDlg('Lời mời giao dịch',`<b style="color:#ffd977">${esc(p.name)}</b> muốn giao dịch với bạn.`,
       [{t:'Đồng ý',fn:()=>{closeDlg();Object.assign(TRD,{id:p.id,name:p.name});netCast(tradeRoom(),'tacc',{id:NET.id,name:player.name,to:p.id});tradeOpen();}},
        {t:'Từ chối',gray:true,fn:()=>{netCast(tradeRoom(),'tno',{id:NET.id,name:player.name,to:p.id});closeDlg();}}]);return;}

@@ -22,7 +22,7 @@ function toggleAuto(){if(!started||player.dead)return;const was=auto&&player.aut
   log(auto?'Bật tự động: tự làm nhiệm vụ, tìm đường qua các vùng, đánh quái, ra chiêu, uống thuốc, trả nhiệm vụ':'Đã tắt chế độ tự động',auto?'#7dff9a':'#f4ead6');}
 // luyện tại chỗ: đứng luyện quanh vị trí hiện tại, ở bất kỳ bản đồ nào, không chạy đi làm nhiệm vụ
 function toggleAutoHere(){if(!started||player.dead)return;const was=auto&&player.autoMode==='here';auto=!was;player.autoMode='here';autoRest=false;navGoal=null;closeDlg();sfx('click');
-  if(auto){player.autoAnchor={map:curMapId,x:player.x,y:player.y};log(`Luyện tại chỗ: đánh quái quanh đây (${regionName()}). Hết thuốc sẽ về thành mua rồi quay lại đúng chỗ này.`,'#7dff9a');}
+  if(auto){const A=player.autoAnchor={map:curMapId,x:player.x,y:player.y};A.zone=anchorZone(player.x,player.y);const nm=A.zone?MT[A.zone].name:'quái';log(`Luyện tại chỗ: chỉ đánh ${nm} ở bãi gần đây. Hết thuốc sẽ về thành mua rồi quay lại bãi này.`,'#7dff9a');}
   else log('Đã tắt luyện tại chỗ','#f4ead6');}
 
 // ===================== CẬP NHẬT HUD =====================

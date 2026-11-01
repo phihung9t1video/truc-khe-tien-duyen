@@ -294,6 +294,7 @@ function gatherDone(h){h.dead=true;h.respawn=25;sfx('gather');addParts(h.x,h.y-1
   else{gainExp(5+player.lv*2);if(Math.random()<0.3){player.mpPot++;log(`Hái ${CM.herbs.name}, luyện được 1 Ngưng Thần Đan`,'#8ac4ff');}}}
 function nearestHerb(){let b=null,bd=Infinity;for(const h of herbs){if(h.dead)continue;const d=dist(h,player);if(d<bd){bd=d;b=h;}}return b;}
 const soloAvoid=t=>t.elite&&!(typeof inParty==='function'&&inParty());
+function bestZoneKey(){const z=bestZone();for(const k in CM.zones)if(CM.zones[k]===z)return k;return null;}
 function bestZone(){let z=null,best=-1;for(const k in CM.zones){const t=MT[k];if(t.boss||soloAvoid(t))continue;if(player.lv>=t.lv[0]-1&&t.lv[0]>best){best=t.lv[0];z=CM.zones[k];}}
   if(!z){let lo=1e9;for(const k in CM.zones){const t=MT[k];if(!t.boss&&t.lv[0]<lo){lo=t.lv[0];z=CM.zones[k];}}}return z;}
 function bestMap(){let m='trukhe';for(const id in MAPS)if(player.lv>=MAPS[id].minLv&&MAPS[id].minLv>=MAPS[m].minLv)m=id;return m;}
@@ -315,14 +316,15 @@ function moveTo(x,y){const p=pathPts(player.x,player.y,x,y);if(p){player.path=p;
 
 // ===================== TỰ ĐỘNG =====================
 // quái quanh điểm luyện (bán kính ~16 ô), bỏ qua trùm và bầy tinh anh khi đi một mình, quái quá cấp
-function autoPickNear(A){let best=null,bd=Infinity;for(const m of mobs){if(m.dead||m.state==='return'||m.isFoe)continue;const d=dist(m,player);
-    if(m.state==='chase'&&d<240){if(d*0.05<bd){bd=d*0.05;best=m;}continue;}
-    if(m.t.boss||soloAvoid(m.t)||m.lv>player.lv+4)continue;if(Math.hypot(m.x-A.x,m.y-A.y)>520)continue;if(d<bd){bd=d;best=m;}}return best;}
+function anchorZone(x,y){let best=null,bd=Infinity;for(const k in CM.zones){const t=MT[k];if(t.boss)continue;const z=CM.zones[k],d=Math.hypot(z.x*T+16-x,z.y*T+16-y);if(d<bd){bd=d;best=k;}}return best;}
+function autoPickNear(A){if(!A.zone)A.zone=anchorZone(A.x,A.y);let best=null,bd=Infinity;for(const m of mobs){if(m.dead||m.state==='return'||m.isFoe)continue;const d=dist(m,player);
+    if(m.state==='chase'&&d<140){if(d*0.05<bd){bd=d*0.05;best=m;}continue;}
+    if(m.type!==A.zone)continue;if(d<bd){bd=d;best=m;}}return best;}
 function autoPick(pref){let best=null,bd=Infinity;
-  for(const m of mobs){if(m.dead||m.state==='return')continue;
+  for(const m of mobs){if(m.dead||m.state==='return'||m.isFoe)continue;
     let d=dist(m,player);
-    if(m.state==='chase'&&d<240){d*=0.05;}
-    else{if(soloAvoid(m.t))continue;if(m.t.boss&&pref!==m.type)continue;if(m.lv>player.lv+2&&pref!==m.type)continue;if(pref&&m.type!==pref)d*=8;}
+    if(m.state==='chase'&&d<140){d*=0.05;}
+    else{if(pref&&m.type!==pref)continue;if(soloAvoid(m.t)&&pref!==m.type)continue;if(m.t.boss&&pref!==m.type)continue;if(m.lv>player.lv+2&&pref!==m.type)continue;}
     if(d<bd){bd=d;best=m;}}
   return best;}
 function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk=skillList();
@@ -357,7 +359,8 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
     return;}
   if(player.autoMode==='here'){let A=player.autoAnchor;if(!A||A.map!==curMapId){A=player.autoAnchor={map:curMapId,x:player.x,y:player.y};}
     const m=autoPickNear(A);if(m){player.target=m;player.repath=0;return;}
-    if(!player.path.length&&Math.hypot(player.x-A.x,player.y-A.y)>60){moveTo(A.x,A.y);if(player.flyUnlocked&&Math.hypot(player.x-A.x,player.y-A.y)>360)setFly(true);}return;}
+    const Z=A.zone&&CM.zones[A.zone],hx=Z?Z.x*T+16:A.x,hy=Z?Z.y*T+16:A.y;
+    if(!player.path.length&&Math.hypot(player.x-hx,player.y-hy)>Math.max(60,(Z?Z.r:2)*T*0.6)){moveTo(hx,hy);if(player.flyUnlocked&&Math.hypot(player.x-A.x,player.y-A.y)>360)setFly(true);}return;}
   const o=questObjective();
   if(o&&o.map!==curMapId){
     const p=routeNext(curMapId,o.map);
@@ -366,7 +369,7 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
     if(o.npc){player.target=null;player.npc=npcById(o.npc);player.repath=0;return;}
     if(o.gather){const h=nearestHerb();if(h){player.gather=h;player.repath=0;return;}}}
   const pref=o&&o.map===curMapId&&o.mob&&mobReady(o.mob)?o.mob:null;
-  const m=autoPick(pref);if(m){player.target=m;player.repath=0;return;}
+  const m=autoPick(pref||bestZoneKey());if(m){player.target=m;player.repath=0;return;}
   const z=pref?CM.zones[pref]:bestZone();
   if(z&&!player.path.length){const zx=z.x*T+16,zy=z.y*T+16;if(Math.hypot(player.x-zx,player.y-zy)>Math.max(z.r,2)*T)moveTo(zx,zy);}}
 function autoBuy(){if(typeof autoMount==='function')autoMount();partyAPI('autoPet');let a=0,b=0;while(player.hpPot<20&&player.gold>=30){player.gold-=30;player.hpPot+=5;a+=5;}while(player.mpPot<10&&player.gold>=30){player.gold-=30;player.mpPot+=5;b+=5;}
