@@ -122,7 +122,11 @@ function partyOnMsg(ev,p){
   if(ev==='pleave'){const nm=(PARTY.members.find(m=>m.id===p.id)||{}).name||'';PARTY.members=PARTY.members.filter(m=>m.id!==p.id);PARTY.st.delete(p.id);log(`${nm} đã rời tổ đội`,'#ffb36b');
     if(PARTY.members.length<=1){partyReset('Tổ đội đã giải tán');return;}
     if(PARTY.leader===p.id)PARTY.leader=PARTY.members[0].id;if(isLeader())partyBroadcastSet();if(typeof renderParty==='function')renderParty();return;}
-  if(ev==='pst'){PARTY.st.set(p.id,{name:p.name,lv:p.lv,hp:p.hp,map:p.map,sect:p.sect,dead:p.dead,seen:Date.now()});return;}
+  if(ev==='pst'){PARTY.st.set(p.id,{name:p.name,lv:p.lv,hp:p.hp,map:p.map,sect:p.sect,dead:p.dead,x:+p.x||0,y:+p.y||0,seen:Date.now()});return;}
+  if(ev==='pfol'&&p.id===PARTY.leader&&!isLeader()){followAsk(p);return;}
+  if(ev==='plead'&&p.id===PARTY.leader&&PARTY.members.some(m=>m.id===p.to)){PARTY.leader=p.to;const nm=(PARTY.members.find(m=>m.id===p.to)||{}).name;
+    if(p.to===NET.id){toast('Bạn trở thành đội trưởng','#ffd23f');log('Bạn được chuyển làm đội trưởng','#ffd23f');partyBroadcastSet();PARTY.follow=false;}else log(`${nm} trở thành đội trưởng`,'#9fffb0');
+    if(typeof renderParty==='function')renderParty();return;}
   if(ev==='pheal'&&Array.isArray(p.to)&&p.to.includes(NET.id)){recvHeal(+p.pct||0,p.hot||null,p.name);return;}
   if(ev==='pbuff'&&Array.isArray(p.to)&&p.to.includes(NET.id)&&p.buff){const b=p.buff;recvBuff({id:String(b.id),dur:+b.dur||5,defm:+b.defm||0,pct:+b.pct||0,icon:b.icon,col:b.col,name:String(b.name||'')},p.name);return;}
   if(ev==='pkill'&&p.map===curMapId&&!player.dead&&Math.hypot(player.x-p.x,player.y-p.y)<700){const e=Math.max(1,Math.round((+p.exp||0)*0.3));
@@ -136,10 +140,37 @@ function netPartyBuff(r,b){const ms=matesNear(r);if(!ms.length)return 0;netCast(
 function netPartyLow(r,thr){return matesNear(r).filter(o=>o.hf!=null&&o.hf<thr).length;}
 function netPartyKill(e,x,y){if(inParty()&&NET.status==='on')netCast('tk_world','pkill',{id:NET.id,exp:e,map:curMapId,x:Math.round(x),y:Math.round(y)});}
 function partyTick(dt){if(!inParty())return;
-  PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=2;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0});}
+  PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=2;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0,x:Math.round(player.x),y:Math.round(player.y)});}
   if(isLeader()){PARTY.setT-=dt;
     const gone=PARTY.members.filter(m=>m.id!==NET.id&&(!PARTY.st.has(m.id)?false:Date.now()-PARTY.st.get(m.id).seen>120000));
     if(gone.length){PARTY.members=PARTY.members.filter(m=>!gone.includes(m));for(const g of gone)log(`${g.name} mất kết nối, rời tổ đội`,'#ffb36b');
       if(PARTY.members.length<=1){partyReset('Tổ đội đã giải tán');return;}partyBroadcastSet();}
     if(PARTY.setT<=0)partyBroadcastSet();}
   else if(Date.now()-PARTY.lastSet>90000)partyReset('Mất liên lạc với đội trưởng, tổ đội đã giải tán');}
+
+// ===================== THEO ĐỘI =====================
+// Đội trưởng bấm "Gọi theo đội": đội viên đồng ý sẽ dịch chuyển ngay tới chỗ đội trưởng rồi tự đi theo.
+// Đội viên tự bấm "Theo đội" cũng dịch chuyển tới và đi theo; "Bỏ theo" để tự đi.
+PARTY.follow=false;PARTY.folRe=0;
+function leaderPos(){const L=PARTY.leader;if(!L||L===NET.id)return null;const o=NET.others.get(L),s=PARTY.st.get(L);
+  if(o)return{map:curMapId,x:o.x,y:o.y,live:true};if(s&&s.map&&MAPS[s.map]&&s.x)return{map:s.map,x:s.x,y:s.y};return null;}
+function jumpTo(pos){if(!pos||player.dead)return false;if(typeof inDuel==='function'&&inDuel()){log('Đang tỷ thí, không dịch chuyển được','#ffb36b');return false;}
+  const nx=pos.x+rnd(-24,24),ny=pos.y+rnd(10,24);navGoal=null;player.target=null;player.npc=null;player.gather=null;player.path=[];
+  if(pos.map!==curMapId)loadMap(pos.map,nx,ny);else{if(canStand(nx,ny)){player.x=nx;player.y=ny;}else{player.x=pos.x;player.y=pos.y;}}
+  fadeT=0.6;sfx('fly');addRing(player.x,player.y-10,60,'#9fd3ff',0.8);addParts(player.x,player.y-20,'#cfeaff',20,100);return true;}
+function followStart(){if(!inParty()||isLeader())return;const p=leaderPos();if(!p){log('Chưa thấy vị trí đội trưởng, thử lại sau vài giây','#ffb36b');return;}
+  if(jumpTo(p)){PARTY.follow=true;log('Đang theo đội trưởng','#9fffb0');toast('Theo đội','#9fffb0');}if(typeof renderParty==='function')renderParty();}
+function followStop(){PARTY.follow=false;log('Đã bỏ theo đội','#ccc');if(typeof renderParty==='function')renderParty();}
+function followCall(){if(!isLeader())return;netCast('tk_world','pfol',{id:NET.id,name:player.name,map:curMapId,x:Math.round(player.x),y:Math.round(player.y)});log('Đã gọi cả đội đến chỗ bạn','#9fffb0');toast('Đã gọi theo đội','#9fffb0');}
+function followAsk(p){if(PARTY.follow){jumpTo({map:p.map,x:+p.x,y:+p.y});return;}sfx('quest');
+  openDlg('Đội trưởng gọi theo đội',`Đội trưởng <b style="color:#9fffb0">${esc(p.name)}</b> gọi cả đội đến ${MAPS[p.map]?MAPS[p.map].name:''}. Đồng ý thì bạn sẽ dịch chuyển ngay tới chỗ đội trưởng và tự đi theo.`,
+    [{t:'Đồng ý',fn:()=>{closeDlg();if(jumpTo({map:p.map,x:+p.x,y:+p.y})){PARTY.follow=true;toast('Theo đội','#9fffb0');if(typeof renderParty==='function')renderParty();}}},{t:'Từ chối',gray:true,fn:closeDlg}]);}
+function leaderTransfer(id){if(!isLeader()||id===NET.id)return;netCast('tk_world','plead',{id:NET.id,to:id});PARTY.leader=id;const nm=(PARTY.members.find(m=>m.id===id)||{}).name;log(`Đã chuyển đội trưởng cho ${nm}`,'#9fffb0');if(typeof renderParty==='function')renderParty();}
+// mỗi khung hình: đội viên đang theo thì bám theo đội trưởng; trả về true khi đang chạy theo (tạm dừng tự động)
+function followTick(dt){if(!PARTY.follow)return false;if(!inParty()||isLeader()){PARTY.follow=false;return false;}if(player.dead)return false;
+  const p=leaderPos();if(!p)return false;
+  if(p.map!==curMapId){if(Date.now()-(PARTY.lastJump||0)>3000){PARTY.lastJump=Date.now();jumpTo(p);}return true;}
+  const d=Math.hypot(p.x-player.x,p.y-player.y);
+  if(d>700){jumpTo(p);return true;}
+  if(d>120){PARTY.folRe-=dt;if(PARTY.folRe<=0||!player.path.length){PARTY.folRe=0.6;player.target=null;moveTo(p.x+rnd(-20,20),p.y+rnd(8,20));if(player.flyUnlocked&&d>320&&!player.flying){setFly(true);player.navFly=true;}}return true;}
+  return false;}

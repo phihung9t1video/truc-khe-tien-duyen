@@ -134,9 +134,16 @@ function renderParty(){const box=$('partyBox');if(!box)return;if(typeof inParty!
   const meRow=(()=>{const st=stats(),S=SECTS[player.sect];return`<div class="pm"><b style="color:${S.color}">${PARTY.leader===NET.id?'★ ':''}${esc(player.name)}</b> <span style="color:#9fffb0">(bạn)</span> <span style="color:#ccc">${player.lv}</span><div class="bar hp"><i style="width:${Math.max(0,Math.min(1,player.hp/st.maxhp))*100}%"></i></div></div>`;})();
   const rows=meRow+PARTY.members.filter(m=>m.id!==NET.id).map(m=>{const s=PARTY.st.get(m.id)||{},o=NET.others.get(m.id),hp=o&&o.hf!=null?o.hf:s.hp,S=SECTS[s.sect||(o&&o.sect)];
     const far=s.map&&s.map!==curMapId?` <span style="color:#999">(${MAPS[s.map]?MAPS[s.map].name:''})</span>`:'';
-    return`<div class="pm"><b style="color:${S?S.color:'#fff'}">${m.id===PARTY.leader?'★ ':''}${esc(m.name)}</b> <span style="color:#ccc">${s.lv||(o&&o.lv)||''}</span>${far}<div class="bar hp"><i style="width:${Math.max(0,Math.min(1,hp==null?1:hp))*100}%"></i></div></div>`;}).join('');
-  b.innerHTML=`<div class="ph">Tổ đội ${PARTY.members.length}/${PARTY_MAX}${isLeader()?' · Bạn là đội trưởng':''}<button id="pLeave">Rời đội</button></div>${rows||'<div style="color:#999">Đang chờ đồng đội...</div>'}`;
-  $('pLeave').onclick=()=>{sfx('click');netLeaveParty();};}
+    return`<div class="pm" data-pid="${m.id}" title="Bấm để xem thao tác"><b style="color:${S?S.color:'#fff'}">${m.id===PARTY.leader?'★ ':''}${esc(m.name)}</b> <span style="color:#ccc">${s.lv||(o&&o.lv)||''}</span>${far}<div class="bar hp"><i style="width:${Math.max(0,Math.min(1,hp==null?1:hp))*100}%"></i></div></div>`;}).join('');
+  const fb=isLeader()?'<button id="pCall" class="pfb">Gọi theo đội</button>':PARTY.follow?'<button id="pUnfol" class="pfb on">Bỏ theo</button>':'<button id="pFol" class="pfb">Theo đội</button>';
+  b.innerHTML=`<div class="ph">Tổ đội ${PARTY.members.length}/${PARTY_MAX}${isLeader()?' · Bạn là đội trưởng':PARTY.follow?' · Đang theo':''}<button id="pLeave">Rời đội</button></div><div class="pbtns">${fb}</div>${rows||'<div style="color:#999">Đang chờ đồng đội...</div>'}`;
+  $('pLeave').onclick=()=>{sfx('click');netLeaveParty();};
+  if($('pCall'))$('pCall').onclick=()=>{sfx('click');followCall();};if($('pFol'))$('pFol').onclick=()=>{sfx('click');followStart();};if($('pUnfol'))$('pUnfol').onclick=()=>{sfx('click');followStop();};
+  b.querySelectorAll('[data-pid]').forEach(el=>el.onclick=()=>{const id=el.dataset.pid,m=PARTY.members.find(x=>x.id===id);if(!m)return;sfx('click');
+    const btns=[{t:'Nhắn riêng',fn:()=>{closeDlg();whisperTo(id,m.name);}}];
+    if(isLeader())btns.unshift({t:'Chuyển đội trưởng',fn:()=>{closeDlg();leaderTransfer(id);}});
+    if(!isLeader()&&id===PARTY.leader)btns.unshift({t:'Đến chỗ đội trưởng',fn:()=>{closeDlg();followStart();}});
+    openDlg('Đội viên',`<b>${esc(m.name)}</b>${id===PARTY.leader?' · <span style="color:#ffd23f">Đội trưởng</span>':''}`,btns);});}
 setInterval(()=>{if(started)renderParty();},700);
 function updateNetUI(){if(!$('netStat'))return;if(!netEnabled()){$('chatBox').hidden=true;return;}$('chatBox').hidden=false;
   const n=NET.world.size+(NET.status==='on'?1:0);$('netStat').innerHTML=NET.status==='on'?`<span style="color:#7dff9a">●</span> Đang online: <b>${n}</b> <span style="color:#8fd8ff;text-decoration:underline">(xem)</span> · Cùng vùng: <b>${NET.others.size}</b>`:'<span style="color:#ff8a7a">●</span> Đang kết nối...';}
@@ -436,8 +443,9 @@ setInterval(()=>{const now=Date.now();
     if(started){let t=el;try{while(t>0){const s=Math.min(0.05,t);update(s);t-=s;}}catch(e){}}
     if(typeof netTick==='function')netTick(el);}
   else bgLast=now;},1000);
-function loop(now){lastLoopWall=Date.now();const dt=Math.min(0.05,(now-last)/1000);last=now;
-  if(started){update(dt);draw(dt);}else{nowT+=dt;drawStartBg(dt);}
-  if(typeof netTick==='function')netTick(dt);
+function loop(now){lastLoopWall=Date.now();bgLast=Date.now();const real=Math.max(0,Math.min(3,(now-last)/1000)),dt=Math.min(0.05,real);last=now;
+  // khung hình thưa (cửa sổ bị che): vẫn tính đủ thời gian thật theo từng bước nhỏ
+  if(started){let t=real;while(t>0.0001){const s=Math.min(0.05,t);update(s);t-=s;}draw(dt);}else{nowT+=dt;drawStartBg(dt);}
+  if(typeof netTick==='function')netTick(real);
   requestAnimationFrame(loop);}
 requestAnimationFrame(loop);

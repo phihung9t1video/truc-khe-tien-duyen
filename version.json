@@ -1,6 +1,6 @@
 {
-  "version": "1.3.5",
-  "notes": "Chạy nền vẫn tự động đánh quái và online, chơi nhiều cửa sổ cùng lúc, giảm dữ liệu mạng khi đứng yên",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.5/www.zip",
-  "sha256": "bf8fcadbf7667314d18ef5e535facea11f36a5cdb424c5500280a44f2556d316"
+  "version": "1.3.6",
+  "notes": "Tổ đội: Theo đội, Bỏ theo, Gọi theo đội (đồng ý là dịch chuyển tới đội trưởng), Chuyển đội trưởng; cửa sổ bị che vẫn chạy đúng tốc độ",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.6/www.zip",
+  "sha256": "37dda4e2d8ab18d8326d6c0545d2d9fca7941afbba4e43140321b019c53b849f"
 }

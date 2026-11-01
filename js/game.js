@@ -377,7 +377,8 @@ function updatePlayer(dt){const st=stats();
   if(typeof updateRiding==='function'){updateRiding();const M=mountObj();if(M&&M.spd>=0.7&&player.flying&&player.navFly)setFly(false);}
   if(player.stunT>0){player.stunT-=dt;player.path=[];player.moving=false;return;}
   if(mouse.down&&mouse.hold){mouse.holdT-=dt;if(mouse.holdT<=0){mouse.holdT=0.2;const w=toWorld(mouse.x,mouse.y);moveTo(w.x,w.y);}}
-  if(auto){autoThink(dt);autoFly();}
+  const following=partyAPI('followTick',dt);
+  if(auto&&!following){autoThink(dt);autoFly();}
   if(player.npc){const n=player.npc;
     if(dist(player,n)<=54){player.path=[];player.npc=null;if(player.flying)setFly(false);openNpc(n);}
     else if(player.repath<=0){player.repath=0.5;moveTo(n.x,n.y+14);}}
