@@ -142,12 +142,21 @@ button{font-family:inherit}
 .tog{padding:7px 22px;background:#2a2232;border:1px solid #6b5a40;color:#ddd;border-radius:6px;cursor:pointer;font-size:14px}
 .tog.sel{background:linear-gradient(#6b4a22,#4a3016);border-color:var(--gold);color:#fff}
 #createBody{display:flex;gap:16px;margin-top:6px}
-#sects{display:flex;flex-direction:column;gap:8px;flex:1}
+#sects{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;flex:1;align-content:start}
+#sectInfo{grid-column:1/-1;border:1px solid #4a3e2a;border-radius:8px;padding:7px 10px;background:rgba(0,0,0,.3);font-size:12.5px;line-height:1.55;color:#ddd}
+.elb{display:inline-block;margin-top:3px;border:1px solid;border-radius:10px;padding:0 7px;font-size:11px}
+.eqbox.sel{outline:2px solid #ffd23f;outline-offset:1px}
+#eqDetail{display:flex;gap:10px;margin-top:8px;padding:8px 10px;border:1px solid #4a3e2a;border-radius:8px;background:rgba(0,0,0,.3);font-size:13px;line-height:1.5;min-height:48px}
+#eqDetail .btn{margin:0 0 6px}
+#partyBox{position:absolute;left:10px;top:112px;width:220px;padding:6px 8px;font-size:12px}
+#partyBox .ph{color:#ffd77a;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+#partyBox .ph button{font-size:11px;padding:2px 8px;background:#3a2a2a;color:#fcc;border:1px solid #7a4a4a;border-radius:4px;cursor:pointer}
+#partyBox .pm{margin:3px 0}#partyBox .bar{height:7px;margin-top:2px}
 .sect{border:1px solid #5a4a30;border-radius:8px;padding:8px 11px;cursor:pointer;background:rgba(0,0,0,.35)}
 .sect:hover{border-color:#8a7040}
 .sect.sel{border-color:var(--gold);background:rgba(232,198,106,.12);box-shadow:0 0 12px rgba(232,198,106,.3)}
 .sect b{font-size:15px}
-.sect div{font-size:12px;color:#ccc;margin-top:3px;line-height:1.45}
+.sect div{font-size:11.5px;color:#ccc;margin-top:2px;line-height:1.35}
 #cPreview{width:220px;height:260px;border-radius:12px;background:radial-gradient(#3e5f80,#121a26);flex:none}
 .foot{position:fixed;bottom:8px;width:100%;text-align:center;font-size:11px;color:#bba;text-shadow:0 1px 2px #000}
 #chatBox{position:absolute;left:10px;bottom:190px;width:380px;padding:6px 8px;font-size:12.5px}
@@ -168,7 +177,7 @@ button{font-family:inherit}
 #rotate{position:fixed;inset:0;z-index:99;background:#120e18;color:#ffe9b0;display:none;align-items:center;justify-content:center;text-align:center;font-size:18px;padding:30px}
 @media (orientation:portrait) and (max-width:820px){#rotate{display:flex}}
 @media (max-height:560px){
-  #pframe{width:250px;padding:5px 8px 6px 60px;min-height:62px}#portrait{width:46px;height:46px;left:7px;top:8px}#plvBadge{left:38px;top:44px}
+  #pframe{width:250px;padding:5px 8px 6px 60px;min-height:62px}#partyBox{top:80px;width:190px;font-size:11px}#sectInfo{font-size:10.5px;line-height:1.35;padding:4px 7px}#eqDetail{font-size:11px}#portrait{width:46px;height:46px;left:7px;top:8px}#plvBadge{left:38px;top:44px}
   #pname{font-size:13px}.bar{height:12px;margin-top:2px}.bar span{font-size:9px;line-height:11px}#pgold{font-size:10px}
   #topright{width:180px}#mini{width:168px;height:126px}#menuBtns button{font-size:10px;padding:4px 0}#quest{font-size:11px;padding:5px 7px;line-height:1.35}
   #hotbar{bottom:14px;gap:3px;padding:4px}.slot{width:46px;height:46px}.slot b{font-size:18px;line-height:20px}.slot small{display:none}.slot.wide{width:66px;font-size:10px}.slot.wide span{font-size:9px}
@@ -192,6 +201,7 @@ button{font-family:inherit}
     <div id="pgold"></div>
   </div>
   <div id="buffs"></div>
+  <div id="partyBox" class="panel" hidden></div>
   <div id="tframe" class="panel" hidden><div id="tname"></div><div class="bar hp"><i id="thpb"></i><span id="thpt"></span></div><div id="tstatus"></div></div>
   <div id="region" class="serif"></div>
   <div id="topright">
@@ -214,7 +224,8 @@ button{font-family:inherit}
       <div class="eqcol" id="eqR"></div>
     </div>
     <div class="stats2" id="charStats"></div>
-    <div style="font-size:12px;color:#999;margin-top:6px;text-align:center">Rê chuột vào ô để xem chỉ số · Nhấp ô có đồ để tháo ra · Nhấp ô trống để mở Túi đồ</div></div>
+    <div id="eqDetail"></div>
+    <div style="font-size:12px;color:#999;margin-top:6px;text-align:center">Nhấp ô có đồ để cường hóa hoặc tháo ra · Nhấp ô trống để mở Túi đồ</div></div>
 
   <div id="panelBag" class="panel modal" hidden><button class="close">✕</button><h3 class="serif">Túi đồ</h3>
     <div id="bagGrid"></div><div id="bagDetail"></div>
@@ -237,7 +248,10 @@ button{font-family:inherit}
     Giang hồ có 6 vùng đất từ cấp 1 tới cấp 60, nối với nhau bằng <b>Truyền Tống Trận</b>. Hãy tu luyện, giúp dân chúng và hạ các trùm!
     <ul>
       <li><b>Nhấp chuột xuống đất</b>: đi tới đó (giữ chuột để đi liên tục). <b>Nhấp vào quái</b>: tự chạy tới đánh. <b>Nhấp Thảo dược</b> phát sáng: hái.</li>
-      <li><b>Nhấp người trong làng</b>: nhận và trả nhiệm vụ, chữa thương, mua thuốc, cường hóa vũ khí, bán đồ.</li>
+      <li><b>Nhấp người trong làng</b>: nhận và trả nhiệm vụ, chữa thương, mua thuốc, bán đồ.</li>
+      <li><b>Cường hóa</b>: mở bảng Nhân vật, nhấp vào món đang mặc. Mỗi món cường hóa riêng; thay đồ mới thì cường hóa tự chuyển sang.</li>
+      <li><b>Tổ đội</b>: nhấp vào người chơi khác (tên xanh) để mời. Dược sư Bách Thảo Cốc hồi máu được cho cả đội.</li>
+      <li><b>Ngũ hành</b>: Kim khắc Mộc, Mộc khắc Thổ, Thổ khắc Thủy và Ám, Thủy khắc Hỏa, Hỏa khắc Kim, Ám khắc Hỏa và Mộc. Đánh hệ mình khắc: thêm 20% sát thương (số có ▲).</li>
       <li><b>Nhấp bảng nhiệm vụ</b>: tự tìm đường, kể cả sang vùng khác.</li>
       <li><b>Bản đồ</b> (nút ⛶ hoặc phím M): xem toàn cảnh khu vực và thế giới, nhấp để tự đi tới.</li>
       <li><b>Nút TỰ ĐỘNG</b>: tự làm nhiệm vụ, đánh quái, ra chiêu, uống thuốc, mặc đồ tốt hơn, sang vùng mới.</li>

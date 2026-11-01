@@ -1,21 +1,58 @@
 'use strict';
+// ===================== NGŨ HÀNH & TƯƠNG KHẮC =====================
+// Mỗi môn phái và mỗi loại quái mang một hệ. Hệ khắc: gây thêm 20% sát thương, nhận ít hơn 15%.
+const EL={
+  kim:{n:'Kim',c:'#ffe08a',i:'金'},moc:{n:'Mộc',c:'#7dff9a',i:'木'},thuy:{n:'Thủy',c:'#7fd0ff',i:'水'},
+  hoa:{n:'Hỏa',c:'#ff8a5a',i:'火'},tho:{n:'Thổ',c:'#e0b070',i:'土'},am:{n:'Ám',c:'#c890ff',i:'暗'}};
+const EL_BEATS={kim:['moc'],moc:['tho'],tho:['thuy','am'],thuy:['hoa'],hoa:['kim'],am:['hoa','moc']};
+const EL_UP=1.2,EL_DOWN=0.85;
+function elMul(a,d){if(!a||!d)return 1;if(EL_BEATS[a]&&EL_BEATS[a].includes(d))return EL_UP;if(EL_BEATS[d]&&EL_BEATS[d].includes(a))return EL_DOWN;return 1;}
+const elBeatenBy=e=>Object.keys(EL_BEATS).filter(k=>EL_BEATS[k].includes(e));
+
 // ===================== MÔN PHÁI =====================
 const SECTS={
-  kiem:{name:'Thiên Kiếm Tông',color:'#8fc4ff',role:'Cận chiến · Phòng thủ',
-    desc:'Kiếm tu cận chiến. Sinh lực và phòng thủ cao, xoay kiếm diệt cả bầy quái, tuyệt kỹ gọi vạn kiếm từ trời.',
+  kiem:{name:'Thiên Kiếm Tông',color:'#8fc4ff',role:'Cận chiến · Đánh nhóm',el:'kim',
+    desc:'Kiếm tu cận chiến. Sinh lực và phòng thủ khá, xoay kiếm diệt cả bầy quái, tuyệt kỹ gọi vạn kiếm từ trời.',
+    strong:'Đánh cả bầy quái rất nhanh, vừa công vừa thủ, dễ chơi nhất. Khắc Mộc.',
+    weak:'Không có chiêu hồi máu, phải áp sát mới đánh được. Sợ Hỏa.',
     look:{robe:'#f7f9fd',trim:'#6fa8e0',belt:'#3f74b8',pants:'#e4ebf5',boot:'#5a6a86',sash:'#9fd0ff',iris:'#2f62a8',crown:'#e6edf5',inner:'#dcecff'},
     wtype:'sword',base:{hp:105,hpL:34,mp:40,mpL:10,atk:11,atkL:4.2,def:5,defL:2.5},range:46,proj:null,
     skills:['phivan','kiemkhi','hothe','vankiem']},
-  hoa:{name:'Xích Diễm Cốc',color:'#ffa070',role:'Đánh xa · Sát thương',
-    desc:'Hỏa tu đánh xa bằng quạt. Công lực cực mạnh, thiêu đốt kẻ địch từ xa nhưng thân thể yếu hơn.',
+  hoa:{name:'Xích Diễm Cốc',color:'#ffa070',role:'Đánh xa · Sát thương cao',el:'hoa',
+    desc:'Hỏa tu đánh xa bằng quạt. Công lực cực mạnh, thiêu đốt kẻ địch từ xa nhưng thân thể yếu.',
+    strong:'Sát thương cao nhất, đốt cháy cả vùng, đứng xa vẫn đánh được. Khắc Kim.',
+    weak:'Máu và phòng thủ thấp, bị áp sát là nguy. Sợ Thủy và Ám.',
     look:{robe:'#fff3ea',trim:'#e0552b',belt:'#b8321a',pants:'#f3e2d6',boot:'#7a3a2a',sash:'#ffb070',iris:'#a8321a',crown:'#f0c040',inner:'#ffe2cc'},
     wtype:'fan',base:{hp:88,hpL:27,mp:50,mpL:14,atk:12.5,atkL:4.9,def:3,defL:1.8},range:210,proj:'fire',
     skills:['liethoa','hoalong','viemthan','phuonghoang']},
-  thuy:{name:'Bích Thủy Các',color:'#7fe8d8',role:'Tầm trung · Hồi phục',
+  thuy:{name:'Bích Thủy Các',color:'#7fe8d8',role:'Tầm trung · Khống chế',el:'thuy',
     desc:'Thủy tu thổi tiêu. Làm chậm và đóng băng kẻ địch, tự hồi phục giỏi, bền bỉ khi luyện công lâu.',
+    strong:'Đóng băng, làm chậm khiến kẻ địch không chạm được mình. Tự hồi máu. Khắc Hỏa.',
+    weak:'Sát thương trung bình, hồi máu chỉ cho bản thân. Sợ Thổ.',
     look:{robe:'#f0fbf8',trim:'#3fb5a5',belt:'#2a8a80',pants:'#dff2ee',boot:'#3a6a66',sash:'#b8f0ff',iris:'#2a8a80',crown:'#cfe8ff',inner:'#d8f6f0'},
     wtype:'flute',base:{hp:95,hpL:30,mp:60,mpL:16,atk:11.5,atkL:4.4,def:4,defL:2.1},range:180,proj:'water',
-    skills:['hanbang','hoixuan','bangphong','thuylong']}
+    skills:['hanbang','hoixuan','bangphong','thuylong']},
+  duoc:{name:'Bách Thảo Cốc',color:'#a8f07a',role:'Dược sư · Hồi máu cho nhóm',el:'moc',
+    desc:'Dược sư dùng trượng thần mộc. Hồi máu và tăng phòng thủ cho cả tổ đội, đánh bằng độc châm thấm dần.',
+    strong:'Hồi máu cho cả tổ đội, độc ngấm xuyên qua phòng thủ nên khắc phái Thổ.',
+    weak:'Sát thương trực tiếp thấp nhất, giết quái chậm khi đi một mình. Sợ Kim và Ám.',
+    look:{robe:'#f4fbe8',trim:'#6abf4a',belt:'#3f8a2a',pants:'#e6f2d8',boot:'#4a6a3a',sash:'#c8f0a0',iris:'#3f8a2a',crown:'#d8f0c0',inner:'#e8f8d8'},
+    wtype:'staff',base:{hp:94,hpL:30,mp:70,mpL:18,atk:11.5,atkL:4.5,def:4,defL:2.0},range:190,proj:'leaf',
+    skills:['bichdiep','thanhmoc','vanmoc','linhvuc']},
+  the:{name:'Hậu Thổ Môn',color:'#e8c070',role:'Hộ vệ · Chịu đòn',el:'tho',
+    desc:'Võ tăng cầm chùy đá. Thân thể cứng như núi, gầm lên kéo hết quái về mình, phản lại sát thương.',
+    strong:'Máu và phòng thủ cao nhất, choáng kẻ địch, phản đòn. Khắc Thủy và Ám.',
+    weak:'Đánh chậm, công lực thấp, tầm đánh ngắn nhất. Sợ độc của Mộc.',
+    look:{robe:'#f6efe2',trim:'#b8863a',belt:'#8a5a20',pants:'#ece0cc',boot:'#6a4a2a',sash:'#e8c070',iris:'#8a5a20',crown:'#d8b060',inner:'#f0e2c8'},
+    wtype:'hammer',base:{hp:128,hpL:41,mp:40,mpL:10,atk:10.5,atkL:3.9,def:7,defL:3.3},range:48,proj:null,aspd:0.95,
+    skills:['lietdia','sonnhac','kimcang','thaison']},
+  am:{name:'Ảnh Nguyệt Lâu',color:'#c8a0ff',role:'Sát thủ · Bạo kích',el:'am',
+    desc:'Sát thủ dùng song chủy. Lướt tới sau lưng địch, ẩn thân, bạo kích liên hoàn hạ gục mục tiêu trong chớp mắt.',
+    strong:'Bạo kích cao nhất, đánh nhanh nhất, lướt tới mục tiêu tức thì. Khắc Hỏa và Mộc.',
+    weak:'Máu mỏng nhất, chủ yếu đánh từng mục tiêu. Sợ Thổ.',
+    look:{robe:'#3a3448',trim:'#9a6ad8',belt:'#5a3a8a',pants:'#2e2a3a',boot:'#1e1a28',sash:'#c8a0ff',iris:'#7a4ad0',crown:'#8a7aa8',inner:'#4a4060'},
+    wtype:'dagger',base:{hp:86,hpL:27,mp:45,mpL:12,atk:12.5,atkL:5.0,def:3.5,defL:1.9},range:40,proj:null,aspd:0.62,crit:0.12,
+    skills:['anhsat','docnguyet','anthan','huyetnguyet']}
 };
 
 // ===================== VÕ CÔNG =====================
@@ -28,10 +65,25 @@ const SKILLS={
   hoalong:{name:'Hỏa Long Quyển',icon:'♨',col:'#ff6a2a',lv:3,mp:20,cd:7,kind:'aoeTarget',range:250,r:90,mult:2.0,burn:{dur:4,mult:0.25},desc:'Cuộn lửa thiêu đốt vùng quanh mục tiêu, 200% công lực và gây bỏng 4 giây.'},
   viemthan:{name:'Viêm Thần Hộ Thể',icon:'☀',col:'#ffcf40',lv:6,mp:22,cd:20,kind:'buff',buff:{id:'fury',dur:10,atk:0.35},desc:'Lửa thần nhập thể, tăng 35% công lực trong 10 giây.'},
   phuonghoang:{name:'Phượng Hoàng Liệt Diễm',icon:'❂',col:'#ffb040',lv:10,mp:45,cd:22,kind:'phoenix',range:330,mult:4.0,desc:'Tuyệt kỹ: triệu hồi hỏa phượng hoàng lao qua, thiêu mọi kẻ địch trên đường, 400% công lực.'},
-  hanbang:{name:'Hàn Băng Tiễn',icon:'❄',col:'#9fe8ff',lv:1,mp:10,cd:3,kind:'proj',fx:'ice',range:260,mult:2.0,slow:{dur:3,amt:0.45},desc:'Bắn mũi băng tiễn, 200% công lực và làm chậm 45% trong 3 giây.'},
-  hoixuan:{name:'Hồi Xuân Quyết',icon:'✚',col:'#7dff9a',lv:3,mp:22,cd:12,kind:'heal',pct:0.35,hot:{dur:5,pct:0.03},desc:'Hồi ngay 35% sinh lực, sau đó hồi thêm 3% mỗi giây trong 5 giây.'},
+  hanbang:{name:'Hàn Băng Tiễn',icon:'❄',col:'#9fe8ff',lv:1,mp:10,cd:3,kind:'proj',fx:'ice',range:260,mult:2.0,slow:{dur:3,amt:0.45},desc:'Bắn mũi băng tiễn, 200% công lực và làm chậm 45% trong 3 giây. Khắc chế sát thủ và cận chiến.'},
+  hoixuan:{name:'Hồi Xuân Quyết',icon:'✚',col:'#7dff9a',lv:3,mp:22,cd:12,kind:'heal',pct:0.35,hot:{dur:5,pct:0.03},desc:'Hồi ngay 35% sinh lực, sau đó hồi thêm 3% mỗi giây trong 5 giây. Chỉ hồi cho bản thân.'},
   bangphong:{name:'Băng Phong Trận',icon:'❅',col:'#c8f4ff',lv:6,mp:24,cd:10,kind:'aoeSelf',r:115,mult:1.6,freeze:1.6,desc:'Băng trận quanh thân, 160% công lực và đóng băng kẻ địch 1,6 giây.'},
-  thuylong:{name:'Thủy Long Ngâm',icon:'≋',col:'#6fd8ff',lv:10,mp:45,cd:24,kind:'dragon',r:170,mult:3.0,healPct:0.2,desc:'Tuyệt kỹ: thủy long cuộn quanh thân, 300% công lực lên kẻ địch xung quanh, làm chậm và hồi 20% sinh lực.'}
+  thuylong:{name:'Thủy Long Ngâm',icon:'≋',col:'#6fd8ff',lv:10,mp:45,cd:24,kind:'dragon',r:170,mult:3.0,healPct:0.2,desc:'Tuyệt kỹ: thủy long cuộn quanh thân, 300% công lực lên kẻ địch xung quanh, làm chậm và hồi 20% sinh lực.'},
+  // Bách Thảo Cốc (dược sư)
+  bichdiep:{name:'Bích Diệp Phi Châm',icon:'❦',col:'#9fff8a',lv:1,mp:10,cd:3,kind:'proj',fx:'leaf',range:260,mult:1.9,poison:{dur:6,mult:0.4},desc:'Phóng lá độc vào mục tiêu, 190% công lực và trúng độc 6 giây. Độc bỏ qua phòng thủ, khắc chế phái Thổ.'},
+  thanhmoc:{name:'Thanh Mộc Hồi Sinh',icon:'✚',col:'#7dff9a',lv:3,mp:24,cd:9,kind:'groupHeal',r:360,pct:0.3,hot:{dur:6,pct:0.025},desc:'Hồi 30% sinh lực cho bản thân và mọi đồng đội trong tổ đội ở gần, sau đó hồi thêm 2,5% mỗi giây trong 6 giây.'},
+  vanmoc:{name:'Vạn Mộc Hộ Trận',icon:'♣',col:'#c8f0a0',lv:6,mp:26,cd:22,kind:'groupBuff',r:360,buff:{id:'wood',dur:12,defm:0.35,pct:0.015},desc:'Rễ cây thần bao bọc cả tổ đội 12 giây: tăng 35% phòng thủ và hồi 1,5% sinh lực mỗi giây.'},
+  linhvuc:{name:'Bách Thảo Linh Vực',icon:'✿',col:'#b8ffb0',lv:10,mp:48,cd:26,kind:'field',r:150,dur:6,mult:0.9,healPct:0.06,desc:'Tuyệt kỹ: mở vườn linh thảo quanh thân 6 giây. Mỗi giây hồi 6% sinh lực cho cả tổ đội, gây 90% công lực và làm chậm kẻ địch trong vùng.'},
+  // Hậu Thổ Môn (hộ vệ)
+  lietdia:{name:'Liệt Địa Chùy',icon:'⛰',col:'#e8c070',lv:1,mp:12,cd:5,kind:'aoeSelf',r:95,mult:1.6,stun:1.0,desc:'Nện chùy xuống đất, 160% công lực lên kẻ địch xung quanh và làm choáng 1 giây.'},
+  sonnhac:{name:'Sơn Nhạc Hống',icon:'☗',col:'#ffd27a',lv:3,mp:16,cd:12,kind:'taunt',r:240,buff:{id:'rock',dur:6,dr:0.3},desc:'Gầm vang như núi lở, kéo mọi quái trong vùng lao vào mình và giảm 30% sát thương nhận vào trong 6 giây. Che chắn cho đồng đội.'},
+  kimcang:{name:'Kim Cang Bất Hoại',icon:'◈',col:'#ffe9a0',lv:6,mp:24,cd:22,kind:'buff',buff:{id:'diamond',dur:9,dr:0.45,reflect:0.4},desc:'Thân hóa kim cang 9 giây: giảm 45% sát thương nhận vào và phản lại 40% sát thương cho kẻ đánh mình.'},
+  thaison:{name:'Thái Sơn Áp Đỉnh',icon:'▲',col:'#f0b060',lv:10,mp:45,cd:24,kind:'quake',range:220,r:135,mult:3.4,stun:2.2,desc:'Tuyệt kỹ: gọi núi đá giáng xuống vùng mục tiêu, 340% công lực và làm choáng 2,2 giây.'},
+  // Ảnh Nguyệt Lâu (sát thủ)
+  anhsat:{name:'Ảnh Sát',icon:'✧',col:'#d8b8ff',lv:1,mp:12,cd:5,kind:'dash',range:280,mult:2.6,desc:'Lướt như bóng tới sau lưng mục tiêu và đâm một nhát 260% công lực, bạo kích dễ hơn.'},
+  docnguyet:{name:'Độc Nguyệt Tiêu',icon:'☾',col:'#b48cff',lv:3,mp:16,cd:7,kind:'proj',fx:'dark',range:250,mult:1.9,mark:{dur:6,amt:0.25},desc:'Phóng ám tiêu hình trăng khuyết, 190% công lực và đánh dấu mục tiêu: chịu thêm 25% sát thương trong 6 giây.'},
+  anthan:{name:'Ẩn Thân Quyết',icon:'◐',col:'#a088d0',lv:6,mp:22,cd:20,kind:'buff',buff:{id:'stealth',dur:7,dodge:0.45,crit:0.35,atk:0.15},desc:'Hòa vào bóng tối 7 giây: né 45% đòn đánh, tăng 35% bạo kích và 15% công lực.'},
+  huyetnguyet:{name:'Huyết Nguyệt Liên Sát',icon:'✺',col:'#ff6a9a',lv:10,mp:42,cd:20,kind:'multi',range:200,hits:7,mult:1.15,desc:'Tuyệt kỹ: lướt quanh mục tiêu chém 7 nhát liên hoàn, mỗi nhát 115% công lực, bạo kích tăng mạnh.'}
 };
 
 // ===================== QUÁI =====================
@@ -55,9 +107,9 @@ const EQ_KEYS=['weapon','helmet','armor','vest','gloves','wrist','boots','amulet
 const SLOTS=['weapon','helmet','armor','vest','gloves','wrist','boots','amulet','necklace','ring'];
 const SLOTNAME={weapon:'Vũ khí',helmet:'Mũ',armor:'Áo',vest:'Giáp',gloves:'Bao tay',wrist:'Hộ uyển',boots:'Bao chân',amulet:'Hộ phù',necklace:'Dây chuyền',ring:'Nhẫn',ring1:'Nhẫn',ring2:'Nhẫn'};
 const SLOTICON={weapon:'⚔',helmet:'冠',armor:'衣',vest:'甲',gloves:'✋',wrist:'腕',boots:'履',amulet:'符',necklace:'◎',ring:'◯',ring1:'◯',ring2:'◯'};
-const WICON={sword:'⚔',fan:'扇',flute:'笛'};
+const WICON={sword:'⚔',fan:'扇',flute:'笛',staff:'杖',hammer:'鎚',dagger:'匕'};
 const TIER_PRE=['Bố','Thanh Đồng','Huyền Thiết','Tử Kim','Lưu Vân','Hàn Ngọc','Xích Viêm','Thiên Tinh','Long Lân','Tiên Thiên'];
-const SLOT_SUF={helmet:'Đầu Quan',armor:'Trường Bào',vest:'Hộ Giáp',gloves:'Thủ Sáo',wrist:'Hộ Uyển',boots:'Hộ Cước',amulet:'Hộ Phù',necklace:'Hạng Liên',ring:'Giới Chỉ',sword:'Kiếm',fan:'Phiến',flute:'Tiêu'};
+const SLOT_SUF={helmet:'Đầu Quan',armor:'Trường Bào',vest:'Hộ Giáp',gloves:'Thủ Sáo',wrist:'Hộ Uyển',boots:'Hộ Cước',amulet:'Hộ Phù',necklace:'Hạng Liên',ring:'Giới Chỉ',sword:'Kiếm',fan:'Phiến',flute:'Tiêu',staff:'Trượng',hammer:'Chùy',dagger:'Song Chủy'};
 // chỉ số cơ bản theo bậc t (0..9)
 const SLOT_STATS={
   weapon:t=>({atk:7+9*t}),
@@ -81,6 +133,14 @@ const RARITY=[
 const TIER_LV=[1,4,7,11,15,20,26,32,42,52];
 const STATNAME={atk:'Công lực',def:'Phòng thủ',hp:'Sinh lực',mp:'Nội lực',crit:'Bạo kích',spd:'Tốc độ'};
 const BAG_MAX=40;
+// cường hóa từng món: tối đa +15, thất bại chỉ mất lượng
+const REF_MAX=15;
+const refRate=r=>r<5?100:[80,70,60,50,40,35,30,25,20,15][r-5];
+const refCost=it=>Math.round((it.slot==='weapon'?40:18)*(1+it.tier*0.6)*((it.ref||0)+1)**2);
+// chỉ số cộng thêm của món đồ khi cường hóa +r
+function refBonus(it){const r=it&&it.ref||0;if(!r)return{};
+  if(it.slot==='weapon')return{atk:r*(3+it.tier*2)};
+  const base=SLOT_STATS[it.slot](it.tier),o={};for(const k of ['atk','def','hp','mp'])if(base[k])o[k]=Math.max(1,Math.round(base[k]*0.1*r));return o;}
 
 
 // ===================== GIAO DIỆN TỪNG VÙNG =====================
@@ -279,3 +339,7 @@ QUESTS.push(
     desc:'Đọa Tiên Ma Quân chiếm Đọa Tiên Đài ở đỉnh tiên cảnh. Đây là trận chiến cuối cùng. Nên đạt cấp 58 trở lên!',reward:{exp:400000,gold:20000,hp:30,item:{slot:'armor',tier:9,rar:3}}}
 );
 for(const q of QUESTS)if(q.reward&&q.reward.item){const it=q.reward.item;if(it.slot==='jade')it.slot='amulet';}
+
+// hệ ngũ hành của từng loại quái
+Object.entries({wolf:'moc',boar:'tho',bandit:'kim',boss:'kim',snake:'thuy',fox:'hoa',pirate:'thuy',foxboss:'hoa',snowwolf:'thuy',icespirit:'thuy',cultist:'am',iceboss:'thuy',
+  sandwolf:'tho',sandsnake:'tho',nomad:'kim',sandking:'tho',ghost:'am',darkfox:'am',ghoul:'moc',ghostking:'am',cloudspirit:'kim',skyfox:'hoa',guard:'kim',fallen:'hoa'}).forEach(([k,e])=>MT[k].el=e);
