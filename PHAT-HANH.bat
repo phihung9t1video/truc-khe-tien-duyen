@@ -1,3 +1,3 @@
 @echo off
 chcp 65001 >nul
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0toolselease.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\release.ps1"
