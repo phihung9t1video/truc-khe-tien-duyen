@@ -130,8 +130,10 @@ function partyOnMsg(ev,p){
     if(typeof renderParty==='function')renderParty();return;}
   if(ev==='pheal'&&Array.isArray(p.to)&&p.to.includes(NET.id)){recvHeal(+p.pct||0,p.hot||null,p.name);return;}
   if(ev==='pbuff'&&Array.isArray(p.to)&&p.to.includes(NET.id)&&p.buff){const b=p.buff;recvBuff({id:String(b.id),dur:+b.dur||5,defm:+b.defm||0,pct:+b.pct||0,icon:b.icon,col:b.col,name:String(b.name||'')},p.name);return;}
-  if(ev==='pkill'&&p.map===curMapId&&!player.dead&&Math.hypot(player.x-p.x,player.y-p.y)<700){const e=Math.max(1,Math.round((+p.exp||0)*0.3));
-    addText(player.x,player.y-74,'+'+e+' (tổ đội)','#c8f0a0',12);gainExp(e);}}
+  if(ev==='pkill'&&p.map===curMapId&&!player.dead&&Math.hypot(player.x-p.x,player.y-p.y)<SHARE_R+200){const e=Math.max(0,Math.round(+p.exp||0)),g=Math.max(0,Math.round(+p.gold||0));
+    addText(player.x,player.y-74,'+'+e+' kinh nghiệm (tổ đội)','#c8f0a0',12);player.gold+=g;gainExp(e);
+    if(MT[p.type])qOnKill({type:p.type,t:MT[p.type]});return;}
+  if(ev==='ploot'&&p.to===NET.id){const it=typeof cleanItem==='function'?cleanItem(p.item):null;if(it){if(it.slot==='weapon'){const w=SECTS[player.sect].wtype;it.wtype=w;it.name=it.set&&SETS[it.set]?SETS[it.set].name+' '+SETS[it.set].suf[w]:TIER_PRE[it.tier]+' '+SLOT_SUF[w];}addItem(it,true);log(`Được chia ${it.name} (${RARITY[it.rar].n}) từ ${p.name}`,RARITY[it.rar].c);toast(`Được chia: ${it.name}`,RARITY[it.rar].c);sfx('pick');}}}
 // đồng đội cùng bản đồ trong bán kính r quanh mình
 function matesNear(r){if(!inParty())return[];const out=[];for(const o of NET.others.values())if(isMate(o.id)&&!o.dead&&Math.hypot(o.x-player.x,o.y-player.y)<=r)out.push(o);return out;}
 function netPartyHeal(r,pct,hot){const ms=matesNear(r);if(!ms.length)return 0;netCast('tk_world','pheal',{id:NET.id,name:player.name,to:ms.map(o=>o.id),pct,hot});
@@ -139,7 +141,11 @@ function netPartyHeal(r,pct,hot){const ms=matesNear(r);if(!ms.length)return 0;ne
 function netPartyBuff(r,b){const ms=matesNear(r);if(!ms.length)return 0;netCast('tk_world','pbuff',{id:NET.id,name:player.name,to:ms.map(o=>o.id),buff:b});
   for(const o of ms)addRing(o.x,o.y-20,40,b.col||'#c8f0a0',0.6);return ms.length;}
 function netPartyLow(r,thr){return matesNear(r).filter(o=>o.hf!=null&&o.hf<thr).length;}
-function netPartyKill(e,x,y){if(inParty()&&NET.status==='on')netCast('tk_world','pkill',{id:NET.id,exp:e,map:curMapId,x:Math.round(x),y:Math.round(y)});}
+// đồng đội cùng bản đồ, còn sống, đứng gần chỗ quái chết (kể cả mình) được chia thưởng
+const SHARE_R=900;
+function partyShareIds(x,y){if(!inParty()||NET.status!=='on')return[NET.id];const ids=[NET.id];for(const o of NET.others.values())if(isMate(o.id)&&!o.dead&&Math.hypot(o.x-x,o.y-y)<=SHARE_R)ids.push(o.id);return ids;}
+function netPartyKill(e,g,m){if(inParty()&&NET.status==='on')netCast('tk_world','pkill',{id:NET.id,exp:e,gold:g,type:m.type,map:curMapId,x:Math.round(m.x),y:Math.round(m.y)});}
+function netSendLoot(to,it){if(NET.status!=='on')return false;netCast('tk_world','ploot',{id:NET.id,name:player.name,to,item:it});const nm=(PARTY.members.find(x=>x.id===to)||{}).name||'đồng đội';log(`Chia ${it.name} cho ${nm}`,'#c8f0a0');return true;}
 function partyTick(dt){if(!inParty())return;
   PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=2;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0,x:Math.round(player.x),y:Math.round(player.y)});}
   if(isLeader()){PARTY.setT-=dt;

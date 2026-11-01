@@ -80,7 +80,9 @@ function eqKeyFor(it){if(it.slot!=='ring')return it.slot;if(!player.eq.ring1)ret
 function itemScore(it){if(!it)return 0;const s=it.st;return(s.atk||0)*2+(s.def||0)*1.6+(s.hp||0)*0.12+(s.mp||0)*0.08+(s.crit||0)*3+(s.spd||0)*1.2;}
 const wtypeOk=it=>it.slot!=='weapon'||!it.wtype||it.wtype===SECTS[player.sect].wtype;
 function isUpgrade(it){return it.lvReq<=player.lv&&wtypeOk(it)&&itemScore(it)>itemScore(player.eq[eqKeyFor(it)]);}
+let LOOT_TO=null; // danh sách người được chia đồ khi đang tổ đội
 function addItem(it,silent){
+  if(LOOT_TO&&LOOT_TO.length>1){const r=LOOT_TO[rint(0,LOOT_TO.length-1)];if(r!==NET.id&&partyAPI('netSendLoot',r,it))return;}
   if(player.inv.length>=BAG_MAX){let wi=-1,ws=Infinity;player.inv.forEach((x,i)=>{const s=itemScore(x)*(1+x.rar)+(isUpgrade(x)?1e6:0);if(s<ws){ws=s;wi=i;}});
     if(wi<0||itemScore(it)*(1+it.rar)+(isUpgrade(it)?1e6:0)<=ws){player.gold+=it.price;log(`Túi đầy, tự bán ${it.name} được ${it.price} lượng`,'#ffd977');return;}
     const old=player.inv.splice(wi,1)[0];player.gold+=old.price;log(`Túi đầy, tự bán ${old.name} để lấy chỗ`,'#ffd977');}
@@ -165,15 +167,17 @@ function killMob(m){m.dead=true;m.fade=0.6;m.respawn=m.t.boss?90:12;player.kills
   let e=Math.round(m.t.exp*(1+0.2*(m.lv-m.t.lv[0])));const diff=player.lv-m.lv;
   if(diff>=6)e=Math.max(1,Math.round(e*0.2));else if(diff>=4)e=Math.round(e*0.6);
   if(m.summoned)e=Math.round(e*0.5);
-  const g=rint(m.t.gold[0],m.t.gold[1]);player.gold+=g;
-  addText(player.x,player.y-62,'+'+e+' kinh nghiệm','#ffe27a',13);
+  const g=rint(m.t.gold[0],m.t.gold[1]);
+  const share=partyAPI('partyShareIds',m.x,m.y)||[],n=share.length>1?share.length:1;
+  if(n>1){e=Math.max(1,Math.round(e*(1+0.15*(n-1))/n));}const gs=Math.round(g/n);player.gold+=gs;
+  addText(player.x,player.y-62,'+'+e+' kinh nghiệm'+(n>1?' (chia '+n+')':''),'#ffe27a',13);
   if(Math.random()<m.t.hpP){const n=m.t.boss?5:1;player.hpPot+=n;log(`Nhặt được ${n} Kim Sang Dược`,'#ff9a8a');}
   if(Math.random()<m.t.mpP){const n=m.t.boss?5:1;player.mpPot+=n;log(`Nhặt được ${n} Ngưng Thần Đan`,'#8ac4ff');}
-  if(!m.summoned)rollLoot(m);
+  if(!m.summoned){LOOT_TO=n>1?share:null;try{rollLoot(m);}finally{LOOT_TO=null;}}
   if(m.t.boss){toast(`Đã hạ gục ${m.t.name}!`,'#ffd23f');shakeT=0.6;for(const o of mobs)if(o.summoned&&!o.dead){o.dead=true;o.fade=0.6;}}
   qOnKill(m);
   if(player.target===m){player.target=null;player.pend=null;}
-  partyAPI('netPartyKill',e,m.x,m.y);partyAPI('petOnKill',m);
+  if(n>1)partyAPI('netPartyKill',e,gs,m);partyAPI('petOnKill',m);
   gainExp(e);}
 function gainExp(e){if(player.lv>=MAXLV)return;e*=player.exp3T>0?3:player.exp2T>0?2:1;player.exp+=e;
   while(player.lv<MAXLV&&player.exp>=expNeed(player.lv)){player.exp-=expNeed(player.lv);player.lv++;const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;
