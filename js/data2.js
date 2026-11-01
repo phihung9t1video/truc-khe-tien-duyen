@@ -78,3 +78,35 @@ QUESTS.push(
   {map:'tinhha',title:'Hỗn Độn Thạch',giver:'starsmith',type:'drop',target:'thienma',n:6,item:'Hỗn độn thạch',chance:0.4,short:'Đoạt Hỗn độn thạch',desc:'Đoạt 6 viên Hỗn độn thạch, ta rèn thần binh Hồng Mông.',reward:{exp:2000000,gold:28000,item:{slot:'weapon',tier:12,rar:3}}},
   {map:'tinhha',title:'Hỗn Độn Ma Thần',giver:'starsage',type:'kill',target:'hondon',n:1,short:'Hạ Hỗn Độn Ma Thần',desc:'Trận chiến cuối cùng nơi tận cùng tinh hà. Hỗn Độn Ma Thần phóng ám hỏa và gọi Thiên Ma Tướng. Nên đạt cấp 90!',reward:{exp:4000000,gold:120000,hp:50,item:{slot:'armor',tier:12,rar:4}}}
 );
+
+// ===================== BẢN ĐỒ LỚN (cấp 50 trở lên) =====================
+// Phóng to 1,5 lần mỗi chiều (96×72 ô), quái thường đông gấp đôi (luyện lẻ được, kinh nghiệm vừa),
+// thêm bầy "Tinh anh" dày đặc: máu trâu, đánh đau, kinh nghiệm gấp 4 lần, nên đi tổ đội.
+const BIG={langtieu:'guard',hoadiem:'hoama',longcung:'vebinh',tinhha:'thienma'};
+const ELITE={guard:'Thiên Binh Tinh Anh',hoama:'Hỏa Ma Tinh Anh',vebinh:'Long Cung Tinh Anh',thienma:'Thiên Ma Tinh Anh'};
+function scaleMap(id,f){const M=MAPS[id],g=M.gen,S=v=>Math.round(v*f),SF=v=>Math.round(v*f*2)/2;
+  g.size=[S(64),S(48)];if(g.river)g.river.x=S(g.river.x);
+  g.lakes=g.lakes.map(([x,y,w,h])=>[S(x),S(y),S(w),S(h)]);
+  const sf=g.safe;Object.assign(sf,{x0:S(sf.x0),y0:S(sf.y0),x1:S(sf.x1),y1:S(sf.y1)});sf.gates=sf.gates.map(([s,a,b])=>[s,S(a),S(b)+1]);
+  g.houses=g.houses.map(([x,y])=>[S(x),S(y)]);if(g.well)g.well=[S(g.well[0]),S(g.well[1])];
+  const A=g.arena;Object.assign(A,{x0:S(A.x0),y0:S(A.y0),x1:S(A.x1),y1:S(A.y1)});A.gap=[A.gap[0],S(A.gap[1]),S(A.gap[2])+1];
+  g.roads=g.roads.map(r=>r.map(S));M.revive=M.revive.map(SF);
+  for(const k in M.zones){const z=M.zones[k];z.x=S(z.x);z.y=S(z.y);if(!MT[k].boss){z.r=Math.round(z.r*f*1.3);z.n=Math.round(z.n*2);}}
+  M.herbs.zones.forEach(z=>{z.x=S(z.x);z.y=S(z.y);z.r=S(z.r);z.n=Math.round(z.n*1.5);});
+  M.regions.forEach(r=>{r.x=S(r.x);r.y=S(r.y);r.r=S(r.r);});
+  M.npcs.forEach(n=>{n.x=SF(n.x);n.y=SF(n.y);});
+  M.portals.forEach(p=>{p.x=SF(p.x);p.y=SF(p.y);});
+  for(const o in MAPS)for(const p of MAPS[o].portals)if(p.to===id){p.tx=SF(p.tx);p.ty=SF(p.ty);}}
+for(const [id,base] of Object.entries(BIG)){scaleMap(id,1.5);const b=MT[base],k='e_'+base;
+  MT[k]=Object.assign({},b,{name:ELITE[base],lv:[b.lv[1]+1,b.lv[1]+1],hp:Math.round(b.hp*3),atk:Math.round(b.atk*1.2),def:Math.round(b.def*1.15),exp:b.exp*4,gold:[b.gold[0]*3,b.gold[1]*3],loot:0.35,aggro:0,elite:true,scale:1.15});
+  const M=MAPS[id],z=M.zones[base];
+  // bầy tinh anh đặt ở khu riêng, cạnh khu quái gốc (về phía giữa bản đồ)
+  const dx=M.gen.size[0]/2-z.x,dy=M.gen.size[1]/2-z.y,dl=Math.hypot(dx,dy)||1,cx=Math.round(z.x+dx/dl*14),cy=Math.round(z.y+dy/dl*14);
+  M.zones[k]={x:cx,y:cy,r:8,n:15};M.regions.push({n:ELITE[base]+' (nên đi tổ đội)',x:cx,y:cy,r:7});}
+for(const id in MAPS)for(const n of MAPS[id].npcs)NPC_INDEX[n.id]=Object.assign({map:id},n);
+
+// ===================== BỘ TRÙNG LÂU (đồ Thần thoại cao nhất) =====================
+// Rơi khi hạ Hỗn Độn Ma Thần (trùm cấp 90). Tài khoản GM nhận đủ bộ.
+const SETS={trunglau:{name:'Trùng Lâu',col:'#ff4a6a',pieces:['weapon','armor','amulet','necklace','ring'],
+  suf:{armor:'Bào',amulet:'Ngọc',necklace:'Liên',ring:'Giới',sword:'Kiếm',fan:'Phiến',flute:'Tiêu',staff:'Trượng',hammer:'Chùy',dagger:'Song Chủy'},
+  bonus:{2:{atk:0.08},3:{hp:0.12,def:0.1},5:{atk:0.15,crit:0.1}},desc:{2:'Công lực +8%',3:'Sinh lực +12%, phòng thủ +10%',5:'Công lực +15%, bạo kích +10%'}}};

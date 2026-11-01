@@ -72,6 +72,10 @@ function makeItem(slot,tier,rar,wtype){tier=clamp(tier,0,MAXTIER);const m=RARITY
   const name=TIER_PRE[tier]+' '+(slot==='weapon'?SLOT_SUF[wtype]:SLOT_SUF[slot]);
   return{uid:uidN++,slot,tier,rar,wtype:slot==='weapon'?wtype:null,name,lvReq:TIER_LV[tier],price:Math.round((8+tier*24)*(1+rar*0.9)),st};
 }
+// đồ bộ (Trùng Lâu): Thần thoại bậc cao nhất, chỉ số x1,25, điểm thưởng theo số món đang mặc
+function makeSetItem(slot,setId,wtype){const S=SETS[setId],wt=wtype||SECTS[player.sect].wtype,it=makeItem(slot,MAXTIER,RARITY.length-1,wt);for(const k in it.st)it.st[k]=Math.round(it.st[k]*1.25);
+  it.set=setId;it.name=S.name+' '+(slot==='weapon'?S.suf[wt]:S.suf[slot]);it.lvReq=85;it.price*=5;return it;}
+const setCount=id=>EQ_KEYS.filter(k=>player.eq[k]&&player.eq[k].set===id).length;
 function eqKeyFor(it){if(it.slot!=='ring')return it.slot;if(!player.eq.ring1)return'ring1';if(!player.eq.ring2)return'ring2';return itemScore(player.eq.ring1)<=itemScore(player.eq.ring2)?'ring1':'ring2';}
 function itemScore(it){if(!it)return 0;const s=it.st;return(s.atk||0)*2+(s.def||0)*1.6+(s.hp||0)*0.12+(s.mp||0)*0.08+(s.crit||0)*3+(s.spd||0)*1.2;}
 const wtypeOk=it=>it.slot!=='weapon'||!it.wtype||it.wtype===SECTS[player.sect].wtype;
@@ -108,6 +112,7 @@ function sellJunk(){let n=0,g=0;player.inv=player.inv.filter(it=>{if(it.rar<=1&&
   if(n){player.gold+=g;sfx('coin');log(`Đã bán ${n} món đồ, thu ${g} lượng`,'#ffd977');}else log('Không có đồ Thường/Tinh xảo nào để bán','#ccc');refreshPanels();}
 function autoEquip(){for(const it of [...player.inv])if(isUpgrade(it))equipItem(it.uid);}
 function rollLoot(m){const t=m.t,w=SECTS[player.sect].wtype;
+  if(m.type==='hondon'&&Math.random()<0.12){const S=SETS.trunglau,it=makeSetItem(S.pieces[rint(0,S.pieces.length-1)],'trunglau');addItem(it);toast(`Rơi đồ ${S.name}: ${it.name}!`,S.col);log(`${m.t.name} để lại ${it.name}!`,S.col);}
   if(t.boss){for(let k=0;k<2;k++)addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,t.tier>=10&&Math.random()<0.15?4:Math.random()<0.4?3:2,w));return;}
   if(Math.random()>t.loot)return;
   const r=Math.random(),rar=t.tier>=10&&r<0.002?4:r<0.02?3:r<0.12?2:r<0.4?1:0;
@@ -118,6 +123,7 @@ function stats(){const S=SECTS[player.sect].base,l=player.lv;
   const s={maxhp:S.hp+S.hpL*l,maxmp:S.mp+S.mpL*l,atk:S.atk+S.atkL*l,def:S.def+S.defL*l,crit:0.05+(SECTS[player.sect].crit||0),spd:0};
   for(const k of EQ_KEYS){const it=player.eq[k];if(!it)continue;const st=it.st,rb=refBonus(it);s.maxhp+=(st.hp||0)+(rb.hp||0);s.maxmp+=(st.mp||0)+(rb.mp||0);s.atk+=(st.atk||0)+(rb.atk||0);s.def+=(st.def||0)+(rb.def||0);s.crit+=(st.crit||0)/100;s.spd+=(st.spd||0)/100;}
   for(const b of player.buffs){if(b.atk)s.atk*=1+b.atk;if(b.defm)s.def*=1+b.defm;if(b.crit)s.crit+=b.crit;}
+  if(typeof SETS!=='undefined')for(const id in SETS){const n=setCount(id),B=SETS[id].bonus;for(const c in B)if(n>=+c){const b=B[c];if(b.atk)s.atk*=1+b.atk;if(b.hp)s.maxhp*=1+b.hp;if(b.def)s.def*=1+b.def;if(b.crit)s.crit+=b.crit;}}
   const MT_=player.mount&&typeof MOUNTS!=='undefined'?MOUNTS[player.mount]:null;if(MT_){s.maxhp*=1+MT_.hp;s.def*=1+MT_.def;}
   s.maxhp=Math.round(s.maxhp);s.maxmp=Math.round(s.maxmp);s.atk=Math.round(s.atk);s.def=Math.round(s.def);
   s.move=150*(1+s.spd)*(player.flying?1.7:player.riding&&MT_?1+MT_.spd:1)*(player.slowT>0?0.6:1);return s;}
@@ -149,6 +155,7 @@ function hurtMob(m,r){if(m.dead)return;const em=elMul(SECTS[player.sect].el,m.t.
   addText(m.x,m.y-m.t.hh-6,(r.crit?'Bạo kích ':'')+v+(em>1?' ▲':em<1?' ▼':''),r.crit?'#ffd23f':em>1?'#ffe9a0':'#ffffff',r.crit?19:14);
   sfx(r.crit?'crit':'hit');if(r.crit)shakeT=Math.max(shakeT,0.08);
   if(m.state!=='chase'&&!inSafe(player))m.state='chase';
+  if(m.t.elite)for(const o of mobs)if(o!==m&&!o.dead&&o.type===m.type&&o.state==='idle'&&dist(o,m)<150)o.state='chase';
   if(m.t.draw==='human'&&!m.t.boss)for(const o of mobs)if(o!==m&&!o.dead&&o.type===m.type&&o.state==='idle'&&dist(o,m)<150)o.state='chase';
   if(m.t.boss&&!m.enraged&&m.hp<m.maxhp*0.5){m.enraged=true;m.atk=Math.round(m.atk*1.25);m.spd*=1.2;toast(`${m.t.name} nổi giận!`,'#ff6a5a');log(`${m.t.name} nổi giận, gọi đồng bọn tới!`,'#ff6a5a');
     shakeT=0.4;sfx('slam');summonAdd(m);summonAdd(m);}
@@ -286,7 +293,8 @@ function gatherDone(h){h.dead=true;h.respawn=25;sfx('gather');addParts(h.x,h.y-1
   const q=curQ();if(q&&q.type==='gather'&&q.map===curMapId&&!qDone()){player.qc++;log(`Hái được ${CM.herbs.name} (${player.qc}/${q.n})`,'#9fffd8');afterProgress();}
   else{gainExp(5+player.lv*2);if(Math.random()<0.3){player.mpPot++;log(`Hái ${CM.herbs.name}, luyện được 1 Ngưng Thần Đan`,'#8ac4ff');}}}
 function nearestHerb(){let b=null,bd=Infinity;for(const h of herbs){if(h.dead)continue;const d=dist(h,player);if(d<bd){bd=d;b=h;}}return b;}
-function bestZone(){let z=null,best=-1;for(const k in CM.zones){const t=MT[k];if(t.boss)continue;if(player.lv>=t.lv[0]-1&&t.lv[0]>best){best=t.lv[0];z=CM.zones[k];}}
+const soloAvoid=t=>t.elite&&!(typeof inParty==='function'&&inParty());
+function bestZone(){let z=null,best=-1;for(const k in CM.zones){const t=MT[k];if(t.boss||soloAvoid(t))continue;if(player.lv>=t.lv[0]-1&&t.lv[0]>best){best=t.lv[0];z=CM.zones[k];}}
   if(!z){let lo=1e9;for(const k in CM.zones){const t=MT[k];if(!t.boss&&t.lv[0]<lo){lo=t.lv[0];z=CM.zones[k];}}}return z;}
 function bestMap(){let m='trukhe';for(const id in MAPS)if(player.lv>=MAPS[id].minLv&&MAPS[id].minLv>=MAPS[m].minLv)m=id;return m;}
 function mobReady(type){const t=MT[type];return t.boss?(player.lv>=t.lv[0]&&player.hpPot>=8):player.lv>=t.lv[0]-(t.draw==='human'?0:1);}
@@ -310,7 +318,7 @@ function autoPick(pref){let best=null,bd=Infinity;
   for(const m of mobs){if(m.dead||m.state==='return')continue;
     let d=dist(m,player);
     if(m.state==='chase'&&d<240){d*=0.05;}
-    else{if(m.t.boss&&pref!==m.type)continue;if(m.lv>player.lv+2&&pref!==m.type)continue;if(pref&&m.type!==pref)d*=8;}
+    else{if(soloAvoid(m.t))continue;if(m.t.boss&&pref!==m.type)continue;if(m.lv>player.lv+2&&pref!==m.type)continue;if(pref&&m.type!==pref)d*=8;}
     if(d<bd){bd=d;best=m;}}
   return best;}
 function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk=skillList();
@@ -329,6 +337,8 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
     if(inSafe(player)&&player.hp>=st.maxhp*0.95){autoRest=false;autoBuy();autoEquip();log('Đã hồi phục, tiếp tục hành trình','#7dff9a');}
     else if(!player.path.length&&dist(player,R)>20){moveTo(R.x,R.y);if(player.flyUnlocked&&dist(player,R)>320)setFly(true);}
     return;}
+  // đích đến cũ mà không có đường đi (kẹt) thì bỏ sau 3 giây
+  if(navGoal&&!player.path.length&&!player.moving){player.navStuck=(player.navStuck||0)+0.2;if(player.navStuck>3){navGoal=null;player.navStuck=0;}}else player.navStuck=0;
   if(player.npc||player.gather||navGoal)return;
   const tg=player.target;
   if(tg&&!tg.dead){const d=dist(player,tg);
@@ -487,12 +497,12 @@ function update(dt){nowT+=dt;
 // ===================== LƯU / TẢI =====================
 let SKEY='trukhe_tienduyen_v2'; // đổi theo tài khoản khi đăng nhập (accounts.js)
 function save(){if(!player.sect)return;try{localStorage.setItem(SKEY,JSON.stringify({v:3,name:player.name,gender:player.gender,sect:player.sect,lv:player.lv,exp:player.exp,gold:player.gold,
-  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,exp2T:player.exp2T,exp3T:player.exp3T,luck:player.luck,reviveC:player.reviveC,ddT:player.ddT,ap:player.ap,tp:player.tp,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,
+  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,exp2T:player.exp2T,exp3T:player.exp3T,luck:player.luck,reviveC:player.reviveC,ddT:player.ddT,ap:player.ap,tp:player.tp,gmSet:player.gmSet,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,
   map:curMapId,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx,ts:Date.now()}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SKEY));return s&&(s.v===2||s.v===3)&&SECTS[s.sect]?s:null;}catch(e){return null;}}
 function applySave(s){
   Object.assign(player,{name:s.name,gender:s.gender,sect:s.sect,lv:s.lv,exp:s.exp,gold:s.gold,hpPot:s.hpPot,mpPot:s.mpPot,inv:s.inv||[],
-    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,exp2T:s.exp2T||0,exp3T:s.exp3T||0,luck:s.luck||0,reviveC:s.reviveC||0,ddT:s.ddT||0,ap:s.ap||null,tp:s.tp||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{}});
+    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,exp2T:s.exp2T||0,exp3T:s.exp3T||0,luck:s.luck||0,reviveC:s.reviveC||0,ddT:s.ddT||0,ap:s.ap||null,tp:s.tp||0,gmSet:s.gmSet||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{}});
   resetRuntime();
   delete player.eq.jade;delete player.refine;
   if(s.refine&&player.eq.weapon&&!player.eq.weapon.ref)player.eq.weapon.ref=s.refine; // bản cũ: cường hóa gắn với nhân vật -> chuyển vào vũ khí đang cầm

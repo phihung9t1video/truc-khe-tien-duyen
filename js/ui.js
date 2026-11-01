@@ -65,6 +65,7 @@ function itemHTML(it,cmp){if(!it)return'';if(cmp===undefined&&player.inv.include
   h+=`<div style="color:${it.lvReq>player.lv?'#ff7a6a':'#ccc'}">Yêu cầu cấp ${it.lvReq}</div><div style="margin-top:4px">`;
   for(const k in it.st){const v=it.st[k],o=cmp&&cmp.st[k]||0,dv=v-o;h+=`${STATNAME[k]}: <b>+${v}${k==='crit'||k==='spd'?'%':''}</b>`+(cmp&&cmp!==it&&dv!==0?` <span style="color:${dv>0?'#7f7':'#f77'}">(${dv>0?'+':''}${dv})</span>`:'')+'<br>';}
   if(it.ref){const rb=refBonus(it);h+=`<span style="color:#ffd23f">Cường hóa +${it.ref}: ${Object.entries(rb).map(([k,v])=>STATNAME[k]+' +'+v).join(', ')}</span><br>`;}
+  if(it.set&&typeof SETS!=='undefined'&&SETS[it.set]){const S=SETS[it.set],n=setCount(it.set);h+=`<div style="margin-top:4px;color:${S.col}"><b>Bộ ${S.name}</b> (đang mặc ${n}/${S.pieces.length})</div>`+Object.entries(S.desc).map(([c,t])=>`<div style="color:${n>=+c?'#9fffb0':'#888'}">${c} món: ${t}</div>`).join('');}
   h+=`</div><div style="color:#ffd977;margin-top:3px">Giá bán: ${it.price} lượng</div>`;return h;}
 function tipContent(key){const [k,v]=key.split(':');
   if(k==='skill'){const s=skillList()[+v];return`<div class="tn" style="color:${s.col}">${s.icon} ${s.name}</div><div style="color:${EL[SECTS[player.sect].el].c}">Hệ ${EL[SECTS[player.sect].el].n}</div><div style="color:${player.lv<s.lv?'#ff7a6a':'#9f9'}">Mở ở cấp ${s.lv}</div>${s.desc}<div style="margin-top:4px;color:#8ac4ff">Tốn ${s.mp} nội lực · Hồi chiêu ${s.cd} giây</div>`;}
@@ -334,7 +335,7 @@ function drawMob(m){if(m.isFoe)return; // đối thủ tỷ thí được vẽ n
   drawMonsterBody(m,m.x,m.y+jy+sink,m.hitFlash>0);
   if(m.freezeT>0&&!m.dead){ctx.fillStyle='rgba(180,235,255,.45)';ctx.strokeStyle='rgba(120,200,255,.9)';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(m.x-t.hw*s,m.y-t.hh*0.95,t.hw*2*s,t.hh*0.95,4);ctx.fill();ctx.stroke();}
   ctx.globalAlpha=1;if(m.dead)return;
-  const top=m.y-t.hh-8,diff=m.lv-player.lv,col=diff>=3?'#ff5a4a':diff<=-5?'#9a9a9a':t.boss?'#ff9a3d':'#ffffff';
+  const top=m.y-t.hh-8,diff=m.lv-player.lv,col=t.elite?'#d8a0ff':diff>=3?'#ff5a4a':diff<=-5?'#9a9a9a':t.boss?'#ff9a3d':'#ffffff';
   const ly=top-(sel||m.hp<m.maxhp?6:0);label(`${t.name} · Cấp ${m.lv}`,m.x,ly,col,t.boss?12:10);
   if(t.el){ctx.font=`bold ${t.boss?12:10}px "Segoe UI",Arial`;const tw=ctx.measureText(`${t.name} · Cấp ${m.lv}`).width;label(EL[t.el].i,m.x-tw/2-8,ly,EL[t.el].c,t.boss?12:10);}
   if(m.stunT>0)for(let k=0;k<3;k++){const a=nowT*5+k*2.1;label('★',m.x+Math.cos(a)*12,ly-12+Math.sin(a)*3,'#ffe27a',9);}
@@ -420,7 +421,7 @@ function draw(dt){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#0b0b0b';ctx.fill
   if(fadeT>0){ctx.fillStyle=`rgba(255,255,255,${Math.min(1,fadeT/0.7)*0.85})`;ctx.fillRect(0,0,VW,VH);}
   drawMini();}
 const mctx=$('mini').getContext('2d');
-function drawMini(){mctx.drawImage(miniBase,0,0);const k=3/T;
+function drawMini(){mctx.drawImage(miniBase,0,0);const k=192/(MW*T);
   mctx.strokeStyle='rgba(255,255,255,.7)';mctx.lineWidth=1;mctx.strokeRect(cam.x*k+0.5,cam.y*k+0.5,VW/Z*k,VH/Z*k);
   for(const h of herbs)if(!h.dead){mctx.fillStyle='#7fffc8';mctx.fillRect(h.x*k-1,h.y*k-1,2,2);}
   for(const m of mobs){if(m.dead)continue;mctx.fillStyle=m.t.boss?'#ff2020':'#ff7060';const s=m.t.boss?5:2;mctx.fillRect(m.x*k-s/2,m.y*k-s/2,s,s);}

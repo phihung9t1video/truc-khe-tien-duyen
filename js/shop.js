@@ -28,6 +28,7 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
   let h='';
   if(shopTab==='item')h=SHOP_ITEMS.map(it=>`<div class="shr"><span class="shi" style="color:${it.col}">${it.icon}</span><div class="shd"><b>${it.name}</b><br><span>${it.desc}</span></div><div class="shp">${priceTxt(it.price)}<button data-buy="${it.id}">Mua</button></div></div>`).join('');
   else if(shopTab==='eq'){const gm=isGM(),tier=gm?gmTier:shopTierFor(player.lv),rar=gm?gmRar:1;
+    if(gm)h+=`<div class="shr"><span class="shi" style="color:${SETS.trunglau.col}">✦</span><div class="shd"><b style="color:${SETS.trunglau.col}">Bộ ${SETS.trunglau.name}</b><br><span>5 món Thần thoại mạnh nhất, có điểm thưởng khi mặc đủ bộ</span></div><div class="shp">${priceTxt(0)}<button id="gmSetBtn">Nhận cả bộ</button></div></div>`;
     if(gm)h+=`<div class="shgm">Bậc <select id="gmTier">${TIER_PRE.map((n,i)=>`<option value="${i}"${i===gmTier?' selected':''}>${i+1} · ${n}</option>`).join('')}</select> Độ hiếm <select id="gmRar">${RARITY.map((r,i)=>`<option value="${i}"${i===gmRar?' selected':''}>${r.n}</option>`).join('')}</select></div>`;
     else h+=`<div class="shgm">Bán đồ <b style="color:${RARITY[1].c}">Tinh xảo</b> bậc ${tier+1} (${TIER_PRE[tier]}), hợp với cấp của bạn. Đồ Hiếm và Truyền thuyết phải đánh quái, đánh trùm mới có.</div>`;
     h+=EQ_SHOP.map(sl=>{const wt=SECTS[player.sect].wtype,nm=TIER_PRE[tier]+' '+(sl==='weapon'?SLOT_SUF[wt]:SLOT_SUF[sl]),ic=sl==='weapon'?WICON[wt]:SLOTICON[sl];
@@ -42,6 +43,7 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
   b.querySelectorAll('[data-mount]').forEach(e=>e.onclick=()=>{const k=e.dataset.mount,m=MOUNTS[k];if(!isGM()&&player.lv<m.lv)return;if(!shopPay(m.price))return;
     player.mounts=player.mounts||[];player.mounts.push(k);setMount(k);toast(`Đã mua thú cưỡi ${m.name}`,'#ffd23f');sfx('level');save();renderShop();});
   b.querySelectorAll('[data-use]').forEach(e=>e.onclick=()=>{setMount(e.dataset.use);save();renderShop();});
+  if($('gmSetBtn'))$('gmSetBtn').onclick=()=>{const S=SETS.trunglau;if(player.inv.length+S.pieces.length>BAG_MAX)return log('Túi đồ không đủ chỗ','#ff9a8a');for(const sl of S.pieces){const it=makeSetItem(sl,'trunglau');it.lvReq=1;player.inv.push(it);}refreshPanels();save();toast(`Đã nhận bộ ${S.name} vào túi`,S.col);renderShop();};
   if($('gmTier')){$('gmTier').onchange=e=>{gmTier=+e.target.value;renderShop();};$('gmRar').onchange=e=>{gmRar=+e.target.value;renderShop();};}
   b.querySelectorAll('canvas[data-mv]').forEach(c=>withCtx(c,()=>{ctx.scale(2,2);drawShadow(30,36,16,0.3);drawSteed(c.dataset.mv,30,36,1,false,0.5);}));}
 // ---------- thú cưỡi ----------

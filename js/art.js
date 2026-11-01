@@ -573,7 +573,7 @@ function vFlag(c,x,y){c.strokeStyle='rgba(20,10,5,.7)';c.lineWidth=1;c.fillStyle
   c.fillStyle='#c0392b';c.beginPath();c.arc(x+11,y-36.5,4,0,Math.PI*2);c.fill();}
 let mapCv=null,miniBase=null,TREE_SPR=[],HOUSE_SPR=null;
 function renderMap(){
-  RS=Math.min(2,Math.max(1,Z*DPR));const S=T,th=CM.theme;
+  RS=Math.min(2,Math.max(1,Z*DPR),Math.sqrt(14e6/(MW*T*MH*T)));const S=T,th=CM.theme;
   mapCv=document.createElement('canvas');mapCv.width=MW*S*RS;mapCv.height=MH*S*RS;const c=mapCv.getContext('2d');c.scale(RS,RS);
   seed=CM.gen.seed+99;c.lineJoin='round';c.lineCap='round';
   const W=MW*S,H=MH*S,ctr=(x,y)=>[x*S+S/2,y*S+S/2];
@@ -619,7 +619,7 @@ function renderMap(){
   for(const [fx_,fy_] of FLAGS)vFlag(c,fx_*S+16,fy_*S+30);
   if(CM.gen.well){const [wx,wy]=CM.gen.well;c.save();c.scale(2,2);P(c,'#6d6d6d',wx*16+2,wy*16+2,14,12);P(c,'#1e3f6b',wx*16+4,wy*16+4,10,7);P(c,'#7a3b20',wx*16+1,wy*16-6,2,10);P(c,'#7a3b20',wx*16+15,wy*16-6,2,10);P(c,'#8e2b1f',wx*16-1,wy*16-8,20,3);c.restore();}
   miniBase=document.createElement('canvas');miniBase.width=192;miniBase.height=144;const m=miniBase.getContext('2d');m.imageSmoothingEnabled=true;m.drawImage(mapCv,0,0,192,144);
-  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const t=getT(x,y);if(t===TR){m.fillStyle=TH.tree;m.beginPath();m.arc(x*3+1.5,y*3+1.5,1.7,0,Math.PI*2);m.fill();}else if(t===HO){m.fillStyle=TH.roof;m.fillRect(x*3,y*3,3,3);}}
+  const q=192/MW;for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const t=getT(x,y);if(t===TR){m.fillStyle=TH.tree;m.beginPath();m.arc(x*q+q/2,y*q+q/2,q*0.57,0,Math.PI*2);m.fill();}else if(t===HO){m.fillStyle=TH.roof;m.fillRect(x*q,y*q,q,q);}}
   TREE_SPR=makeTrees(th);HOUSE_SPR=makeHouse(th);
 }
 

@@ -21,10 +21,10 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 
 // ===================== BẢN ĐỒ HIỆN TẠI =====================
-const T=32,MW=64,MH=48;
+const T=32;let MW=64,MH=48; // kích thước đổi theo bản đồ (gen.size)
 const G=0,TR=1,WA=2,PA=3,RO=4,HO=5,FL=6,FE=7,BR=8,DK=9;
 const BLK=[0,1,1,0,1,1,0,1,0,0];
-const map=new Uint8Array(MW*MH);
+let map=new Uint8Array(MW*MH);
 let reach=new Uint8Array(MW*MH);
 let curMapId='trukhe',CM=MAPS.trukhe,TH=THEMES.spring;
 let SAFE={x0:3,y0:3,x1:16,y1:15},LIGHTS=[],TORCHES=[],FLAGS=[];
@@ -37,7 +37,7 @@ const canStand=(x,y)=>walkable(x-7,y-4)&&walkable(x+7,y-4)&&walkable(x-7,y+4)&&w
 const inSafe=o=>{const tx=o.x/T,ty=o.y/T;return tx>=SAFE.x0&&tx<SAFE.x1+1&&ty>=SAFE.y0&&ty<SAFE.y1+1;};
 const revivePos=()=>({x:CM.revive[0]*T,y:CM.revive[1]*T});
 
-function genMap(def){
+function genMap(def){const sz=def.gen.size;MW=sz?sz[0]:64;MH=sz?sz[1]:48;map=new Uint8Array(MW*MH);
   const g=def.gen;seed=g.seed;map.fill(G);
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(x<2||y<2||x>=MW-2||y>=MH-2)setT(x,y,TR);
   if(g.river)for(let y=0;y<MH;y++){const cx=Math.round(g.river.x+Math.sin(y*0.25)*2.5+Math.sin(y*0.07+1)*2);for(let d=-1;d<=1;d++)setT(cx+d,y,WA);}
@@ -95,7 +95,7 @@ function findPath(sx,sy,tx,ty){
   const pop=()=>{const top=heap[0],l=heap.pop();if(heap.length){heap[0]=l;let k=0;for(;;){const a=2*k+1,b=a+1;let m=k;if(a<heap.length&&heap[a][0]<heap[m][0])m=a;if(b<heap.length&&heap[b][0]<heap[m][0])m=b;if(m===k)break;[heap[m],heap[k]]=[heap[k],heap[m]];k=m;}}return top;};
   const h=i=>{const dx=Math.abs(i%MW-tx),dy=Math.abs(((i/MW)|0)-ty);return Math.max(dx,dy)+0.414*Math.min(dx,dy);};
   g[start]=0;push(h(start),start);let it=0;
-  while(heap.length&&it++<9000){const cur=pop()[1];if(cur===goal)break;if(closed[cur])continue;closed[cur]=1;const cx=cur%MW,cy=(cur/MW)|0;
+  while(heap.length&&it++<40000){const cur=pop()[1];if(cur===goal)break;if(closed[cur])continue;closed[cur]=1;const cx=cur%MW,cy=(cur/MW)|0;
     for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=cx+dx,ny=cy+dy;if(blocked(nx,ny))continue;
       if(dx&&dy&&(blocked(cx+dx,cy)||blocked(cx,cy+dy)))continue;const ni=idx(nx,ny);if(closed[ni])continue;
       const ng=g[cur]+(dx&&dy?1.414:1);if(ng<g[ni]){g[ni]=ng;came[ni]=cur;push(ng+h(ni),ni);}}}
@@ -119,4 +119,4 @@ function followPath(e,spd,dt){
   if(d<=s){e.x=p.x;e.y=p.y;e.path.shift();}else{e.x+=dx/d*s;e.y+=dy/d*s;}
   e.moving=true;
 }
-function freeSpot(cx,cy,r){for(let k=0;k<80;k++){const x=Math.round(cx+rnd(-r,r)),y=Math.round(cy+rnd(-r,r));if(blocked(x,y)||!reach[idx(x,y)])continue;const o={x:x*T+T/2,y:y*T+T/2};if(inSafe(o))continue;return o;}return{x:cx*T+T/2,y:cy*T+T/2};}
+function freeSpot(cx,cy,r0){for(let k=0;k<180;k++){const r=r0*(1+Math.floor(k/60)),x=Math.round(cx+rnd(-r,r)),y=Math.round(cy+rnd(-r,r));if(blocked(x,y)||!reach[idx(x,y)])continue;const o={x:x*T+T/2,y:y*T+T/2};if(inSafe(o))continue;return o;}return{x:cx*T+T/2,y:cy*T+T/2};}

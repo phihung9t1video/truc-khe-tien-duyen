@@ -159,6 +159,7 @@ const _enterGame0=enterGame;
 const GM_GOLD=999999999;
 function gmBoost(){if(!isGM()||!player.sect)return;let ch=false;
   if(player.lv<MAXLV){player.lv=MAXLV;player.exp=0;ch=true;}if(player.gold<GM_GOLD){player.gold=GM_GOLD;ch=true;}if(!player.flyUnlocked){player.flyUnlocked=true;ch=true;}
+  if(!player.gmSet&&typeof makeSetItem==='function'){player.gmSet=1;const S=SETS.trunglau;for(const sl of S.pieces){const it=makeSetItem(sl,'trunglau');it.lvReq=1;player.inv.push(it);equipItem(it.uid);}toast(`GM nhận đủ bộ ${S.name}`,S.col);ch=true;}
   if(ch){const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;refreshPanels();}}
 setInterval(()=>{if(started)gmBoost();},1000);
 enterGame=function(isNew){_enterGame0(isNew);if(isGM()){gmBoost();toast(`GM: cấp ${MAXLV}, ${GM_GOLD.toLocaleString('vi-VN')} lượng`,'#ffd23f');save();}if(isNew)setTimeout(()=>accSync(true),1000);};
