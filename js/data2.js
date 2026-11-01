@@ -133,3 +133,21 @@ Object.assign(SLOTICON,{
   necklace:svgIcon('<path d="M4.5 2.5Q12 16.5 19.5 2.5" fill="none" stroke-width="1.7"/><path d="M12 13l3.2 4.2L12 21.5l-3.2-4.3Z"/>'),
   ring:svgIcon('<circle cx="12" cy="15.2" r="6" fill="none" stroke-width="2.4"/><path d="M12 2.5l3.2 3.2L12 9 8.8 5.7Z"/>')});
 SLOTICON.ring1=SLOTICON.ring;SLOTICON.ring2=SLOTICON.ring;
+
+// ===================== VÕ CÔNG MỚI (cấp 20, cấp 40) =====================
+Object.assign(SKILLS,{
+  kiemanh:{name:'Kiếm Ảnh Liên Hoàn',icon:'⚚',col:'#bfe6ff',lv:20,mp:30,cd:12,kind:'multi',range:200,hits:5,mult:1.15,desc:'Phân kiếm ảnh chém liên hoàn 5 nhát, mỗi nhát 115% công lực.'},
+  thienkiem:{name:'Thiên Kiếm Giáng Thế',icon:'⟰',col:'#ffffff',lv:40,mp:55,cd:28,kind:'rain',range:260,r:110,hits:4,mult:2.6,desc:'Bốn thanh thiên kiếm khổng lồ cắm xuống vùng mục tiêu, mỗi đợt 260% công lực.'},
+  hoavu:{name:'Hỏa Vũ Lưu Tinh',icon:'☄',col:'#ff7a3a',lv:20,mp:34,cd:12,kind:'aoeTarget',range:280,r:115,mult:2.6,burn:{dur:5,mult:0.3},desc:'Mưa sao lửa trút xuống vùng mục tiêu, 260% công lực và thiêu đốt 5 giây.'},
+  phanthien:{name:'Liệt Diễm Phần Thiên',icon:'✺',col:'#ffb040',lv:40,mp:55,cd:22,kind:'aoeSelf',r:150,mult:3.2,desc:'Bùng nổ biển lửa quanh thân, 320% công lực lên mọi kẻ địch xung quanh.'},
+  bangtien:{name:'Băng Tinh Phá Không',icon:'❆',col:'#bff4ff',lv:20,mp:28,cd:9,kind:'proj',fx:'ice',range:280,mult:3.4,slow:{dur:4,amt:0.55},desc:'Mũi băng tinh xuyên không, 340% công lực và làm chậm 55% trong 4 giây.'},
+  vanlybang:{name:'Vạn Lý Băng Phong',icon:'❄',col:'#e0faff',lv:40,mp:55,cd:26,kind:'aoeSelf',r:170,mult:2.6,freeze:2.2,desc:'Đóng băng cả vùng rộng quanh thân 2,2 giây, 260% công lực.'},
+  docvu:{name:'Vạn Độc Vụ',icon:'☁',col:'#9fff6a',lv:20,mp:32,cd:12,kind:'aoeTarget',range:260,r:120,mult:1.4,burn:{dur:7,mult:0.45},desc:'Thả màn sương độc lên vùng mục tiêu, 140% công lực và ngấm độc 7 giây.'},
+  daihoixuan:{name:'Đại Hồi Xuân Thuật',icon:'✚',col:'#b8ffb0',lv:40,mp:60,cd:30,kind:'groupHeal',r:420,pct:0.5,hot:{dur:6,pct:0.03},desc:'Hồi 50% sinh lực cho bản thân và cả tổ đội ở gần, sau đó hồi thêm 3% mỗi giây trong 6 giây.'},
+  chanson:{name:'Chấn Sơn Quyền',icon:'✊',col:'#e8c070',lv:20,mp:30,cd:12,kind:'aoeSelf',r:120,mult:2.2,stun:1.4,desc:'Đấm xuống đất làm rung chuyển, 220% công lực và làm choáng 1,4 giây.'},
+  minhvuong:{name:'Bất Động Minh Vương',icon:'⛊',col:'#fff0b0',lv:40,mp:50,cd:35,kind:'buff',buff:{id:'mingwang',dur:8,dr:0.6,reflect:0.6},desc:'Thân bất động như núi 8 giây: giảm 60% sát thương nhận vào, phản lại 60% sát thương.'},
+  anhdoc:{name:'Ảnh Độc Tiêu',icon:'✦',col:'#c8a0ff',lv:20,mp:30,cd:10,kind:'proj',fx:'dark',range:260,mult:3.0,mark:{dur:8,amt:0.35},desc:'Phóng ám tiêu tẩm độc, 300% công lực và đánh dấu: mục tiêu chịu thêm 35% sát thương trong 8 giây.'},
+  tuyetmenh:{name:'Tuyệt Mệnh Nhất Kích',icon:'✖',col:'#ff5a8a',lv:40,mp:55,cd:25,kind:'dash',range:300,mult:6.0,desc:'Lướt tới đâm một nhát chí mạng 600% công lực, bạo kích dễ hơn.'}
+});
+SECTS.kiem.skills.push('kiemanh','thienkiem');SECTS.hoa.skills.push('hoavu','phanthien');SECTS.thuy.skills.push('bangtien','vanlybang');
+SECTS.duoc.skills.push('docvu','daihoixuan');SECTS.the.skills.push('chanson','minhvuong');SECTS.am.skills.push('anhdoc','tuyetmenh');

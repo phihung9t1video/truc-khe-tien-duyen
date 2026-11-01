@@ -1,6 +1,6 @@
 {
-  "version": "1.3.15",
-  "notes": "Tổ đội chia đều kinh nghiệm (thêm 15% mỗi đồng đội), lượng và vật phẩm cho mọi người đứng gần, không phụ thuộc ai hạ quái; nhiệm vụ diệt quái tính cho cả đội",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.15/www.zip",
-  "sha256": "86ada11fb22fc393832d41bc65086e5ca80efda8bcdeb891bbdd1b720af7f0de"
+  "version": "1.3.16",
+  "notes": "Kho đồ 60 ô; cài đặt tự bán đồ khi nhặt; mỗi phái thêm 2 võ công (cấp 20 và 40); đan nhân kinh nghiệm ăn nhiều viên được cộng dồn (tối đa x10)",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.16/www.zip",
+  "sha256": "88892b79d3eb3b8085fccfd39e008910828e0d168019b8d40aee57f2385967e6"
 }

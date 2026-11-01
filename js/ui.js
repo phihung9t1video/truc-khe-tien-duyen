@@ -9,8 +9,8 @@ function buildHotbar(){const hb=$('hotbar');hb.innerHTML='';
   skillList().forEach((s,i)=>{const b=document.createElement('button');b.className='slot';b.id='sk'+i;b.dataset.tip='skill:'+i;
     b.innerHTML=`<em>${i+1}</em><b style="color:${s.col}">${s.icon}</b><small>${s.name}</small><div class="cd"></div><div class="cdt"></div>`;b.onclick=()=>trySkill(i);hb.appendChild(b);});
   hb.insertAdjacentHTML('beforeend',`<div class="sep"></div>
-    <button class="slot" id="pot0" data-tip="pot:hp"><em>5</em><span class="cnt" id="hpc">0</span><b style="color:#ff6a5a">♥</b><small>Kim Sang Dược</small></button>
-    <button class="slot" id="pot1" data-tip="pot:mp"><em>6</em><span class="cnt" id="mpc">0</span><b style="color:#5ab4ff">◆</b><small>Ngưng Thần Đan</small></button>
+    <button class="slot" id="pot0" data-tip="pot:hp"><em>7</em><span class="cnt" id="hpc">0</span><b style="color:#ff6a5a">♥</b><small>Kim Sang Dược</small></button>
+    <button class="slot" id="pot1" data-tip="pot:mp"><em>8</em><span class="cnt" id="mpc">0</span><b style="color:#5ab4ff">◆</b><small>Ngưng Thần Đan</small></button>
     <div class="sep"></div>
     <button class="slot wide" id="flyBtn" data-tip="fly">NGỰ KIẾM<span id="flyTxt">CHƯA HỌC</span></button>
     <button class="slot wide" id="autoBtn" data-tip="auto">TỰ ĐỘNG<span id="autoTxt">ĐANG TẮT</span></button>
@@ -325,7 +325,7 @@ $('optMusic').onchange=e=>{auSet('music',e.target.checked);save();};$('optSfx').
 $('resetBtn').onclick=()=>{if(!resetArm){resetArm=true;$('resetBtn').textContent='Bấm lần nữa để XÓA toàn bộ tiến trình';return;}removeEventListener('beforeunload',save);localStorage.removeItem(SKEY);location.reload();};
 $('reviveBtn').onclick=revive;
 addEventListener('keydown',e=>{if(!started||e.target.tagName==='INPUT')return;const k=e.key.toLowerCase();
-  if(k>='1'&&k<='4')trySkill(+k-1);else if(k==='5')usePot('hp');else if(k==='6')usePot('mp');else if(k==='z')toggleAuto();else if(k==='f'){setFly(!player.flying);player.navFly=false;}
+  if(k>='1'&&k<='6')trySkill(+k-1);else if(k==='7')usePot('hp');else if(k==='8')usePot('mp');else if(k==='z')toggleAuto();else if(k==='f'){setFly(!player.flying);player.navFly=false;}
   else if(k==='c')openPanel('panelChar');else if(k==='b')openPanel('panelBag');else if(k==='m')openPanel('panelMap');else if(k==='escape'){closeDlg();PANELS.forEach(p=>$(p).hidden=true);}});
 
 // ===================== VẼ THẾ GIỚI =====================
