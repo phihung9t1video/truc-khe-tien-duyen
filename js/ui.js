@@ -13,12 +13,17 @@ function buildHotbar(){const hb=$('hotbar');hb.innerHTML='';
     <button class="slot" id="pot1" data-tip="pot:mp"><em>6</em><span class="cnt" id="mpc">0</span><b style="color:#5ab4ff">◆</b><small>Ngưng Thần Đan</small></button>
     <div class="sep"></div>
     <button class="slot wide" id="flyBtn" data-tip="fly">NGỰ KIẾM<span id="flyTxt">CHƯA HỌC</span></button>
-    <button class="slot wide" id="autoBtn" data-tip="auto">TỰ ĐỘNG<span id="autoTxt">ĐANG TẮT</span></button>`);
+    <button class="slot wide" id="autoBtn" data-tip="auto">TỰ ĐỘNG<span id="autoTxt">ĐANG TẮT</span></button>
+    <button class="slot wide" id="hereBtn" data-tip="here">LUYỆN TẠI CHỖ<span id="hereTxt">ĐANG TẮT</span></button>`);
   $('pot0').onclick=()=>usePot('hp');$('pot1').onclick=()=>usePot('mp');
   $('flyBtn').onclick=()=>{if(!started||player.dead)return;setFly(!player.flying);player.navFly=false;};
-  $('autoBtn').onclick=toggleAuto;}
-function toggleAuto(){if(!started||player.dead)return;auto=!auto;autoRest=false;navGoal=null;closeDlg();sfx('click');
+  $('autoBtn').onclick=toggleAuto;$('hereBtn').onclick=toggleAutoHere;}
+function toggleAuto(){if(!started||player.dead)return;const was=auto&&player.autoMode!=='here';auto=!was;player.autoMode='quest';autoRest=false;navGoal=null;closeDlg();sfx('click');
   log(auto?'Bật tự động: tự làm nhiệm vụ, tìm đường qua các vùng, đánh quái, ra chiêu, uống thuốc, trả nhiệm vụ':'Đã tắt chế độ tự động',auto?'#7dff9a':'#f4ead6');}
+// luyện tại chỗ: đứng luyện quanh vị trí hiện tại, ở bất kỳ bản đồ nào, không chạy đi làm nhiệm vụ
+function toggleAutoHere(){if(!started||player.dead)return;const was=auto&&player.autoMode==='here';auto=!was;player.autoMode='here';autoRest=false;navGoal=null;closeDlg();sfx('click');
+  if(auto){player.autoAnchor={map:curMapId,x:player.x,y:player.y};log(`Luyện tại chỗ: đánh quái quanh đây (${regionName()}). Hết thuốc sẽ về thành mua rồi quay lại đúng chỗ này.`,'#7dff9a');}
+  else log('Đã tắt luyện tại chỗ','#f4ead6');}
 
 // ===================== CẬP NHẬT HUD =====================
 let lastQ='',lastReg='',regT=0,lastBuff='',portraitT=0;
@@ -44,7 +49,8 @@ function updateUI(){if(!player.sect||!$('hpc'))return;const st=stats();
     el.style.opacity=!locked&&player.mp<s.mp?0.55:1;});
   $('hpc').textContent=player.hpPot;$('mpc').textContent=player.mpPot;
   $('flyBtn').classList.toggle('on',player.flying);$('flyTxt').textContent=!player.flyUnlocked?'CHƯA HỌC':player.flying?'ĐANG BAY':'ĐANG TẮT';
-  $('autoBtn').classList.toggle('on',auto);$('autoTxt').textContent=auto?(autoRest?'ĐANG NGHỈ':'ĐANG BẬT'):'ĐANG TẮT';
+  const aq=auto&&player.autoMode!=='here',ah=auto&&player.autoMode==='here';$('autoBtn').classList.toggle('on',aq);$('autoTxt').textContent=aq?(autoRest?'ĐANG NGHỈ':'ĐANG BẬT'):'ĐANG TẮT';
+  if($('hereBtn')){$('hereBtn').classList.toggle('on',ah);$('hereTxt').textContent=ah?(autoRest?'ĐANG NGHỈ':'ĐANG BẬT'):'ĐANG TẮT';}
   const q=curQ();let qh;
   if(!q)qh='<b>Nhiệm vụ</b><br>Đã hoàn thành toàn bộ cốt truyện!<br><span class="go">Tiếp tục tu luyện, săn trang bị Truyền thuyết</span>';
   else{const o=questObjective(),where=o&&o.map!==curMapId?`<br><span style="color:#ffb36b">Ở ${MAPS[o.map].name}</span>`:'';
@@ -71,6 +77,7 @@ function tipContent(key){const [k,v]=key.split(':');
   if(k==='skill'){const s=skillList()[+v];return`<div class="tn" style="color:${s.col}">${s.icon} ${s.name}</div><div style="color:${EL[SECTS[player.sect].el].c}">Hệ ${EL[SECTS[player.sect].el].n}</div><div style="color:${player.lv<s.lv?'#ff7a6a':'#9f9'}">Mở ở cấp ${s.lv}</div>${s.desc}<div style="margin-top:4px;color:#8ac4ff">Tốn ${s.mp} nội lực · Hồi chiêu ${s.cd} giây</div>`;}
   if(k==='pot')return v==='hp'?'<div class="tn" style="color:#ff8a7a">Kim Sang Dược</div>Hồi 40% sinh lực. Mua ở thầy thuốc trong làng.':'<div class="tn" style="color:#8ac4ff">Ngưng Thần Đan</div>Hồi 50% nội lực. Mua ở thầy thuốc trong làng.';
   if(k==='fly')return'<div class="tn" style="color:#9fd3ff">Ngự Kiếm Phi Hành</div>Đứng trên phi kiếm, tăng 70% tốc độ di chuyển. Tự xuống kiếm khi ra đòn.<br>Học được từ nhiệm vụ của Trưởng Làng (cấp 7).';
+  if(k==='here')return'<div class="tn" style="color:#7dff9a">Luyện tại chỗ</div>Đứng luyện ngay vùng bạn đang đứng, ở bất kỳ bản đồ nào: tự đánh quái quanh đây, ra chiêu, uống thuốc, hết thuốc thì về thành mua rồi quay lại đúng chỗ. Không chạy đi làm nhiệm vụ. Muốn đổi chỗ luyện: tắt, đi tới chỗ mới rồi bật lại.';
   if(k==='auto')return'<div class="tn" style="color:#7dff9a">Tự động</div>Nhân vật tự làm nhiệm vụ, tự đi qua Truyền Tống Trận sang vùng mới, đánh quái, ra chiêu, uống thuốc, hái thảo dược, mặc đồ tốt hơn và trả nhiệm vụ.';
   if(k==='item'){const it=player.inv.find(x=>x.uid===+v);return it?itemHTML(it):'';}
   if(k==='eq'){const it=player.eq[v];return it?itemHTML(it,null)+'<div style="color:#aaa;margin-top:3px">Nhấp để cường hóa hoặc tháo ra</div>':`<div class="tn">${SLOTNAME[v]}</div>Chưa trang bị`;}

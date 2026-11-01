@@ -1,6 +1,6 @@
 {
-  "version": "1.3.7",
-  "notes": "Bản đồ cấp 50 trở lên rộng gấp đôi, quái đông hơn, bầy Tinh anh để luyện tổ đội; bộ Trùng Lâu rơi từ trùm cấp 90, GM có sẵn đủ bộ",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.7/www.zip",
-  "sha256": "99ee16591e60f45622a3f26aab6459ff9dc99c5d442de931089ee3bc7819eb9e"
+  "version": "1.3.8",
+  "notes": "Thêm nút LUYỆN TẠI CHỖ: tự động luyện ngay vùng đang đứng ở bất kỳ bản đồ nào, không chạy đi làm nhiệm vụ",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.8/www.zip",
+  "sha256": "111fad880fd752c136d05d8758d741957895cf8f27654f0f4437c0b940413f39"
 }

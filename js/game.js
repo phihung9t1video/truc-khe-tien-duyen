@@ -314,6 +314,10 @@ function questNav(){if(!started||player.dead)return;const o=questObjective();if(
 function moveTo(x,y){const p=pathPts(player.x,player.y,x,y);if(p){player.path=p;return true;}return false;}
 
 // ===================== TỰ ĐỘNG =====================
+// quái quanh điểm luyện (bán kính ~16 ô), bỏ qua trùm và bầy tinh anh khi đi một mình, quái quá cấp
+function autoPickNear(A){let best=null,bd=Infinity;for(const m of mobs){if(m.dead||m.state==='return'||m.isFoe)continue;const d=dist(m,player);
+    if(m.state==='chase'&&d<240){if(d*0.05<bd){bd=d*0.05;best=m;}continue;}
+    if(m.t.boss||soloAvoid(m.t)||m.lv>player.lv+4)continue;if(Math.hypot(m.x-A.x,m.y-A.y)>520)continue;if(d<bd){bd=d;best=m;}}return best;}
 function autoPick(pref){let best=null,bd=Infinity;
   for(const m of mobs){if(m.dead||m.state==='return')continue;
     let d=dist(m,player);
@@ -351,6 +355,9 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
       if(needsTarget(s)&&d<=s.range){castSkill(i);break;}
       if(s.kind==='buff'&&d<200&&!player.buffs.some(b=>b.id===s.buff.id)){castSkill(i);break;}}
     return;}
+  if(player.autoMode==='here'){let A=player.autoAnchor;if(!A||A.map!==curMapId){A=player.autoAnchor={map:curMapId,x:player.x,y:player.y};}
+    const m=autoPickNear(A);if(m){player.target=m;player.repath=0;return;}
+    if(!player.path.length&&Math.hypot(player.x-A.x,player.y-A.y)>60){moveTo(A.x,A.y);if(player.flyUnlocked&&Math.hypot(player.x-A.x,player.y-A.y)>360)setFly(true);}return;}
   const o=questObjective();
   if(o&&o.map!==curMapId){
     const p=routeNext(curMapId,o.map);
