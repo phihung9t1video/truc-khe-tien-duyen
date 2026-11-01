@@ -1,6 +1,6 @@
 {
-  "version": "1.3.11",
-  "notes": "Tự động và Luyện tại chỗ chỉ đánh trong một bãi quái; GM giao dịch bình thường",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.11/www.zip",
-  "sha256": "a56a8d1f6ce5269d0c932640514f2b4d9dc8b2605a8689119eb663e3d6559738"
+  "version": "1.3.12",
+  "notes": "Quái dùng chung trên mỗi bản đồ: người khác hạ quái thì mọi người đều thấy quái chết, máu và vị trí quái giống nhau trên mọi máy",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.12/www.zip",
+  "sha256": "1630e39739ef8b819cc538da4e2df52e7677ec7eb91803458f13d7e427bd3f07"
 }

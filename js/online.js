@@ -33,6 +33,7 @@ function netConnect(){
     else if(ev==='chat'){netAddChat(p.name,String(p.text||'').slice(0,120),p.lv);}
     else if(ev[0]==='p')partyOnMsg(ev,p);
     else if(ev[0]==='d'&&typeof duelOnMsg==='function')duelOnMsg(ev,p);
+    else if((ev==='mpos'||ev==='mhit')&&typeof mobOnMsg==='function')mobOnMsg(ev,p);
     else if((ev==='wsp'||ev[0]==='f'||ev[0]==='t')&&typeof socialOnMsg==='function')socialOnMsg(ev,p);};}
 addEventListener('pagehide',()=>{try{if(NET.status==='on')netCast('tk_world','bye',{id:NET.id});}catch(e){}});
 function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId;if(NET.mapRoom===room)return;
@@ -59,7 +60,7 @@ function netTick(dt){
   for(const [k,o] of NET.others){if(nowT-o.seen>6){NET.others.delete(k);continue;}
     const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>400){o.x=o.tx;o.y=o.ty;}else{const s=Math.min(1,dt*8);o.x+=dx*s;o.y+=dy*s;}o.atk=o.at?(o.atk>0?o.atk-dt:0.25):0;}
   for(const [k,o] of NET.world)if(nowT-o.seen>25)NET.world.delete(k);
-  partyTick(dt);
+  partyTick(dt);if(typeof mobSyncTick==='function')mobSyncTick(dt);
   NET.cloudT-=dt;if(NET.cloudT<=0){NET.cloudT=60;cloudSave(true);}}
 function drawOthers(list){if(!NET.others.size)return;
   for(const o of NET.others.values()){if(!o.look)continue;list.push({y:o.y,f:()=>{

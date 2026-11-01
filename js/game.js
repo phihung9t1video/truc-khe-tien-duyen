@@ -140,7 +140,7 @@ function spawnMob(m){const t=m.t,z=CM.zones[m.type];const lv=rint(t.lv[0],t.lv[1
   const s=freeSpot(z.x,z.y,z.r);m.x=m.hx=s.x;m.y=m.hy=s.y;
   Object.assign(m,{dead:false,fade:0,state:'idle',path:[],atkCd:rnd(0,1),atkAnim:0,wanderT:rnd(1,4),repath:0,slamCd:5,slamT:0,fireCd:4,hitFlash:0,face:Math.random()<.5?1:-1,dir:'side',
     freezeT:0,stunT:0,markT:0,markAmt:0,slowT:0,slowAmt:0,burnT:0,burnTick:0,burnDmg:0,burnKind:'fire',enraged:false,summoned:false});}
-function initMobs(){mobs.length=0;for(const k in CM.zones)for(let i=0;i<CM.zones[k].n;i++){const m={type:k,t:MT[k]};spawnMob(m);mobs.push(m);}}
+function initMobs(){mobs.length=0;for(const k in CM.zones)for(let i=0;i<CM.zones[k].n;i++){const m={type:k,t:MT[k]};spawnMob(m);m.i=mobs.length;mobs.push(m);}}
 function initHerbs(){herbs.length=0;for(const z of CM.herbs.zones)for(let i=0;i<z.n;i++){const s=freeSpot(z.x,z.y,z.r);herbs.push({x:s.x+rnd(-8,8),y:s.y+rnd(-6,6),dead:false,respawn:0});}}
 function summonAdd(boss){const type=boss.t.add,m={type,t:MT[type]};const z=CM.zones[type];spawnMob(m);const a=rnd(0,7);m.x=boss.x+Math.cos(a)*60;m.y=boss.y+Math.sin(a)*40;
   if(!canStand(m.x,m.y)){m.x=boss.x;m.y=boss.y;}m.hx=boss.hx;m.hy=boss.hy;m.lv=boss.lv-2;m.maxhp=m.hp=Math.round(m.t.hp*1.2);m.atk=Math.round(m.t.atk*1.15);m.summoned=true;m.state='chase';mobs.push(m);
@@ -151,7 +151,7 @@ function nearestMob(r){let b=null,bd=r;for(const m of mobs){if(m.dead)continue;c
 function dmgCalc(atk,def,mult=1,crit=0.08){let v=atk*mult*rnd(0.9,1.1)-def*0.5;v=Math.max(1,v);const c=Math.random()<crit;if(c)v*=1.8;return{v:Math.round(v),crit:c};}
 function hurtMob(m,r){if(m.dead)return;const em=elMul(SECTS[player.sect].el,m.t.el);let v=Math.max(1,Math.round(r.v*em*(m.markT>0?1+m.markAmt:1)));
   if(m.isFoe){partyAPI('pvpSendHit',m,v,r.crit);return;}
-  m.hp-=v;m.hitFlash=0.12;player.combatT=5;
+  m.hp-=v;m.hitFlash=0.12;player.combatT=5;if(m.i!=null)partyAPI('mobHitQ',m.i,v);
   addText(m.x,m.y-m.t.hh-6,(r.crit?'Bạo kích ':'')+v+(em>1?' ▲':em<1?' ▼':''),r.crit?'#ffd23f':em>1?'#ffe9a0':'#ffffff',r.crit?19:14);
   sfx(r.crit?'crit':'hit');if(r.crit)shakeT=Math.max(shakeT,0.08);
   if(m.state!=='chase'&&!inSafe(player))m.state='chase';
@@ -428,7 +428,8 @@ function enemyShoot(m,kind,ang,mult){const a=ang!=null?ang:Math.atan2(player.y-1
   eshots.push({kind,x:m.x,y:m.y-m.t.hh/2,vx:Math.cos(a),vy:Math.sin(a),spd:kind==='eice'?300:260,atk:m.atk*(mult||1),travel:0,el:m.t.el,m});}
 function updateMob(m,dt){
   if(m.isFoe){partyAPI('foeTick',m,dt);return;}
-  if(m.dead){if(m.fade>0)m.fade-=dt;if(m.summoned)return;m.respawn-=dt;if(m.respawn<=0)spawnMob(m);return;}
+  if(m.dead){if(m.fade>0)m.fade-=dt;if(m.summoned)return;m.respawn-=dt;if(m.respawn<=0&&!partyAPI('mobHostRemote'))spawnMob(m);return;}
+  if(m.i!=null&&partyAPI('mobNetMove',m,dt))return;
   m.atkCd-=dt;m.atkAnim-=dt;m.hitFlash-=dt;m.repath-=dt;
   if(m.burnT>0){m.burnT-=dt;m.burnTick-=dt;if(m.burnTick<=0){m.burnTick=0.5;hurtMob(m,{v:m.burnDmg,crit:false});if(m.dead)return;}const pz=m.burnKind==='poison';if(Math.random()<0.4)fx.push({k:'p',x:m.x+rnd(-8,8),y:m.y-rnd(4,20),vx:0,vy:-40,col:pz?(Math.random()<.5?'#9fff6a':'#4ac03a'):(Math.random()<.5?'#ffb040':'#ff5a1a'),t:0,life:0.5,sz:2});}
   if(m.markT>0)m.markT-=dt;
