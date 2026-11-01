@@ -487,7 +487,7 @@ function update(dt){nowT+=dt;
 let SKEY='trukhe_tienduyen_v2'; // đổi theo tài khoản khi đăng nhập (accounts.js)
 function save(){if(!player.sect)return;try{localStorage.setItem(SKEY,JSON.stringify({v:3,name:player.name,gender:player.gender,sect:player.sect,lv:player.lv,exp:player.exp,gold:player.gold,
   hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,exp2T:player.exp2T,exp3T:player.exp3T,luck:player.luck,reviveC:player.reviveC,ddT:player.ddT,ap:player.ap,tp:player.tp,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,
-  map:curMapId,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx}));}catch(e){}}
+  map:curMapId,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx,ts:Date.now()}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SKEY));return s&&(s.v===2||s.v===3)&&SECTS[s.sect]?s:null;}catch(e){return null;}}
 function applySave(s){
   Object.assign(player,{name:s.name,gender:s.gender,sect:s.sect,lv:s.lv,exp:s.exp,gold:s.gold,hpPot:s.hpPot,mpPot:s.mpPot,inv:s.inv||[],
