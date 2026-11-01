@@ -74,7 +74,7 @@ function tradeSendOffer(){TRD.myLock=false;TRD.theirLock=false;TRD.myOk=false;TR
   netCast(tradeRoom(),'toff',{id:NET.id,to:TRD.id,items,gold:TRD.myGold});renderTrade();}
 function tradeCancel(silent){if(TRD.state&&TRD.id)netCast(tradeRoom(),'tcan',{id:NET.id,to:TRD.id});if(!silent)log('Đã hủy giao dịch','#ccc');tradeReset();}
 // món nhận được: dựng lại từ dữ liệu, giới hạn chỉ số trong mức tối đa có thể có của bậc/độ hiếm đó
-function cleanItem(x){if(!x||typeof x!=='object'||!SLOT_STATS[x.slot])return null;const tier=clamp(x.tier|0,0,MAXTIER),rar=clamp(x.rar|0,0,3);
+function cleanItem(x){if(!x||typeof x!=='object'||!SLOT_STATS[x.slot])return null;const tier=clamp(x.tier|0,0,MAXTIER),rar=clamp(x.rar|0,0,RARITY.length-1);
   const wt=x.slot==='weapon'?(WICON[x.wtype]?x.wtype:'sword'):null,it=makeItem(x.slot,tier,rar,wt);
   const base=SLOT_STATS[x.slot](tier),m=RARITY[rar].m,b=RARITY[rar].b,maxAdd={crit:2+Math.ceil(tier/3),atk:Math.ceil((tier+1)*3*0.8),hp:(tier+1)*20,mp:(tier+1)*15,def:Math.ceil((tier+1)*2*0.8)};
   const st={};for(const k in (x.st||{})){if(!(k in maxAdd)&&!(k in base))continue;const cap=Math.max(1,Math.round((base[k]||0)*m))+b*(maxAdd[k]||0);const v=clamp(Math.round(+x.st[k]||0),0,cap);if(v)st[k]=v;}

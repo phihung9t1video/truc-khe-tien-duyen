@@ -159,7 +159,10 @@ button{font-family:inherit}
 .title{font-size:70px;font-weight:bold;background:linear-gradient(#fff8dc,#f0c860 55%,#a8742a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 8px rgba(0,0,0,.8));letter-spacing:3px}
 .subtitle{color:#f4e6c8;margin:-6px 0 22px;letter-spacing:8px;font-size:14px;text-shadow:0 1px 4px #000}
 #startMenu{width:400px;padding:18px}
-#create{width:840px;padding:16px 22px}
+#create{width:840px;padding:14px 22px;max-height:96vh;overflow-y:auto}
+#apBox{margin-top:8px;padding:6px 10px;border:1px solid #4a3e2a;border-radius:8px;background:rgba(0,0,0,.3);font-size:12.5px}.aph{color:#ffd77a;margin-bottom:3px}.aph button,#leRows button.x{margin-left:8px;font-size:11px;padding:2px 8px;background:#3e2e48;color:#ffe9b0;border:1px solid var(--gold2);border-radius:4px;cursor:pointer}
+.aprow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:3px 0}.aprow label{color:#ffe9b0;min-width:66px}.aprow select{background:#2a2232;color:#fff;border:1px solid var(--gold2);border-radius:4px;padding:2px 4px;margin-right:10px;font-family:inherit}
+.apsw{width:20px;height:20px;border-radius:50%;border:1.5px solid #5a4a30;cursor:pointer;background:#333;color:#aaa;font-size:10px;padding:0;line-height:16px}.apsw.sel{border-color:#ffd23f;box-shadow:0 0 0 2px #ffd23f88}
 #create h3{margin:0 0 8px;color:#ffd77a;font-size:22px}
 .crow{display:flex;align-items:center;gap:10px;margin:8px 0}
 .crow label{width:84px;color:#ffe9b0}
@@ -329,6 +332,7 @@ button{font-family:inherit}
 
 <script src="js/version.js"></script>
 <script src="js/data.js"></script>
+<script src="js/data2.js"></script>
 <script src="js/core.js"></script>
 <script src="js/art.js"></script>
 <script src="js/audio.js"></script>
@@ -341,6 +345,7 @@ button{font-family:inherit}
 <script src="js/social.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/pets.js"></script>
+<script src="js/appearance.js"></script>
 <script src="js/accounts.js"></script>
 </body>
 </html>

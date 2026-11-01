@@ -26,7 +26,7 @@ function netConnect(){
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}
     if(m.event!=='broadcast'||!m.payload)return;const ev=m.payload.event,p=m.payload.payload;if(!p||p.id===NET.id)return;
     if(ev==='pos'){const o=NET.others.get(p.id);if(o){Object.assign(o,p,{tx:p.x,ty:p.y,seen:nowT});}else NET.others.set(p.id,Object.assign({},p,{tx:p.x,ty:p.y,seen:nowT,look:null}));
-      const oo=NET.others.get(p.id);oo.look=buildLook(p.sect,p.gender,{armor:{rar:p.ar||0}});oo.wv=weaponVis({rar:p.wr||0,tier:p.wt||0},SECTS[p.sect].wtype,p.rf||0);}
+      const oo=NET.others.get(p.id);oo.look=buildLook(p.sect,p.gender,{armor:{rar:p.ar||0}},Array.isArray(p.ap)?{h:p.ap[0],hc:p.ap[1],sk:p.ap[2],ey:p.ap[3],acc:p.ap[4],cl:p.ap[5],bd:p.ap[6]}:null);oo.wv=weaponVis({rar:p.wr||0,tier:p.wt||0},SECTS[p.sect].wtype,p.rf||0);}
     else if(ev==='bye')NET.others.delete(p.id);
     else if(ev==='hello'){NET.world.set(p.id,{name:p.name,lv:p.lv,map:p.map,seen:nowT});}
     else if(ev==='chat'){netAddChat(p.name,String(p.text||'').slice(0,120),p.lv);}
@@ -51,7 +51,7 @@ function netTick(dt){
   NET.helloT-=dt;if(NET.helloT<=0){NET.helloT=10;netHello();}
   NET.sendT-=dt;if(NET.sendT<=0){NET.sendT=0.35;const w=player.eq.weapon,a=player.eq.armor;
     netCast(NET.mapRoom,'pos',{id:NET.id,name:player.name,sect:player.sect,gender:player.gender,lv:player.lv,x:Math.round(player.x),y:Math.round(player.y),dir:player.dir,face:player.face,
-      mv:player.moving?1:0,fl:player.flying?1:0,at:player.atkAnim>0?1:0,dead:player.dead?1:0,wr:w?w.rar:0,wt:w?w.tier:0,rf:wRef(),ar:a?a.rar:0,cs:player.combo||0,hf:Math.round(player.hp/stats().maxhp*100)/100,mh:stats().maxhp,df:stats().def,st:player.stunT>0?1:0,mt:player.riding?player.mount:0,pt:player.petOn&&player.pet?player.pet:0,gm:typeof isGM==='function'&&isGM()?1:0});}
+      mv:player.moving?1:0,fl:player.flying?1:0,at:player.atkAnim>0?1:0,dead:player.dead?1:0,wr:w?w.rar:0,wt:w?w.tier:0,rf:wRef(),ar:a?a.rar:0,cs:player.combo||0,hf:Math.round(player.hp/stats().maxhp*100)/100,mh:stats().maxhp,df:stats().def,st:player.stunT>0?1:0,mt:player.riding?player.mount:0,pt:player.petOn&&player.pet?player.pet:0,ap:player.ap?[player.ap.h|0,player.ap.hc|0,player.ap.sk|0,player.ap.ey|0,player.ap.acc|0,player.ap.cl|0,player.ap.bd|0]:0,gm:typeof isGM==='function'&&isGM()?1:0});}
   for(const [k,o] of NET.others){if(nowT-o.seen>6){NET.others.delete(k);continue;}
     const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>400){o.x=o.tx;o.y=o.ty;}else{const s=Math.min(1,dt*8);o.x+=dx*s;o.y+=dy*s;}o.atk=o.at?(o.atk>0?o.atk-dt:0.25):0;}
   for(const [k,o] of NET.world)if(nowT-o.seen>25)NET.world.delete(k);

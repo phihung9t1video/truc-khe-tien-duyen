@@ -47,18 +47,19 @@ function buildLook(sect,gender,eq){
   if(gender==='f'){L.female=true;L.blush=true;L.longHair=true;L.sideBuns=true;L.flower=S.look.sash;L.crown=null;L.hair='#241a26';}
   else{L.male=true;L.pony=true;}
   const a=eq&&eq.armor;
-  if(a&&a.rar>=3){L.trim='#e8b84a';L.sash='#ffe7a0';L.sashGlow='#ffd060';}
+  if(a&&a.rar>=4){L.trim='#ff5a8a';L.sash='#ffb0d0';L.sashGlow='#ff70a8';}
+  else if(a&&a.rar>=3){L.trim='#e8b84a';L.sash='#ffe7a0';L.sashGlow='#ffd060';}
   else if(a&&a.rar>=2){L.sashGlow=S.look.sash;}
   return L;
 }
 function weaponVis(it,wtype,refine){
   const r=it?it.rar:0,glow=r>=2?RARITY[r].c:(refine>=5?'#9fd3ff':null);
-  if(wtype==='fan')return{type:'fan',col:['#e8c0a0','#9fe09f','#8fc8ff','#ffb060'][r],glow};
-  if(wtype==='flute')return{type:'flute',len:20,col:['#7fbf9f','#6fe08f','#6fb8ff','#ffc860'][r],glow};
-  if(wtype==='staff')return{type:'staff',len:30+(it?it.tier:0)*0.8,col:['#8a6a3a','#7a8a3a','#5a7a9a','#a8802a'][r],orb:['#9fff8a','#b8ff9a','#9fe0ff','#ffe080'][r],glow:glow||'#9fff8a'};
-  if(wtype==='hammer')return{type:'hammer',big:true,len:21+(it?it.tier:0)*0.6,col:['#a89a88','#a8c0a0','#9ab8d8','#ffd27a'][r],glow};
-  if(wtype==='dagger')return{type:'dagger',len:14+(it?it.tier:0)*0.5,col:['#c8c0d8','#d0f0d0','#c8b0ff','#ffd8a0'][r],glow:glow||(refine>=3?'#b48cff':null)};
-  return{type:'sword',len:22+(it?it.tier:0)*1.2,col:['#cfd8e6','#d8f2d8','#bfe0ff','#ffe08a'][r],glow};
+  if(wtype==='fan')return{type:'fan',col:['#e8c0a0','#9fe09f','#8fc8ff','#ffb060','#ff7aa8'][r],glow};
+  if(wtype==='flute')return{type:'flute',len:20,col:['#7fbf9f','#6fe08f','#6fb8ff','#ffc860','#ff7aa8'][r],glow};
+  if(wtype==='staff')return{type:'staff',len:30+(it?it.tier:0)*0.8,col:['#8a6a3a','#7a8a3a','#5a7a9a','#a8802a','#a83a5a'][r],orb:['#9fff8a','#b8ff9a','#9fe0ff','#ffe080','#ff8ab8'][r],glow:glow||'#9fff8a'};
+  if(wtype==='hammer')return{type:'hammer',big:true,len:21+(it?it.tier:0)*0.6,col:['#a89a88','#a8c0a0','#9ab8d8','#ffd27a','#ff8ab0'][r],glow};
+  if(wtype==='dagger')return{type:'dagger',len:14+(it?it.tier:0)*0.5,col:['#c8c0d8','#d0f0d0','#c8b0ff','#ffd8a0','#ff9ac0'][r],glow:glow||(refine>=3?'#b48cff':null)};
+  return{type:'sword',len:22+(it?it.tier:0)*1.2,col:['#cfd8e6','#d8f2d8','#bfe0ff','#ffe08a','#ffb0cc'][r],glow};
 }
 
 // ===================== VŨ KHÍ =====================
@@ -385,7 +386,7 @@ function drawHerb(h){if(h.dead)return;const x=h.x,y=h.y,p=0.6+0.4*Math.sin(nowT*
   const gc={lotus:'255,170,220',snowlotus:'170,230,255',desertflower:'255,160,90',ghostflower:'190,140,255',jadeflower:'255,240,170'}[k]||'140,255,200';
   const g=ctx.createRadialGradient(x,y-10,1,x,y-10,22);g.addColorStop(0,`rgba(${gc},${0.4*p})`);g.addColorStop(1,`rgba(${gc},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y-10,22,0,Math.PI*2);ctx.fill();
   ctx.lineCap='round';
-  if(k==='desertflower'||k==='ghostflower'||k==='jadeflower'){const P2={desertflower:['#5a8a3a','#ff6a3a','#ffd060'],ghostflower:['#3a5a4a','#b080ff','#e0c8ff'],jadeflower:['#6aa880','#fff0a0','#ffffff']}[k];
+  if(k==='desertflower'||k==='ghostflower'||k==='jadeflower'||k==='firelotus'||k==='coral'||k==='starflower'){const P2={desertflower:['#5a8a3a','#ff6a3a','#ffd060'],ghostflower:['#3a5a4a','#b080ff','#e0c8ff'],jadeflower:['#6aa880','#fff0a0','#ffffff'],firelotus:['#4a3020','#ff5a1a','#ffe060'],coral:['#c84a6a','#ff8ab0','#fff0f6'],starflower:['#3a3a8a','#a8a0ff','#ffffff']}[k];
     ctx.strokeStyle=P2[0];ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-10);ctx.stroke();if(k==='desertflower'){ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y-3);ctx.lineTo(x-5,y-6);ctx.lineTo(x-5,y-10);ctx.moveTo(x,y-4);ctx.lineTo(x+5,y-7);ctx.lineTo(x+5,y-11);ctx.stroke();}
     for(let i=0;i<6;i++){const a=i/6*Math.PI*2+nowT*0.3;ctx.fillStyle=P2[1];ctx.beginPath();ctx.ellipse(x+Math.cos(a)*3.6,y-13+Math.sin(a)*2.2,2.2,4,a+Math.PI/2,0,Math.PI*2);ctx.fill();}
     ctx.fillStyle=P2[2];ctx.shadowColor=P2[1];ctx.shadowBlur=12;ctx.beginPath();ctx.arc(x,y-13,2.4+p*0.7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
@@ -451,6 +452,27 @@ function makeTrees(theme){const out=[],W=70,H=84,AX=35,AY=72;seed=4242;
     add(3,c=>{trunk(c,8,'#8a7a6a');for(let k=0;k<3;k++){const w=16-k*3.8,y0=-6-k*10;c.beginPath();c.moveTo(-w,y0);c.quadraticCurveTo(0,y0+4,w,y0);c.quadraticCurveTo(w*0.3,y0-9,1,y0-18);c.quadraticCurveTo(-w*0.3,y0-9,-w,y0);c.closePath();
       const g=c.createLinearGradient(-w,0,w,0);g.addColorStop(0,'#8ad8b0');g.addColorStop(1,'#3a8a6a');c.fillStyle=g;c.strokeStyle='rgba(30,80,60,.35)';c.lineWidth=1;c.fill();c.stroke();}});
     add(2,c=>{c.save();c.shadowColor='#bfe8ff';c.shadowBlur=10;for(const [cx,h2,w] of [[0,40,7],[-8,26,5],[8,30,5]]){const g=c.createLinearGradient(cx-w,0,cx+w,0);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#9fd8ff');c.fillStyle=g;c.strokeStyle='rgba(80,140,200,.5)';c.beginPath();c.moveTo(cx-w,0);c.lineTo(cx-w*0.6,-h2*0.8);c.lineTo(cx,-h2);c.lineTo(cx+w*0.6,-h2*0.8);c.lineTo(cx+w,0);c.closePath();c.fill();c.stroke();}c.restore();});
+  }else if(theme==='volcano'){
+    add(4,c=>{trunk(c,20,'#2a1e1a');c.strokeStyle='#2a1e1a';c.lineWidth=2.4;const br=[[0,-18,-13,-32],[0,-15,12,-30],[-5,-26,-15,-40],[4,-24,14,-42]];for(const [a,b2,cx,cy] of br){c.beginPath();c.moveTo(a,b2);c.quadraticCurveTo((a+cx)/2+3,(b2+cy)/2,cx,cy);c.stroke();}
+      c.fillStyle='rgba(255,120,40,.85)';for(const [a,b2,cx,cy] of br){c.beginPath();c.arc(cx,cy,1.8,0,Math.PI*2);c.fill();}});
+    add(3,c=>{for(const [cx,h2,w,col] of [[0,34,7,'#2a2030'],[-9,22,5,'#3a2a3a'],[9,26,5,'#2a2030']]){c.beginPath();c.moveTo(cx-w,0);c.lineTo(cx-w*0.4,-h2);c.lineTo(cx+w*0.5,-h2*0.85);c.lineTo(cx+w,0);c.closePath();c.fillStyle=col;c.strokeStyle='rgba(255,120,60,.6)';c.lineWidth=1;c.fill();c.stroke();
+      c.strokeStyle='rgba(255,140,60,.8)';c.beginPath();c.moveTo(cx-w*0.2,-h2*0.2);c.lineTo(cx,-h2*0.6);c.stroke();}});
+    add(2,c=>{trunk(c,10,'#4a3428');canopy(c,[[0,-24,11],[-8,-18,8],[8,-18,8],[0,-32,7]],['#ffd080','#ff7a2a','#a8301a'],'rgba(90,20,10,.4)');});
+  }else if(theme==='sea'){
+    add(4,c=>{const cols=['#ff7aa0','#ff9a6a','#c87aff','#ff6a8a'];const col=cols[(srand()*cols.length)|0];c.strokeStyle=col;c.lineCap='round';
+      const br=(x,y,a,l,w)=>{if(l<5)return;const x2=x+Math.cos(a)*l,y2=y+Math.sin(a)*l;c.lineWidth=w;c.beginPath();c.moveTo(x,y);c.lineTo(x2,y2);c.stroke();br(x2,y2,a-0.45,l*0.7,w*0.72);br(x2,y2,a+0.5,l*0.68,w*0.72);};
+      br(0,0,-Math.PI/2,15,4.6);c.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<5;i++){c.beginPath();c.arc(-12+srand()*24,-40+srand()*22,1.2,0,Math.PI*2);c.fill();}});
+    add(3,c=>{for(let i=0;i<7;i++){const sx=-9+i*3,h=24+srand()*20,wv=srand()*8-4;c.strokeStyle=srand()<.5?'#2a9a6a':'#4ac08a';c.lineWidth=2.6;c.beginPath();c.moveTo(sx,0);c.bezierCurveTo(sx+wv,-h*0.3,sx-wv,-h*0.65,sx+wv*0.6,-h);c.stroke();}});
+    add(2,c=>{c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.ellipse(0,-2,13,4,0,0,Math.PI*2);c.fill();c.beginPath();c.moveTo(-13,-2);c.quadraticCurveTo(0,-26,13,-2);c.closePath();
+      const g=c.createLinearGradient(0,-24,0,0);g.addColorStop(0,'#fff0f6');g.addColorStop(1,'#d8a8c0');c.fillStyle=g;c.strokeStyle='rgba(120,60,90,.4)';c.lineWidth=1;c.fill();c.stroke();
+      c.strokeStyle='rgba(150,80,110,.35)';for(let k=-2;k<=2;k++){c.beginPath();c.moveTo(0,-20);c.lineTo(k*5,-2);c.stroke();}c.fillStyle='#ffffff';c.beginPath();c.arc(0,-7,3,0,Math.PI*2);c.fill();});
+  }else if(theme==='star'){
+    add(4,c=>{c.save();c.shadowColor='#b8a0ff';c.shadowBlur=12;for(const [cx,h2,w] of [[0,42,6],[-8,28,4.5],[8,32,4.5],[-3,20,3.5]]){const g=c.createLinearGradient(cx-w,0,cx+w,0);g.addColorStop(0,'#f0e8ff');g.addColorStop(1,'#8a6ae0');c.fillStyle=g;c.strokeStyle='rgba(80,60,160,.5)';c.lineWidth=1;
+      c.beginPath();c.moveTo(cx-w,0);c.lineTo(cx,-h2);c.lineTo(cx+w,0);c.closePath();c.fill();c.stroke();}c.restore();});
+    add(3,c=>{trunk(c,16,'#3a3060');canopy(c,[[0,-30,13],[-10,-22,9.5],[10,-22,9.5],[-5,-39,8.5],[6,-38,8.5]],['#c8e8ff','#6a8ae0','#2a3a8a'],'rgba(20,20,70,.4)');
+      for(let i=0;i<9;i++){c.fillStyle=srand()<.5?'#ffffff':'#ffe8a0';c.beginPath();c.arc(-12+srand()*24,-44+srand()*26,1.1,0,Math.PI*2);c.fill();}});
+    add(2,c=>{trunk(c,22,'#2a2848');c.strokeStyle='#2a2848';c.lineWidth=2;for(const [a,b2,cx,cy] of [[0,-20,-12,-36],[0,-17,12,-34],[0,-22,0,-46]]){c.beginPath();c.moveTo(a,b2);c.lineTo(cx,cy);c.stroke();}
+      c.save();c.shadowColor='#fff4a0';c.shadowBlur=10;c.fillStyle='#fff8d0';for(const [x,y] of [[-12,-37],[12,-35],[0,-47]]){c.beginPath();c.arc(x,y,2.6,0,Math.PI*2);c.fill();}c.restore();});
   }else{
     add(5,c=>{trunk(c,8,'#5a4434');for(let k=0;k<3;k++){const w=16-k*3.8,y0=-6-k*10;c.beginPath();c.moveTo(-w,y0);c.quadraticCurveTo(0,y0+4,w,y0);c.quadraticCurveTo(w*0.3,y0-9,1,y0-18);c.quadraticCurveTo(-w*0.3,y0-9,-w,y0);c.closePath();
       const g=c.createLinearGradient(-w,0,w,0);g.addColorStop(0,'#3e7a68');g.addColorStop(1,'#1a4038');c.fillStyle=g;c.strokeStyle='rgba(20,40,40,.4)';c.lineWidth=1;c.fill();c.stroke();
@@ -462,7 +484,7 @@ function makeTrees(theme){const out=[],W=70,H=84,AX=35,AY=72;seed=4242;
   return out;}
 
 // ===================== NHÀ (sprite) =====================
-function makeHouse(theme){return mkSprite(150,140,26,34,c=>{
+function makeHouse(theme){theme={volcano:'dark',sea:'marsh',star:'heaven'}[theme]||theme;return mkSprite(150,140,26,34,c=>{
   const sh=c.createRadialGradient(48,96,4,48,96,62);sh.addColorStop(0,'rgba(0,0,0,.3)');sh.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=sh;c.beginPath();c.ellipse(48,96,62,12,0,0,Math.PI*2);c.fill();
   c.strokeStyle='rgba(40,20,10,.45)';c.lineWidth=1;
   const rr=(x,y,w,h,col,r=1.5)=>{c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=col;c.fill();c.stroke();};
@@ -529,7 +551,7 @@ function makeHouse(theme){return mkSprite(150,140,26,34,c=>{
 // ===================== ĐỊA HÌNH (vẽ mềm) =====================
 function smoothBlob(c,pts){const n=pts.length,mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];c.beginPath();let m=mid(pts[0],pts[1]);c.moveTo(m[0],m[1]);
   for(let i=1;i<=n;i++){const p=pts[i%n],q=pts[(i+1)%n];m=mid(p,q);c.quadraticCurveTo(p[0],p[1],m[0],m[1]);}c.closePath();}
-function vRock(c,cx,cy,theme){const g0=c.createRadialGradient(cx,cy+9,1,cx,cy+9,15);g0.addColorStop(0,'rgba(0,0,0,.25)');g0.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g0;c.beginPath();c.ellipse(cx,cy+9,15,5,0,0,Math.PI*2);c.fill();
+function vRock(c,cx,cy,theme){theme={volcano:'dark',sea:'marsh',star:'snow'}[theme]||theme;const g0=c.createRadialGradient(cx,cy+9,1,cx,cy+9,15);g0.addColorStop(0,'rgba(0,0,0,.25)');g0.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g0;c.beginPath();c.ellipse(cx,cy+9,15,5,0,0,Math.PI*2);c.fill();
   const pts=[];for(let i=0;i<7;i++){const a=i/7*Math.PI*2,r=10+srand()*3.5;pts.push([cx+Math.cos(a)*r*1.15,cy+1+Math.sin(a)*r*(Math.sin(a)<0?0.95:0.7)]);}
   smoothBlob(c,pts);const g=c.createLinearGradient(cx,cy-12,cx,cy+10);
   if(theme==='snow'){g.addColorStop(0,'#c8d2de');g.addColorStop(1,'#7a8698');}else if(theme==='desert'){g.addColorStop(0,'#e0a870');g.addColorStop(1,'#9a5a32');}else if(theme==='dark'){g.addColorStop(0,'#6a6a74');g.addColorStop(1,'#2e2e36');}else if(theme==='heaven'){g.addColorStop(0,'#ffffff');g.addColorStop(1,'#a8d0c0');}else if(theme==='marsh'){g.addColorStop(0,'#9aa290');g.addColorStop(1,'#56604e');}else{g.addColorStop(0,'#b4b4ac');g.addColorStop(1,'#66665f');}
@@ -664,3 +686,12 @@ function drawPortrait(cnv,L,W){const c=cnv.getContext('2d'),old=ctx;ctx=c;c.setT
   c.save();c.beginPath();c.arc(cnv.width/2,cnv.height/2,cnv.width/2,0,Math.PI*2);c.clip();
   const g=c.createRadialGradient(cnv.width/2,cnv.height/2,4,cnv.width/2,cnv.height/2,cnv.width/2);g.addColorStop(0,'#4a6a8a');g.addColorStop(1,'#152030');c.fillStyle=g;c.fillRect(0,0,cnv.width,cnv.height);
   const s=cnv.width/25;drawChibi(L,cnv.width/2,cnv.height*0.55+40*s,s,'down',1,false,0,false,W,0.3);c.restore();ctx=old;}
+
+// ngoại hình quái cấp 60–90
+Object.assign(NPC_LOOK,{
+  firedemon:{robe:'#5a2018',trim:'#ff7a2a',belt:'#2a0a08',boot:'#1a0a08',skin:'#d8a088',hair:'#ff5a1a',messy:true,glowEye:'#ffb040',armor:'#8a3a20',brow:true,male:true,inner:'#7a2a18',weapon:{type:'saber',len:24,col:'#ffb070',glow:'#ff6a2a'}},
+  flamelord:{robe:'#3a1010',trim:'#ffb040',belt:'#ffb040',boot:'#1a0808',skin:'#e0b090',hair:'#ff7a2a',longHair:true,crown:'#ff8a2a',iceCrown:true,glowEye:'#ff4020',brow:true,armor:'#a83a18',male:true,sash:'#ff9a40',sashGlow:'#ff5a1a',inner:'#5a1a10',weapon:{type:'saber',len:34,col:'#ffd080',glow:'#ff5a1a'}},
+  seaguard:{robe:'#2a5a7a',trim:'#7fe8d8',belt:'#1a3a5a',boot:'#1a2a3a',skin:'#c8e0e0',hair:'#1a4a5a',armor:'#5aa8b8',brow:true,male:true,inner:'#3a7a9a',weapon:{type:'staff',len:30,col:'#bff0ff'}},
+  demongeneral:{robe:'#1a1428',trim:'#c890ff',belt:'#3a2a5a',boot:'#0a0812',skin:'#c8b8d8',hair:'#e8e0ff',longHair:true,glowEye:'#c890ff',brow:true,armor:'#4a3a6a',male:true,inner:'#2a2040',weapon:{type:'saber',len:28,col:'#e8d8ff',glow:'#a070ff'}},
+  chaosgod:{robe:'#0a0a14',trim:'#ffd040',belt:'#ffd040',boot:'#050508',skin:'#d8c8e8',hair:'#ffffff',longHair:true,crown:'#c890ff',iceCrown:true,glowEye:'#ff40ff',brow:true,armor:'#2a1a40',male:true,sash:'#ff80ff',sashGlow:'#ff40ff',inner:'#1a1028',weapon:{type:'saber',len:36,col:'#ffffff',glow:'#ff60ff'}}
+});

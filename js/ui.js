@@ -238,7 +238,7 @@ function showStart(){const s=loadSave();
   info();
   $('sects').querySelectorAll('.sect').forEach(el=>el.onclick=()=>{cSect=el.dataset.k;sfx('click');$('sects').querySelectorAll('.sect').forEach(x=>x.classList.toggle('sel',x===el));info();});
   document.querySelectorAll('.tog').forEach(el=>{el.classList.toggle('sel',el.dataset.g===cGender);el.onclick=()=>{cGender=el.dataset.g;sfx('click');document.querySelectorAll('.tog').forEach(x=>x.classList.toggle('sel',x===el));};});
-  $('createBtn').onclick=()=>{const name=$('cName').value.trim()||'Vô Danh';newPlayer(name.slice(0,14),cGender,cSect);loadMap('trukhe');const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;enterGame(true);};
+  $('createBtn').onclick=()=>{const name=$('cName').value.trim()||'Vô Danh';newPlayer(name.slice(0,14),cGender,cSect);if(typeof cAp!=='undefined'){player.ap=Object.assign({},cAp);refreshLook();}loadMap('trukhe');const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;enterGame(true);};
   $('backBtn').onclick=()=>{$('create').hidden=true;$('startMenu').hidden=false;};
   $('restoreBtn').hidden=!netEnabled();
   $('restoreBtn').onclick=async()=>{const code=prompt?null:null;const box=$('restoreBox');box.hidden=!box.hidden;};
@@ -246,7 +246,7 @@ function showStart(){const s=loadSave();
     try{const s=await cloudLoad($('restoreIn').value);msg.textContent='Đã tải nhân vật '+s.name+' (cấp '+s.lv+')';auInit();applySave(loadSave());enterGame(false);}
     catch(e){msg.textContent=e.message==='ma'?'Mã không đúng định dạng (ví dụ ABCD2345-ABCDEFGH2345)':'Không tìm thấy nhân vật với mã này, hoặc chưa kết nối mạng.';}};}
 function drawCreatePreview(){const c=$('cPreview');if($('create').hidden)return;withCtx(c,()=>{
-  const L=buildLook(cSect,cGender,null),W=weaponVis(null,SECTS[cSect].wtype,0);const ph=nowT%6,dirs=['down','side','up','side'],di=Math.floor(nowT/1.5)%4;
+  const L=buildLook(cSect,cGender,null,typeof cAp!=='undefined'?cAp:null),W=weaponVis(null,SECTS[cSect].wtype,0);const ph=nowT%6,dirs=['down','side','up','side'],di=Math.floor(nowT/1.5)%4;
   ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(110,226,36,10,0,0,Math.PI*2);ctx.fill();
   drawChibi(L,110,224,2.8,dirs[di],di===3?-1:1,ph>3&&ph<5,(ph%1.5)<0.25&&ph<3?0.25-(ph%1.5):0,false,W,0.3);});}
 function enterGame(isNew){$('start').hidden=true;$('hud').hidden=false;buildHotbar();started=true;auSet('music',AU.music);auSet('sfx',AU.sfx);

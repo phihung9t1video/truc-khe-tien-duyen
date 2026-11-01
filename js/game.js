@@ -1,6 +1,6 @@
 'use strict';
 // ===================== TRẠNG THÁI =====================
-const MAXLV=70;
+const MAXLV=95;
 const expNeed=l=>Math.round(40*Math.pow(l,1.7)*(1+Math.pow(Math.max(0,l-12),1.8)/40));
 const emptyEq=()=>Object.fromEntries(EQ_KEYS.map(k=>[k,null]));
 let uidN=1;
@@ -15,13 +15,13 @@ const cam={x:0,y:0};
 let playerLook=null,playerW=null;
 const wRef=()=>player.eq&&player.eq.weapon?player.eq.weapon.ref||0:0;
 const hasBuff=id=>player.buffs.some(b=>b.id===id);
-function refreshLook(){playerLook=buildLook(player.sect,player.gender,player.eq);playerW=weaponVis(player.eq.weapon,SECTS[player.sect].wtype,wRef());}
+function refreshLook(){playerLook=buildLook(player.sect,player.gender,player.eq,player.ap);playerW=weaponVis(player.eq.weapon,SECTS[player.sect].wtype,wRef());}
 
 function resetRuntime(){Object.assign(player,{path:[],target:null,npc:null,pend:null,gather:null,channel:0,atkCd:0,atkAnim:0,repath:0,moving:false,dead:false,
   combatT:0,cds:[0,0,0,0],potCd:0,hitFlash:0,dir:'down',face:1,buffs:[],flying:false,navFly:false,slowT:0,stunT:0});}
 function newPlayer(name,gender,sect){
   Object.assign(player,{name,gender,sect,lv:1,exp:0,gold:30,hpPot:6,mpPot:6,inv:[],eq:emptyEq(),
-    flyUnlocked:false,qi:0,qc:0,qNote:-1,kills:0,pvp:{w:0,l:0,d:0},friends:[],mount:null,mounts:[],mountOn:true,exp2T:0,tp:0,pet:null,pets:[],petOn:true,petExp:{},map:'trukhe'});
+    flyUnlocked:false,qi:0,qc:0,qNote:-1,kills:0,pvp:{w:0,l:0,d:0},friends:[],mount:null,mounts:[],mountOn:true,exp2T:0,exp3T:0,luck:0,reviveC:0,ap:null,tp:0,pet:null,pets:[],petOn:true,petExp:{},map:'trukhe'});
   resetRuntime();
   player.eq.weapon=makeItem('weapon',0,0,SECTS[sect].wtype);
   player.eq.armor=makeItem('armor',0,0);
@@ -97,7 +97,8 @@ function equipItem(uid){const i=player.inv.findIndex(x=>x.uid===uid);if(i<0)retu
 function findItem(uid){for(const k of EQ_KEYS)if(player.eq[k]&&player.eq[k].uid===uid)return player.eq[k];return player.inv.find(x=>x.uid===uid)||null;}
 function refineItem(uid,silent){const it=findItem(uid);if(!it)return null;const r=it.ref||0;if(r>=REF_MAX)return null;const cost=refCost(it);
   if(player.gold<cost){if(!silent)log('Không đủ lượng để cường hóa','#ff9a8a');return null;}player.gold-=cost;
-  const ok=Math.random()*100<refRate(r);if(ok){it.ref=r+1;if(it.slot==='weapon')refreshLook();}
+  const luck=player.luck>0?20:0;if(luck){player.luck--;if(!silent)log('Dùng 1 May Mắn Phù: +20% tỉ lệ thành công','#9fffb0');}
+  const ok=Math.random()*100<refRate(r)+luck;if(ok){it.ref=r+1;if(it.slot==='weapon')refreshLook();}
   if(!silent){if(ok){addParts(player.x,player.y-20,'#ffb340',24,130);sfx('level');toast(`${it.name} cường hóa thành công +${it.ref}`,'#ffd23f');}else{sfx('hurt');log(`Cường hóa ${it.name} thất bại, chỉ mất ${cost.toLocaleString('vi-VN')} lượng`,'#ff9a8a');}save();}
   return ok;}
 function unequip(slot){const it=player.eq[slot];if(!it)return;if(player.inv.length>=BAG_MAX){log('Túi đồ đã đầy','#ff9a8a');return;}
@@ -107,9 +108,9 @@ function sellJunk(){let n=0,g=0;player.inv=player.inv.filter(it=>{if(it.rar<=1&&
   if(n){player.gold+=g;sfx('coin');log(`Đã bán ${n} món đồ, thu ${g} lượng`,'#ffd977');}else log('Không có đồ Thường/Tinh xảo nào để bán','#ccc');refreshPanels();}
 function autoEquip(){for(const it of [...player.inv])if(isUpgrade(it))equipItem(it.uid);}
 function rollLoot(m){const t=m.t,w=SECTS[player.sect].wtype;
-  if(t.boss){for(let k=0;k<2;k++)addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,Math.random()<0.4?3:2,w));return;}
+  if(t.boss){for(let k=0;k<2;k++)addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,t.tier>=10&&Math.random()<0.15?4:Math.random()<0.4?3:2,w));return;}
   if(Math.random()>t.loot)return;
-  const r=Math.random(),rar=r<0.02?3:r<0.12?2:r<0.4?1:0;
+  const r=Math.random(),rar=t.tier>=10&&r<0.002?4:r<0.02?3:r<0.12?2:r<0.4?1:0;
   addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,rar,w));}
 
 // ===================== CHỈ SỐ =====================
@@ -167,7 +168,7 @@ function killMob(m){m.dead=true;m.fade=0.6;m.respawn=m.t.boss?90:12;player.kills
   if(player.target===m){player.target=null;player.pend=null;}
   partyAPI('netPartyKill',e,m.x,m.y);partyAPI('petOnKill',m);
   gainExp(e);}
-function gainExp(e){if(player.lv>=MAXLV)return;if(player.exp2T>0)e*=2;player.exp+=e;
+function gainExp(e){if(player.lv>=MAXLV)return;e*=player.exp3T>0?3:player.exp2T>0?2:1;player.exp+=e;
   while(player.lv<MAXLV&&player.exp>=expNeed(player.lv)){player.exp-=expNeed(player.lv);player.lv++;const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;
     fx.push({k:'beam',x:player.x,y:player.y,t:0,life:1.2,col:'rgba(255,230,140,.9)'});addRing(player.x,player.y-20,80,'#ffe27a',0.9);addParts(player.x,player.y-20,'#ffe27a',30,150);
     addText(player.x,player.y-80,'ĐỘT PHÁ CẤP '+player.lv,'#ffe27a',22,true);toast(`Đột phá! Đạt cấp ${player.lv}`);sfx('level');
@@ -188,7 +189,9 @@ function hurtPlayer(r,src){if(player.dead)return;
   player.hp-=v;player.combatT=5;player.hitFlash=0.12;sfx('hurt');
   addText(player.x,player.y-58,'-'+v,r.crit?'#ff3b3b':'#ff8a7a',r.crit?18:14);
   if(player.hp<=0){player.hp=0;die();}}
-function die(){partyAPI('duelOnDeath');player.dead=true;player.path=[];player.target=null;player.npc=null;player.pend=null;player.gather=null;player.flying=false;auto=false;autoRest=false;navGoal=null;
+function die(){
+  if(player.reviveC>0&&!(typeof inDuel==='function'&&inDuel())){player.reviveC--;const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;addRing(player.x,player.y-20,80,'#ffe27a',0.9);fx.push({k:'beam',x:player.x,y:player.y,t:0,life:1.2,col:'rgba(255,230,140,.9)'});toast('Cửu Chuyển Hoàn Hồn Đan: sống lại tại chỗ','#ffe27a');log(`Dùng Hoàn Hồn Đan, sống lại không mất kinh nghiệm (còn ${player.reviveC})`,'#ffe27a');sfx('level');return;}
+  partyAPI('duelOnDeath');player.dead=true;player.path=[];player.target=null;player.npc=null;player.pend=null;player.gather=null;player.flying=false;auto=false;autoRest=false;navGoal=null;
   const loss=Math.floor(player.exp*0.1);player.exp-=loss;sfx('die');
   $('deadTxt').textContent=`Bị mất ${loss} kinh nghiệm. Hãy về ${CM.safeName} dưỡng thương rồi quay lại.`;$('dead').hidden=false;
   for(const m of mobs)if(m.state==='chase')m.state='return';}
@@ -370,7 +373,7 @@ function updatePlayer(dt){const st=stats();
   const inV=inSafe(player),hr=inV?0.12:(player.combatT<=0?0.03:0.004);
   player.hp=Math.min(st.maxhp,player.hp+st.maxhp*hr*dt);
   player.mp=Math.min(st.maxmp,player.mp+st.maxmp*(inV?0.12:0.02)*dt);
-  if(player.exp2T>0)player.exp2T-=dt;
+  if(player.exp2T>0)player.exp2T-=dt;if(player.exp3T>0)player.exp3T-=dt;
   if(typeof updateRiding==='function'){updateRiding();const M=mountObj();if(M&&M.spd>=0.7&&player.flying&&player.navFly)setFly(false);}
   if(player.stunT>0){player.stunT-=dt;player.path=[];player.moving=false;return;}
   if(mouse.down&&mouse.hold){mouse.holdT-=dt;if(mouse.holdT<=0){mouse.holdT=0.2;const w=toWorld(mouse.x,mouse.y);moveTo(w.x,w.y);}}
@@ -483,12 +486,12 @@ function update(dt){nowT+=dt;
 // ===================== LƯU / TẢI =====================
 let SKEY='trukhe_tienduyen_v2'; // đổi theo tài khoản khi đăng nhập (accounts.js)
 function save(){if(!player.sect)return;try{localStorage.setItem(SKEY,JSON.stringify({v:3,name:player.name,gender:player.gender,sect:player.sect,lv:player.lv,exp:player.exp,gold:player.gold,
-  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,exp2T:player.exp2T,tp:player.tp,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,
+  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,exp2T:player.exp2T,exp3T:player.exp3T,luck:player.luck,reviveC:player.reviveC,ddT:player.ddT,ap:player.ap,tp:player.tp,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,
   map:curMapId,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SKEY));return s&&(s.v===2||s.v===3)&&SECTS[s.sect]?s:null;}catch(e){return null;}}
 function applySave(s){
   Object.assign(player,{name:s.name,gender:s.gender,sect:s.sect,lv:s.lv,exp:s.exp,gold:s.gold,hpPot:s.hpPot,mpPot:s.mpPot,inv:s.inv||[],
-    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,exp2T:s.exp2T||0,tp:s.tp||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{}});
+    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,exp2T:s.exp2T||0,exp3T:s.exp3T||0,luck:s.luck||0,reviveC:s.reviveC||0,ddT:s.ddT||0,ap:s.ap||null,tp:s.tp||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{}});
   resetRuntime();
   delete player.eq.jade;delete player.refine;
   if(s.refine&&player.eq.weapon&&!player.eq.weapon.ref)player.eq.weapon.ref=s.refine; // bản cũ: cường hóa gắn với nhân vật -> chuyển vào vũ khí đang cầm
