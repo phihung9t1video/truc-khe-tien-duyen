@@ -1,6 +1,6 @@
 {
-  "version": "1.3.9",
-  "notes": "Theo đội: trên đường chạy tới đội trưởng không còn dừng lại đánh quái cắn",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.9/www.zip",
-  "sha256": "719140fa2c93a30385a883d236a9b0c511ed6cf1b911fcbf200dab5af7453b87"
+  "version": "1.3.10",
+  "notes": "Sửa lỗi trang web hỏi tải lại liên tục",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.10/www.zip",
+  "sha256": "00f806a5d7265f6819d057cb4b40b6720402d78793c5402a874a2196bd1a538e"
 }

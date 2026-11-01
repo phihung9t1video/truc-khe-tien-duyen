@@ -10,6 +10,8 @@ const REPO = 'phihung9t1video/truc-khe-tien-duyen';
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const version = process.env.APP_VERSION_NAME || pkg.version;
 const notes = (process.env.APP_NOTES || '').slice(0, 300);
+// gắn ?v=phiên bản vào mọi file script để trình duyệt không dùng lại file cũ trong bộ nhớ đệm
+fs.writeFileSync('index.html', fs.readFileSync('index.html','utf8').replace(/(<script src="js\/[a-z0-9_-]+\.js)(\?v=[^"]*)?"/gi, '$1?v=' + version + '"'));
 fs.writeFileSync('js/version.js', `window.APP_VERSION=${JSON.stringify(version)};\n`);
 const out = 'www';
 fs.rmSync(out, { recursive: true, force: true });

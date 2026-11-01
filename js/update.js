@@ -15,7 +15,10 @@ let updSkip='',updBusy=false;
 async function checkUpdate(){
   if(!window.APP_VERSION||location.protocol==='file:'||/^(localhost|127\.)/.test(location.hostname)&&!isApp())return;
   try{const r=await fetch(UPDATE_URL+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();
-    if(j&&verNum(j.version)>verNum(window.APP_VERSION)&&updSkip!==j.version)showUpdate(j);}catch(e){}}
+    if(!j||verNum(j.version)<=verNum(window.APP_VERSION)||updSkip===j.version)return;
+    // trang web: đã tải lại cho bản này rồi mà vẫn cũ (bộ nhớ đệm) thì không hỏi lại nữa
+    if(!isApp()&&sessionStorage.getItem('tk_upd_try')===j.version)return;
+    showUpdate(j);}catch(e){}}
 async function liveUpdate(j,setMsg){const U=updater();
   let lis=null;try{lis=await U.addListener('download',i=>{if(i&&i.percent!=null)setMsg(`Đang tải bản mới... ${Math.round(i.percent)}%`);});}catch(e){}
   setMsg('Đang tải bản mới...');
@@ -41,7 +44,7 @@ function showUpdate(j){if(document.getElementById('updBox'))return;const app=isA
     if(live){updBusy=true;document.getElementById('updGo').disabled=true;document.getElementById('updLater').disabled=true;
       try{await liveUpdate(j,msg);}catch(e){updBusy=false;document.getElementById('updGo').disabled=false;document.getElementById('updLater').disabled=false;
         msg('Cập nhật chưa được (mạng yếu hoặc gói lỗi). Bấm lại để thử, hoặc tải APK ở trang GitHub.');}}
-    else if(app)location.href=APK_URL;else location.reload();};
+    else if(app)location.href=APK_URL;else{sessionStorage.setItem('tk_upd_try',j.version);location.replace(location.pathname+'?v='+encodeURIComponent(j.version)+'&t='+Date.now());}};
   document.getElementById('updLater').onclick=()=>{if(updBusy)return;updSkip=j.version;d.remove();};}
 setTimeout(checkUpdate,4000);
 setInterval(checkUpdate,30*60*1000);
