@@ -17,6 +17,8 @@ if (-not $Notes) { $Notes = "$(Read-Host 'Ghi chu thay doi')".Trim() ; if (-not 
 
 Step "Build APK $Version"
 try { & "$PSScriptRoot\build-apk.ps1" -Version $Version } catch { Fail $_.Exception.Message }
+# Tu day chi goi git/gh va tu kiem tra ma loi; PowerShell 5.1 coi dong loi cua chuong trinh ngoai la loi dung han neu de 'Stop'
+$ErrorActionPreference = 'Continue'
 
 Step 'Luu phien ban vao Git'
 & node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version='$Version';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
