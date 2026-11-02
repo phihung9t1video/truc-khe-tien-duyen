@@ -1,6 +1,6 @@
 {
-  "version": "1.3.27",
-  "notes": "Goc nhin nghieng gia 3D: phia xa nho dan va co suong mo. Tat/bat trong Cai dat (Goc nhin 3D).",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.27/www.zip",
-  "sha256": "432fc97c97a939fff2cdc4beb6a536e550de7ab9cf3c1726421f4fee926cbc8e"
+  "version": "1.3.28",
+  "notes": "Dinh nui nho len va che dung truoc sau voi nhan vat; di ra sau nui thi nui mo di.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.28/www.zip",
+  "sha256": "abf7cfc129a43ed00dc93820e702f9dcf3013999cb0159b4d8a12a3f235bb7a2"
 }

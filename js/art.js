@@ -740,7 +740,7 @@ function drawChasms(c,band,S){const pal=terrPal(),isC=t=>t===CH;let any=false;fo
       if(srand()<0.4){c.strokeStyle='rgba(60,110,40,.7)';c.lineWidth=1.2;const px=ox+srand()*S;c.beginPath();c.moveTo(px,oy-1);c.quadraticCurveTo(px+3,oy+6,px-1,oy+12);c.stroke();}}
     if(srand()<0.3){c.fillStyle='rgba(255,255,255,.06)';c.beginPath();c.ellipse(ox+S/2,oy+S/2,S*.7,S*.25,0,0,6.29);c.fill();}}}
 function shade2(hex,p){return typeof shadeHex==='function'?shadeHex(hex,p):hex;}
-function drawMountains(c,S){const pal=terrPal(),L=[];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(getT(x,y)===MO)L.push([x,y]);if(!L.length)return;
+function drawMountains(c,S){const pal=terrPal(),L=[];MPEAKS=[];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(getT(x,y)===MO)L.push([x,y]);if(!L.length)return;
   const isM=(x,y)=>getT(x,y)===MO,cx=x=>x*S+S/2,cy=y=>y*S+S/2;
   // bóng đổ
   c.fillStyle='rgba(0,0,0,.25)';for(const [x,y] of L){c.beginPath();c.ellipse(cx(x)+6,cy(y)+10,S*.85,S*.6,0,0,6.29);c.fill();}
@@ -757,12 +757,16 @@ function drawMountains(c,S){const pal=terrPal(),L=[];for(let y=0;y<MH;y++)for(le
     c.fillStyle=pal.rock[2];c.beginPath();c.ellipse(bx+1,by+1.5,r,r*.75,0,0,6.29);c.fill();c.fillStyle=pal.rock[0];c.beginPath();c.ellipse(bx-.8,by-.8,r*.8,r*.6,0,0,6.29);c.fill();}
   // đỉnh núi: chỉ ở phần giữa khối, cong mềm, chiếu sáng từ trái
   const peaks=L.filter(([x,y])=>isM(x-1,y)&&isM(x+1,y)&&isM(x,y-1)&&srand()<.42).sort((a,b)=>a[1]-b[1]);
-  for(const [x,y] of peaks){const bx=cx(x)+(srand()-.5)*12,by=cy(y)+S*.55,w=S*(1+srand()*.7),h=S*(1.5+srand()*1.1),ax=bx+(srand()-.5)*w*.35,ay=by-h,mx=ax+w*.1;
+  for(const [x,y] of peaks){const bx=cx(x)+(srand()-.5)*12,by=cy(y)+S*.55,w=S*(1+srand()*.7),h=S*(1.5+srand()*1.1),ax=bx+(srand()-.5)*w*.35;MPEAKS.push({bx,by,w,h,ax,ay:by-h,mx:ax+w*.1,pal});}}
+let MPEAKS=[];
+// đỉnh núi vẽ theo thứ tự trước-sau cùng nhân vật; nhân vật đi ra sau thì đỉnh núi mờ đi
+function drawPeak(p,withEnt){const {bx,by,w,h,ax,ay,mx,pal}=p;const behind=withEnt&&player.y<by-4&&player.y>ay-10&&Math.abs(player.x-bx)<w;if(behind)ctx.globalAlpha=.5;ctx.lineJoin='round';
     const left=new Path2D();left.moveTo(bx-w,by);left.quadraticCurveTo(bx-w*.55,ay+h*.35,ax,ay);left.quadraticCurveTo(mx-w*.05,ay+h*.5,mx,by);left.closePath();
     const right=new Path2D();right.moveTo(ax,ay);right.quadraticCurveTo(bx+w*.55,ay+h*.35,bx+w,by);right.lineTo(mx,by);right.quadraticCurveTo(mx-w*.05,ay+h*.5,ax,ay);right.closePath();
-    let g=c.createLinearGradient(bx-w,ay,mx,by);g.addColorStop(0,pal.rock[0]);g.addColorStop(1,shade2(pal.rock[0],-.15));c.fillStyle=g;c.fill(left);
-    g=c.createLinearGradient(mx,ay,bx+w,by);g.addColorStop(0,pal.rock[1]);g.addColorStop(1,pal.rock[2]);c.fillStyle=g;c.fill(right);
-    c.strokeStyle='rgba(0,0,0,.22)';c.lineWidth=1;for(let k=0;k<3;k++){const t=.25+k*.22;c.beginPath();c.moveTo(ax+(bx+w-ax)*t*.6,ay+h*t);c.quadraticCurveTo(ax+(bx+w-ax)*t*.75,ay+h*(t+.15),ax+(bx+w-ax)*t*.55,ay+h*(t+.32));c.stroke();}
-    c.strokeStyle='rgba(255,255,255,.25)';c.beginPath();c.moveTo(ax-2,ay+h*.2);c.quadraticCurveTo(bx-w*.45,ay+h*.55,bx-w*.75,by-4);c.stroke();
-    c.fillStyle=pal.cap;c.beginPath();c.moveTo(ax,ay);c.quadraticCurveTo(ax-w*.2,ay+h*.18,ax-w*.3,ay+h*.3);c.lineTo(ax-w*.12,ay+h*.24);c.lineTo(ax+w*.02,ay+h*.36);c.lineTo(ax+w*.14,ay+h*.25);c.lineTo(ax+w*.3,ay+h*.3);c.quadraticCurveTo(ax+w*.18,ay+h*.15,ax,ay);c.fill();
-    c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=1.1;c.beginPath();c.moveTo(bx-w,by);c.quadraticCurveTo(bx-w*.55,ay+h*.35,ax,ay);c.quadraticCurveTo(bx+w*.55,ay+h*.35,bx+w,by);c.stroke();}}
+    let g=ctx.createLinearGradient(bx-w,ay,mx,by);g.addColorStop(0,pal.rock[0]);g.addColorStop(1,shade2(pal.rock[0],-.15));ctx.fillStyle=g;ctx.fill(left);
+    g=ctx.createLinearGradient(mx,ay,bx+w,by);g.addColorStop(0,pal.rock[1]);g.addColorStop(1,pal.rock[2]);ctx.fillStyle=g;ctx.fill(right);
+    ctx.strokeStyle='rgba(0,0,0,.22)';ctx.lineWidth=1;for(let k=0;k<3;k++){const t=.25+k*.22;ctx.beginPath();ctx.moveTo(ax+(bx+w-ax)*t*.6,ay+h*t);ctx.quadraticCurveTo(ax+(bx+w-ax)*t*.75,ay+h*(t+.15),ax+(bx+w-ax)*t*.55,ay+h*(t+.32));ctx.stroke();}
+    ctx.strokeStyle='rgba(255,255,255,.25)';ctx.beginPath();ctx.moveTo(ax-2,ay+h*.2);ctx.quadraticCurveTo(bx-w*.45,ay+h*.55,bx-w*.75,by-4);ctx.stroke();
+    ctx.fillStyle=pal.cap;ctx.beginPath();ctx.moveTo(ax,ay);ctx.quadraticCurveTo(ax-w*.2,ay+h*.18,ax-w*.3,ay+h*.3);ctx.lineTo(ax-w*.12,ay+h*.24);ctx.lineTo(ax+w*.02,ay+h*.36);ctx.lineTo(ax+w*.14,ay+h*.25);ctx.lineTo(ax+w*.3,ay+h*.3);ctx.quadraticCurveTo(ax+w*.18,ay+h*.15,ax,ay);ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(bx-w,by);ctx.quadraticCurveTo(bx-w*.55,ay+h*.35,ax,ay);ctx.quadraticCurveTo(bx+w*.55,ay+h*.35,bx+w,by);ctx.stroke();
+  ctx.globalAlpha=1;}

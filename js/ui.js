@@ -419,6 +419,7 @@ function drawWorld(dt,cx,cy,withEnt){
   if(withEnt){for(const f of fx)if(f.k==='fire'||f.k==='ice'||f.k==='r'&&f.w===2)drawFx(f);for(const h of herbs)drawHerb(h);}
   const list=[];
   for(const tr of TREES)if(tr.x>cx-40&&tr.x<cx+vw+40&&tr.y>cy-10&&tr.y<cy+vh+90)list.push({y:tr.y,f:()=>drawTree(tr,withEnt)});
+  if(typeof MPEAKS!=='undefined')for(const p of MPEAKS)if(p.bx>cx-80&&p.bx<cx+vw+80&&p.by>cy-10&&p.ay<cy+vh+10)list.push({y:p.by,f:()=>drawPeak(p,withEnt)});
   for(const h of HOUSES_D)list.push({y:h.base,f:()=>{const behind=withEnt&&player.x>h.x-6&&player.x<h.x+102&&player.y<h.base&&player.y>h.y-30;if(behind)ctx.globalAlpha=0.55;blit(HOUSE_SPR,h.x,h.y);ctx.globalAlpha=1;}});
   if(withEnt){for(const m of mobs)if(!m.dead||m.fade>0)list.push({y:m.y,f:()=>drawMob(m)});
     for(const n of npcs)list.push({y:n.y,f:()=>drawNpc(n)});list.push({y:player.y,f:drawPlayer});if(typeof drawOthers==='function')drawOthers(list);if(typeof drawPet==='function')drawPet(list);}
