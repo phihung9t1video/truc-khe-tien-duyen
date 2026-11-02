@@ -56,7 +56,10 @@ function updateUI(){if(!player.sect||!$('hpc'))return;const st=stats();
   else{const o=questObjective(),where=o&&o.map!==curMapId?`<br><span style="color:#ffb36b">Ở ${MAPS[o.map].name}</span>`:'';
     qh=`<b>${q.title}</b><br>${q.short}${q.type==='talk'?'':`: <b>${qProgress()}/${q.n}</b>`}`+(qDone()&&q.type!=='talk'?`<br><span style="color:#7dff9a">✔ Về gặp ${npcName(q.giver)} nhận thưởng</span>`:'')+where+`<br><span class="go">➤ Nhấp để tự tìm đường</span>`;}
   if(qh!==lastQ){($('questBody')||$('quest')).innerHTML=qh;lastQ=qh;}
-  const bh=player.buffs.map(b=>`<div class="buff" style="color:${b.col}" title="${b.name}">${b.icon}<span>${Math.ceil(b.t)}</span></div>`).join('')+(player.slowT>0?'<div class="buff" style="color:#9fe8ff" title="Bị làm chậm">❄</div>':'');
+  const mmss=s=>{s=Math.max(0,Math.ceil(s));return s>=3600?Math.floor(s/3600)+'g'+String(Math.floor(s%3600/60)).padStart(2,'0'):Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+  const sup=[];if(typeof expTime==='function'){if(expTime(2)>0)sup.push(['exp3','Tam bội ×3',mmss(expTime(2))]);if(expTime(1)>0)sup.push(['exp2','Song bội ×2',mmss(expTime(1))]);}
+  if(player.reviveC>0)sup.push(['revive','Hoàn Hồn','×'+player.reviveC]);if(player.luck>0)sup.push(['luck','May Mắn','×'+player.luck]);
+  const bh=sup.map(([id,n,v])=>`<div class="buff sup">${typeof consIcon==='function'?consIcon(id,'sm'):''}<em>${n}</em><span>${v}</span></div>`).join('')+player.buffs.map(b=>`<div class="buff" style="color:${b.col}"><i>${b.icon}</i><em>${b.name||''}</em><span>${mmss(b.t)}</span></div>`).join('')+(player.slowT>0?'<div class="buff" style="color:#9fe8ff"><i>❄</i><em>Bị chậm</em></div>':'');
   if(bh!==lastBuff){$('buffs').innerHTML=bh;lastBuff=bh;}
   const rg=regionName();if(rg!==lastReg){lastReg=rg;$('region').textContent=rg;$('region').style.opacity=1;regT=3;}
   regT-=0.1;if(regT<=0)$('region').style.opacity=0;
