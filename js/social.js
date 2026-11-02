@@ -19,6 +19,7 @@ function renderSelOther(){const o=selObj(),tf=$('tframe');if(!o){tf.dataset.othe
 function openPMenu(x,y){const o=selObj();if(!o)return;const m=$('pmenu');
   const items=[];
   if(!isMate(o.id))items.push(['👥 Mời tổ đội',()=>netInvite(o)]);
+  if(!inParty())items.push(['🙋 Xin vào đội',()=>netAskJoin(o)]);
   items.push(isFriend(o.id)?['💔 Xóa bạn bè',()=>friendRemove(o.id)]:['🤝 Kết bạn',()=>friendReq(o)]);
   items.push(['⇄ Giao dịch',()=>tradeReq(o)]);
   items.push(['⚔ Tuyên chiến (tỷ thí)',()=>duelInvite(o)]);
@@ -45,10 +46,13 @@ function onlineRows(){const rows=[...NET.world.values()].filter(o=>o.id!==NET.id
   if(NET.status!=='on')return'<div style="color:#ff9a8a">Chưa kết nối mạng.</div>';
   if(!rows.length)return'<div style="color:#999">Chưa có ai khác đang online. Người chơi ở mọi máy (web, điện thoại) cùng hiện ở đây khi vào game.</div>';
   return rows.map(o=>{const S=SECTS[o.sect],same=o.map===curMapId,M=MAPS[o.map];
-    return`<div class="frow"><span style="color:#7dff9a">●</span> <b style="color:${o.gm?'#ffd23f':S?S.color:'#fff'}">${o.gm?'[GM] ':''}${esc(o.name)}</b> <span style="color:#aaa">cấp ${o.lv} · ${S?S.name:''} · ${same?'<b style="color:#9fffb0">cùng vùng</b>':M?M.name:''}</span>${isFriend(o.id)?' <span style="color:#9fd3ff">(bạn bè)</span>':''}${isMate(o.id)?' <span style="color:#9fffb0">(đồng đội)</span>':''}
-      <div style="margin-top:3px"><button data-ow="${o.id}">Nhắn</button> ${isFriend(o.id)?'':`<button data-of="${o.id}">Kết bạn</button> `}${isMate(o.id)?'':`<button data-op="${o.id}">Mời tổ đội</button> `}<button data-ot="${o.id}">Giao dịch</button> ${same?`<button data-os="${o.id}">Chọn</button>`:M?`<button data-og="${o.id}">Đi tới</button>`:''}</div></div>`;}).join('');}
+    return`<div class="frow"><span style="color:#7dff9a">●</span> <b style="color:${o.gm?'#ffd23f':S?S.color:'#fff'}">${o.gm?'[GM] ':''}${esc(o.name)}</b> <span style="color:#aaa">cấp ${o.lv} · ${S?S.name:''} · ${same?'<b style="color:#9fffb0">cùng vùng</b>':M?M.name:''}</span>${isFriend(o.id)?' <span style="color:#9fd3ff">(bạn bè)</span>':''}${isMate(o.id)?' <span style="color:#9fffb0">(đồng đội)</span>':o.pa?' <span style="color:#ffd977">(tự nhận vào đội)</span>':o.pt?' <span style="color:#aaa">(có đội)</span>':''}
+      <div style="margin-top:3px"><button data-ow="${o.id}">Nhắn</button> ${isFriend(o.id)?'':`<button data-of="${o.id}">Kết bạn</button> `}${isMate(o.id)?'':`<button data-op="${o.id}">Mời tổ đội</button> `}${!inParty()&&!isMate(o.id)?`<button data-oj="${o.id}">Xin vào đội</button> `:''}<button data-ot="${o.id}">Giao dịch</button> ${same?`<button data-os="${o.id}">Chọn</button>`:M?`<button data-og="${o.id}">Đi tới</button>`:''}</div></div>`;}).join('');}
 function renderFriends(){$('fTabOnline').classList.toggle('sel',friendTab==='online');$('fTabFriends').classList.toggle('sel',friendTab==='friends');
-  if(friendTab==='online'){const b=$('friendList');b.innerHTML=onlineRows();const get=id=>NET.world.get(id);
+  const autoBar=`<div class="frow" style="background:#2a2232">Tự nhận người xin vào đội: <button id="fPAuto">${partyAutoOn()?'BẬT':'TẮT'}</button> <span style="color:#999;font-size:12px">(bật thì ai bấm "Xin vào đội" sẽ vào ngay, không cần đồng ý)</span></div>`;
+  const bindAuto=()=>{if($('fPAuto'))$('fPAuto').onclick=()=>{sfx('click');partyAutoSet(!partyAutoOn());};};
+  if(friendTab==='online'){const b=$('friendList');b.innerHTML=autoBar+onlineRows();bindAuto();const get=id=>NET.world.get(id);
+    b.querySelectorAll('[data-oj]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.oj);if(o)netAskJoin(o);});
     b.querySelectorAll('[data-ow]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.ow);if(o){whisperTo(o.id,o.name);$('panelFriends').hidden=true;}});
     b.querySelectorAll('[data-of]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.of);if(o)friendReq(o);});
     b.querySelectorAll('[data-op]').forEach(e=>e.onclick=()=>{const o=get(e.dataset.op);if(o)netInvite(o);});
@@ -61,7 +65,9 @@ function renderFriends(){$('fTabOnline').classList.toggle('sel',friendTab==='onl
   if(!L.length){b.innerHTML='<div style="color:#999">Chưa có bạn bè. Nhấp vào người chơi khác, nhấp chuột phải vào khung tên trên cùng rồi chọn Kết bạn.</div>';return;}
   b.innerHTML=L.map(f=>{const w=NET.world.get(f.id),near=NET.others.get(f.id),on=!!(w||near),map=w&&MAPS[w.map]?MAPS[w.map].name:near?CM.name:'';
     return`<div class="frow"><span style="color:${on?'#7dff9a':'#777'}">●</span> <b>${esc(f.name)}</b> <span style="color:#aaa">${on?`cấp ${(w||near).lv|0} · ${map}`:'không online'}</span>
-      <span style="float:right"><button data-w="${f.id}">Nhắn</button> <button data-x="${f.id}">Xóa</button></span></div>`;}).join('');
+      <span style="float:right">${on&&!inParty()&&!isMate(f.id)?`<button data-j="${f.id}">Xin vào đội</button> `:''}<button data-w="${f.id}">Nhắn</button> <button data-x="${f.id}">Xóa</button></span></div>`;}).join('');
+  b.innerHTML=autoBar+b.innerHTML;bindAuto();
+  b.querySelectorAll('[data-j]').forEach(e=>e.onclick=()=>{const f=L.find(x=>x.id===e.dataset.j);if(f)netAskJoin(f);});
   b.querySelectorAll('[data-w]').forEach(e=>e.onclick=()=>{const f=L.find(x=>x.id===e.dataset.w);whisperTo(f.id,f.name);$('panelFriends').hidden=true;});
   b.querySelectorAll('[data-x]').forEach(e=>e.onclick=()=>friendRemove(e.dataset.x));}
 

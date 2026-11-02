@@ -147,10 +147,10 @@ function renderParty(){const box=$('partyBox');if(!box)return;if(typeof inParty!
   const rows=meRow+PARTY.members.filter(m=>m.id!==NET.id).map(m=>{const s=PARTY.st.get(m.id)||{},o=NET.others.get(m.id),hp=o&&o.hf!=null?o.hf:s.hp,S=SECTS[s.sect||(o&&o.sect)];
     const far=s.map&&s.map!==curMapId?` <span style="color:#999">(${MAPS[s.map]?MAPS[s.map].name:''})</span>`:'';
     return`<div class="pm" data-pid="${m.id}" title="Bấm để xem thao tác"><b style="color:${S?S.color:'#fff'}">${m.id===PARTY.leader?'★ ':''}${esc(m.name)}</b> <span style="color:#ccc">${s.lv||(o&&o.lv)||''}</span>${far}<div class="bar hp"><i style="width:${Math.max(0,Math.min(1,hp==null?1:hp))*100}%"></i></div></div>`;}).join('');
-  const fb=isLeader()?'<button id="pCall" class="pfb">Gọi theo đội</button>':PARTY.follow?'<button id="pUnfol" class="pfb on">Bỏ theo</button>':'<button id="pFol" class="pfb">Theo đội</button>';
+  const fb=isLeader()?'<button id="pCall" class="pfb">Gọi theo đội</button>'+`<button id="pAuto" class="pfb${partyAutoOn()?' on':''}" title="Bật thì ai xin vào đội cũng được vào ngay">Tự nhận: ${partyAutoOn()?'BẬT':'TẮT'}</button>`:PARTY.follow?'<button id="pUnfol" class="pfb on">Bỏ theo</button>':'<button id="pFol" class="pfb">Theo đội</button>';
   b.innerHTML=`<div class="ph">Tổ đội ${PARTY.members.length}/${PARTY_MAX}${isLeader()?' · Bạn là đội trưởng':PARTY.follow?' · Đang theo':''}<button id="pLeave">Rời đội</button></div><div class="pbtns">${fb}</div>${rows||'<div style="color:#999">Đang chờ đồng đội...</div>'}`;
   $('pLeave').onclick=()=>{sfx('click');netLeaveParty();};
-  if($('pCall'))$('pCall').onclick=()=>{sfx('click');followCall();};if($('pFol'))$('pFol').onclick=()=>{sfx('click');followStart();};if($('pUnfol'))$('pUnfol').onclick=()=>{sfx('click');followStop();};
+  if($('pCall'))$('pCall').onclick=()=>{sfx('click');followCall();};if($('pAuto'))$('pAuto').onclick=()=>{sfx('click');partyAutoSet(!partyAutoOn());};if($('pFol'))$('pFol').onclick=()=>{sfx('click');followStart();};if($('pUnfol'))$('pUnfol').onclick=()=>{sfx('click');followStop();};
   b.querySelectorAll('[data-pid]').forEach(el=>el.onclick=()=>{const id=el.dataset.pid,m=PARTY.members.find(x=>x.id===id);if(!m)return;sfx('click');
     const btns=[{t:'Nhắn riêng',fn:()=>{closeDlg();whisperTo(id,m.name);}}];
     if(isLeader())btns.unshift({t:'Chuyển đội trưởng',fn:()=>{closeDlg();leaderTransfer(id);}});

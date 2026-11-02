@@ -28,7 +28,7 @@ function netConnect(){
     if(ev==='pos'){const o=NET.others.get(p.id);if(o){Object.assign(o,p,{tx:p.x,ty:p.y,seen:nowT});}else NET.others.set(p.id,Object.assign({},p,{tx:p.x,ty:p.y,seen:nowT,look:null}));
       const oo=NET.others.get(p.id);oo.look=buildLook(p.sect,p.gender,{armor:{rar:p.ar||0}},Array.isArray(p.ap)?{h:p.ap[0],hc:p.ap[1],sk:p.ap[2],ey:p.ap[3],acc:p.ap[4],cl:p.ap[5],bd:p.ap[6]}:null);oo.wv=weaponVis({rar:p.wr||0,tier:p.wt||0},SECTS[p.sect].wtype,p.rf||0);}
     else if(ev==='bye'){NET.others.delete(p.id);if(m.topic==='realtime:tk_world')NET.world.delete(p.id);}
-    else if(ev==='hello'){const isNew=!NET.world.has(p.id);NET.world.set(p.id,{id:p.id,name:String(p.name||'').slice(0,14),lv:p.lv|0,map:p.map,sect:p.sect,gm:p.gm?1:0,seen:nowT});
+    else if(ev==='hello'){const isNew=!NET.world.has(p.id);NET.world.set(p.id,{id:p.id,name:String(p.name||'').slice(0,14),lv:p.lv|0,map:p.map,sect:p.sect,gm:p.gm?1:0,pa:p.pa?1:0,pt:p.pt?1:0,seen:nowT});
       if(isNew&&nowT-(NET.lastHelloBack||-9)>2){NET.lastHelloBack=nowT;netHello();}}
     else if(ev==='chat'){netAddChat(p.name,String(p.text||'').slice(0,120),p.lv);}
     else if(ev[0]==='p')partyOnMsg(ev,p);
@@ -38,7 +38,7 @@ function netConnect(){
 addEventListener('pagehide',()=>{try{if(NET.status==='on')netCast('tk_world','bye',{id:NET.id});}catch(e){}});
 function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId;if(NET.mapRoom===room)return;
   if(NET.mapRoom){netCast(NET.mapRoom,'bye',{id:NET.id});netLeave(NET.mapRoom);}NET.others.clear();NET.mapRoom=room;netJoin(room);NET.sendT=0;}
-function netHello(){if(!player.sect||!started)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId,sect:player.sect,gm:typeof isGM==='function'&&isGM()?1:0});}
+function netHello(){if(!player.sect||!started)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId,sect:player.sect,gm:typeof isGM==='function'&&isGM()?1:0,pa:partyAutoOn()&&(!inParty()||isLeader())&&PARTY.members.length<PARTY_MAX?1:0,pt:inParty()?1:0});}
 function netAddChat(name,text,lv){NET.chat.push({name,text,lv,t:Date.now()});if(NET.chat.length>40)NET.chat.shift();if(typeof renderChat==='function')renderChat();}
 function netSendChat(text){text=text.replace(/\s+/g,' ').trim().slice(0,120);if(!text)return;
   if(NET.status!=='on'){netAddChat('Hệ thống','Chưa kết nối mạng, không gửi được.',0);return;}
@@ -100,6 +100,18 @@ function netInvite(o){if(NET.status!=='on'){log('Chưa kết nối mạng','#ff9
   if(inParty()&&PARTY.members.length>=PARTY_MAX){log('Tổ đội đã đủ 5 người','#ffb36b');return;}
   if(isMate(o.id))return;
   netCast('tk_world','pinv',{id:NET.id,name:player.name,lv:player.lv,sect:player.sect,to:o.id});log(`Đã gửi lời mời tổ đội tới ${o.name}`,'#9fffb0');}
+// XIN VÀO ĐỘI: đội trưởng bật "Tự nhận vào đội" thì ai xin cũng vào ngay, không cần đồng ý
+const partyAutoKey=()=>'tk_pauto_'+(NET.id||'');
+const partyAutoOn=()=>{try{return localStorage.getItem(partyAutoKey())==='1';}catch(e){return false;}};
+function partyAutoSet(v){try{if(v)localStorage.setItem(partyAutoKey(),'1');else localStorage.removeItem(partyAutoKey());}catch(e){}
+  log(v?'Đã BẬT tự nhận vào đội: ai xin vào đội sẽ được vào ngay':'Đã TẮT tự nhận vào đội: phải đồng ý từng người',v?'#9fffb0':'#ffb36b');netHello();
+  if(typeof renderParty==='function')renderParty();if(typeof renderFriends==='function'&&!$('panelFriends').hidden)renderFriends();}
+function netAskJoin(o){if(NET.status!=='on'){log('Chưa kết nối mạng','#ff9a8a');return;}
+  if(inParty()){log('Bạn đang ở trong tổ đội, hãy rời đội trước','#ffb36b');return;}
+  netCast('tk_world','preq',{id:NET.id,name:player.name,lv:player.lv,sect:player.sect,to:o.id});log(`Đã xin vào đội của ${o.name}`,'#9fffb0');}
+function partyAddMember(id,name){if(!inParty()){PARTY.leader=NET.id;PARTY.members=[{id:NET.id,name:player.name}];}
+  if(!isLeader()||PARTY.members.length>=PARTY_MAX)return false;
+  if(!PARTY.members.some(m=>m.id===id))PARTY.members.push({id,name:String(name).slice(0,14)});partyBroadcastSet();return true;}
 function netLeaveParty(){if(!inParty())return;netCast('tk_world','pleave',{id:NET.id});partyReset('Bạn đã rời tổ đội');}
 function partyOnMsg(ev,p){
   if(ev==='pinv'&&p.to===NET.id){
@@ -108,7 +120,15 @@ function partyOnMsg(ev,p){
     openDlg('Lời mời tổ đội',`<b style="color:#9fffb0">${esc(p.name)}</b> (cấp ${p.lv|0}${S?' · '+S.name:''}) mời bạn vào tổ đội.<br><br>Trong tổ đội: thấy máu của nhau, dược sư hồi máu được cho cả đội, và nhận thêm 30% kinh nghiệm khi đồng đội ở gần hạ quái.`,
       [{t:'Đồng ý',fn:()=>{netCast('tk_world','pacc',{id:NET.id,name:player.name,to:p.id});closeDlg();log('Đã đồng ý, đang vào tổ đội...','#9fffb0');}},
        {t:'Từ chối',gray:true,fn:()=>{netCast('tk_world','pno',{id:NET.id,name:player.name,to:p.id});closeDlg();}}]);return;}
-  if(ev==='pno'&&p.to===NET.id){log(`${p.name} ${p.busy?'đang ở tổ đội khác':'đã từ chối lời mời'}`,'#ffb36b');return;}
+  if(ev==='pno'&&p.to===NET.id){log(`${p.name} ${p.busy===2?': tổ đội đã đủ người':p.busy===3?'đã từ chối cho bạn vào đội':p.busy?'đang ở tổ đội khác':'đã từ chối lời mời'}`,'#ffb36b');return;}
+  if(ev==='preq'&&p.to===NET.id){const id=String(p.id),nm=String(p.name||'').slice(0,14);if(id===NET.id||isMate(id))return;
+    if(inParty()&&!isLeader()){if(!p.fw)netCast('tk_world','preq',Object.assign({},p,{to:PARTY.leader,fw:1}));return;} // đội viên chuyển lời xin cho đội trưởng
+    if(inParty()&&PARTY.members.length>=PARTY_MAX){netCast('tk_world','pno',{id:NET.id,name:player.name,to:id,busy:2});return;}
+    if(partyAutoOn()){if(partyAddMember(id,nm)){log(`${nm} đã vào tổ đội (tự nhận)`,'#9fffb0');sfx('quest');}return;}
+    const S=SECTS[p.sect];sfx('quest');
+    openDlg('Xin vào tổ đội',`<b style="color:#9fffb0">${esc(nm)}</b> (cấp ${p.lv|0}${S?' · '+S.name:''}) xin vào tổ đội của bạn.<br><br><span style="color:#aaa">Muốn cho vào tự động, bật "Tự nhận vào đội" ở khung tổ đội hoặc bảng Bạn bè.</span>`,
+      [{t:'Cho vào',fn:()=>{closeDlg();if(partyAddMember(id,nm))log(`${nm} đã vào tổ đội`,'#9fffb0');else log('Tổ đội đã đủ người','#ffb36b');}},
+       {t:'Từ chối',gray:true,fn:()=>{netCast('tk_world','pno',{id:NET.id,name:player.name,to:id,busy:3});closeDlg();}}]);return;}
   if(ev==='pacc'&&p.to===NET.id){
     if(!inParty()){PARTY.leader=NET.id;PARTY.members=[{id:NET.id,name:player.name}];}
     if(!isLeader()||PARTY.members.length>=PARTY_MAX)return;
