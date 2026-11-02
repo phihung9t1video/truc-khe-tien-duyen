@@ -295,7 +295,9 @@ function pickAt(w){
   if(best)return{mob:best};
   for(const h of herbs)if(!h.dead&&Math.abs(w.x-h.x)<14&&w.y<h.y+6&&w.y>h.y-24)return{herb:h};
   return null;}
-function groundMove(x,y){if(auto){auto=false;autoRest=false;log('Đã tắt chế độ tự động');}
+// Luyện Tại Chỗ: bấm xuống đất không tắt chế độ (chỉ tắt khi bấm lại nút LUYỆN TẠI CHỖ)
+function groundMove(x,y){if(auto&&player.autoMode==='here'){if(!groundMove.warned||nowT-groundMove.warned>20){groundMove.warned=nowT;log('Đang Luyện Tại Chỗ — bấm lại nút LUYỆN TẠI CHỖ để tắt','#9fffb0');}return;}
+  if(auto){auto=false;autoRest=false;log('Đã tắt chế độ tự động');}
   navGoal=null;player.target=null;player.npc=null;player.pend=null;player.gather=null;player.channel=0;player.navFly=false;moveTo(x,y);marker={x,y,t:0};}
 cv.addEventListener('mousedown',e=>{if(e.button!==0||!started||player.dead)return;mouse.x=e.offsetX;mouse.y=e.offsetY;mouse.down=true;
   const w=toWorld(e.offsetX,e.offsetY),p=pickAt(w);
@@ -303,7 +305,7 @@ cv.addEventListener('mousedown',e=>{if(e.button!==0||!started||player.dead)retur
   if(p&&p.npc){navGoal=null;player.npc=p.npc;player.target=null;player.pend=null;player.gather=null;player.repath=0;mouse.hold=false;return;}
   if(p&&p.mob){navGoal=null;if(typeof selOther!=='undefined')selOther=null;player.target=p.mob;player.npc=null;player.gather=null;player.repath=0;mouse.hold=false;return;}
   if(p&&p.herb){navGoal=null;player.gather=p.herb;player.target=null;player.npc=null;player.repath=0;mouse.hold=false;return;}
-  groundMove(w.x,w.y);mouse.hold=true;mouse.holdT=0.2;});
+  groundMove(w.x,w.y);mouse.hold=!(auto&&player.autoMode==='here');mouse.holdT=0.2;});
 addEventListener('mouseup',()=>{mouse.down=false;mouse.hold=false;});
 cv.addEventListener('mousemove',e=>{mouse.x=e.offsetX;mouse.y=e.offsetY;if(!started)return;const p=pickAt(toWorld(e.offsetX,e.offsetY));cv.style.cursor=p?(p.mob?'crosshair':'pointer'):'default';});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
