@@ -3,12 +3,14 @@
 // Kho: 60 ô cất đồ riêng ngoài túi (mở ở đâu cũng được). Bấm món trong túi để cất vào kho, bấm món trong kho để lấy ra.
 // Tự bán: chọn mức độ hiếm; đồ nhặt được có độ hiếm từ mức đó trở xuống sẽ tự bán ngay (trừ đồ tốt hơn đồ đang mặc và đồ bộ).
 const STASH_MAX=60;
-const AUTO_SELL_OPTS=[[-1,'Tự bán: Tắt'],[0,'Tự bán: đồ Thường'],[1,'Tự bán: Thường + Tinh xảo'],[2,'Tự bán: đến đồ Hiếm']];
+const AUTO_SELL_OPTS=[[-1,'Tự bán: Tắt'],[0,'Tự bán: đồ Thường (trắng)'],[1,'Tự bán: đến Tinh xảo (xanh lá)'],[2,'Tự bán: đến Hiếm (xanh dương)'],[3,'Tự bán: đến Truyền thuyết (vàng)']];
+// bán ngay các món trong túi khớp mức vừa chọn (không bán đồ đang mặc, đồ bộ, đồ tốt hơn đồ đang mặc, đồ Thần thoại)
+function autoSellBag(){if(player.autoSellRar<0)return 0;let n=0,g=0;player.inv=player.inv.filter(it=>{if(autoSellHit(it)){n++;g+=it.price;return false;}return true;});player.gold+=g;if(n)log(`Đã tự bán ${n} món trong túi, được ${g} lượng`,'#ffd977');return n;}
 (()=>{
   // nút Kho + ô chọn tự bán ở chân túi đồ
   const foot=$('bagFoot');
   foot.insertAdjacentHTML('beforeend',`<button class="btn gray" id="openStashBtn">Kho đồ</button><select id="autoSellSel" title="Tự bán đồ khi nhặt để túi không bị đầy">${AUTO_SELL_OPTS.map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select>`);
-  $('autoSellSel').onchange=e=>{player.autoSellRar=+e.target.value;save();sfx('click');log(player.autoSellRar<0?'Đã tắt tự bán':`Tự bán: ${AUTO_SELL_OPTS.find(o=>o[0]===player.autoSellRar)[1].replace('Tự bán: ','')} khi nhặt (trừ đồ tốt hơn và đồ bộ)`,'#ffd977');};
+  $('autoSellSel').onchange=e=>{player.autoSellRar=+e.target.value;autoSellBag();refreshPanels();save();sfx('click');log(player.autoSellRar<0?'Đã tắt tự bán':`Tự bán: ${AUTO_SELL_OPTS.find(o=>o[0]===player.autoSellRar)[1].replace('Tự bán: ','')} khi nhặt (trừ đồ tốt hơn và đồ bộ)`,'#ffd977');};
   $('autoSellSel').onkeydown=e=>e.stopPropagation();
   $('openStashBtn').onclick=()=>{openPanel('panelStash');renderStash();};
   // bảng kho

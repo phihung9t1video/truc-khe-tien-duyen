@@ -81,9 +81,11 @@ function itemScore(it){if(!it)return 0;const s=it.st;return(s.atk||0)*2+(s.def||
 const wtypeOk=it=>it.slot!=='weapon'||!it.wtype||it.wtype===SECTS[player.sect].wtype;
 function isUpgrade(it){return it.lvReq<=player.lv&&wtypeOk(it)&&itemScore(it)>itemScore(player.eq[eqKeyFor(it)]);}
 let LOOT_TO=null; // danh sách người được chia đồ khi đang tổ đội
-function addItem(it,silent){
-  if(!silent&&player.autoSellRar>=0&&it.rar<=player.autoSellRar&&!it.set&&!isUpgrade(it)&&!LOOT_TO){player.gold+=it.price;log(`Tự bán ${it.name} được ${it.price} lượng`,'#ffd977');return;}
+// tự bán: chỉ áp dụng cho đồ rơi/được chia (drop=true), không bán đồ mua ở cửa hàng hay phần thưởng nhiệm vụ
+const autoSellHit=it=>player.autoSellRar>=0&&it.rar<=player.autoSellRar&&it.rar<RARITY.length-1&&!it.set&&!isUpgrade(it);
+function addItem(it,silent,drop){
   if(LOOT_TO&&LOOT_TO.length>1){const r=LOOT_TO[rint(0,LOOT_TO.length-1)];if(r!==NET.id&&partyAPI('netSendLoot',r,it))return;}
+  if(drop&&autoSellHit(it)){player.gold+=it.price;log(`Tự bán ${it.name} (${RARITY[it.rar].n}) được ${it.price} lượng`,'#ffd977');return false;}
   if(player.inv.length>=BAG_MAX){let wi=-1,ws=Infinity;player.inv.forEach((x,i)=>{const s=itemScore(x)*(1+x.rar)+(isUpgrade(x)?1e6:0);if(s<ws){ws=s;wi=i;}});
     if(wi<0||itemScore(it)*(1+it.rar)+(isUpgrade(it)?1e6:0)<=ws){player.gold+=it.price;log(`Túi đầy, tự bán ${it.name} được ${it.price} lượng`,'#ffd977');return;}
     const old=player.inv.splice(wi,1)[0];player.gold+=old.price;log(`Túi đầy, tự bán ${old.name} để lấy chỗ`,'#ffd977');}
@@ -116,10 +118,10 @@ function sellJunk(){let n=0,g=0;player.inv=player.inv.filter(it=>{if(it.rar<=1&&
 function autoEquip(){for(const it of [...player.inv])if(isUpgrade(it))equipItem(it.uid);}
 function rollLoot(m){const t=m.t,w=SECTS[player.sect].wtype;
   if(m.type==='hondon'&&Math.random()<0.12){const S=SETS.trunglau,it=makeSetItem(S.pieces[rint(0,S.pieces.length-1)],'trunglau');addItem(it);toast(`Rơi đồ ${S.name}: ${it.name}!`,S.col);log(`${m.t.name} để lại ${it.name}!`,S.col);}
-  if(t.boss){for(let k=0;k<2;k++)addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,t.tier>=10&&Math.random()<0.15?4:Math.random()<0.4?3:2,w));return;}
+  if(t.boss){for(let k=0;k<2;k++)addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,t.tier>=10&&Math.random()<0.15?4:Math.random()<0.4?3:2,w),false,true);return;}
   if(Math.random()>t.loot)return;
   const r=Math.random(),rar=t.tier>=10&&r<0.002?4:r<0.02?3:r<0.12?2:r<0.4?1:0;
-  addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,rar,w));}
+  addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,rar,w),false,true);}
 
 // ===================== CHỈ SỐ =====================
 function stats(){const S=SECTS[player.sect].base,l=player.lv;

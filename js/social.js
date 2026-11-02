@@ -79,7 +79,7 @@ renderChat=function(){const b=$('chatLog');if(!b)return;b.innerHTML=NET.chat.sli
   `<div><b style="color:${c.name==='Hệ thống'?'#ffb36b':c.name===player.name?'#9fffb0':'#8fd8ff'}">${esc(c.name)}${c.lv?' ['+c.lv+']':''}:</b> ${esc(c.text)}</div>`).join('');b.scrollTop=b.scrollHeight;};
 
 // ---------- giao dịch ----------
-const TRADE_MAX=6;
+const TRADE_MAX=12;
 const TRD={id:null,name:'',state:null,my:[],myGold:0,their:[],theirGold:0,myLock:false,theirLock:false,myOk:false,theirOk:false,lost:0,t:0};
 function tradeRoom(){return 'tk_world';}
 function tradeReset(){Object.assign(TRD,{id:null,name:'',state:null,my:[],myGold:0,their:[],theirGold:0,myLock:false,theirLock:false,myOk:false,theirOk:false,lost:0,t:0});$('panelTrade').hidden=true;}
@@ -117,7 +117,7 @@ function renderTrade(){if($('panelTrade').hidden)return;const ic=it=>it.slot==='
   $('trLock').textContent=TRD.myLock?'Đã khóa':'Khóa đồ';$('trLock').disabled=TRD.myLock;
   $('trOk').disabled=!(TRD.myLock&&TRD.theirLock)||TRD.myOk;
   $('panelTrade').querySelectorAll('[data-rm]').forEach(e=>e.onclick=()=>{if(TRD.myLock)return;TRD.my=TRD.my.filter(u=>u!==+e.dataset.rm);tradeSendOffer();});
-  $('panelTrade').querySelectorAll('[data-add]').forEach(e=>e.onclick=()=>{if(TRD.myLock)return;if(TRD.my.length>=TRADE_MAX)return log('Tối đa 6 món mỗi lần','#ffb36b');TRD.my.push(+e.dataset.add);tradeSendOffer();});}
+  $('panelTrade').querySelectorAll('[data-add]').forEach(e=>e.onclick=()=>{if(TRD.myLock)return;if(TRD.my.length>=TRADE_MAX)return log(`Tối đa ${TRADE_MAX} món mỗi lần`,'#ffb36b');TRD.my.push(+e.dataset.add);tradeSendOffer();});}
 $('trMyGold').addEventListener('change',e=>{if(TRD.myLock)return;TRD.myGold=clamp(Math.floor(+e.target.value||0),0,player.gold);tradeSendOffer();});
 $('trMyGold').addEventListener('keydown',e=>e.stopPropagation());
 $('trLock').onclick=()=>{if(!TRD.state)return;TRD.myLock=true;netCast(tradeRoom(),'tlock',{id:NET.id,to:TRD.id});renderTrade();};
