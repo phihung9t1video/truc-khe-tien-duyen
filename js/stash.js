@@ -21,7 +21,7 @@ function autoSellBag(){if(player.autoSellRar<0)return 0;let n=0,g=0;player.inv=p
     <div style="font-size:12px;color:#999;margin-top:6px">Kho lưu cùng nhân vật trên máy chủ. Rê chuột vào món đồ để xem chỉ số.</div>`;
   $('hud').appendChild(p);p.querySelector('.close').onclick=()=>{p.hidden=true;$('tip').hidden=true;};PANELS.push('panelStash');})();
 function stashCell(it,attr){const ic=it.slot==='weapon'?WICON[it.wtype]:SLOTICON[it.slot],c=RARITY[it.rar].c;
-  return`<div class="cell" ${attr} data-tip="st:${it.uid}" style="border-color:${c}66"><div class="ic" style="color:${c}">${ic}</div><span style="color:${c}">${esc(it.name)}${it.ref?' +'+it.ref:''}</span><span class="tb">B${it.tier+1}</span></div>`;}
+  return`<div class="cell" ${attr} data-tip="st:${it.uid}" style="border-color:${c}66"><div class="ic">${itemIcon(it)}</div><span style="color:${c}">${esc(it.name)}${it.ref?' +'+it.ref:''}</span><span class="tb">B${it.tier+1}</span></div>`;}
 function renderStash(){if($('panelStash').hidden)return;player.stash=player.stash||[];
   $('stBag').innerHTML=player.inv.map(it=>stashCell(it,`data-put="${it.uid}"`)).join('')||'<div style="color:#999">Túi trống</div>';
   $('stStash').innerHTML=player.stash.map(it=>stashCell(it,`data-take="${it.uid}"`)).join('')||'<div style="color:#999">Kho trống</div>';

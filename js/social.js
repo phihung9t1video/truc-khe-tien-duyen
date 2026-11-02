@@ -111,7 +111,7 @@ function tradeCommit(){const give=TRD.my.map(uid=>player.inv.find(x=>x.uid===uid
   log(`Giao dịch với ${TRD.name} thành công: nhận ${got.length} món${TRD.theirGold?', '+TRD.theirGold.toLocaleString('vi-VN')+' lượng':''}`,'#ffd977');toast('Giao dịch thành công','#ffd977');sfx('coin');
   tradeReset();refreshPanels();save();}
 function renderTrade(){if($('panelTrade').hidden)return;const ic=it=>it.slot==='weapon'?WICON[it.wtype]:SLOTICON[it.slot];
-  const cell=(it,attr)=>it?`<div class="cell" ${attr} data-tip="tr:${it.uid}" style="border-color:${RARITY[it.rar].c}66"><div class="ic" style="color:${RARITY[it.rar].c}">${ic(it)}</div><span style="color:${RARITY[it.rar].c}">${esc(it.name)}${it.ref?' +'+it.ref:''}</span></div>`:'<div class="cell" style="cursor:default"></div>';
+  const cell=(it,attr)=>it?`<div class="cell" ${attr} data-tip="tr:${it.uid}" style="border-color:${RARITY[it.rar].c}66"><div class="ic">${itemIcon(it)}</div><span style="color:${RARITY[it.rar].c}">${esc(it.name)}${it.ref?' +'+it.ref:''}</span></div>`:'<div class="cell" style="cursor:default"></div>';
   const mine=TRD.my.map(uid=>player.inv.find(x=>x.uid===uid)).filter(Boolean);
   $('trTitle').textContent=`Giao dịch với ${TRD.name}`;
   $('trMine').innerHTML=Array.from({length:TRADE_MAX},(_,i)=>cell(mine[i],mine[i]?`data-rm="${mine[i].uid}"`:'')).join('');

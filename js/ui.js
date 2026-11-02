@@ -67,7 +67,7 @@ function updateUI(){if(!player.sect||!$('hpc'))return;const st=stats();
   if(!$('panelMap').hidden)renderMapPanel();}
 
 // ===================== CHÚ GIẢI =====================
-function itemHTML(it,cmp){if(!it)return'';if(cmp===undefined&&player.inv.includes(it))cmp=player.eq[eqKeyFor(it)];const r=RARITY[it.rar];let h=`<div class="tn" style="color:${r.c}">${it.name}${it.ref?' <span style="color:#ffd23f">+'+it.ref+'</span>':''}</div><div style="color:${r.c}">${r.n} · ${SLOTNAME[it.slot]} · Bậc ${it.tier+1}</div>`;
+function itemHTML(it,cmp){if(!it)return'';if(cmp===undefined&&player.inv.includes(it))cmp=player.eq[eqKeyFor(it)];const r=RARITY[it.rar];let h=`<div style="float:left;margin:0 8px 4px 0">${itemIcon(it,'big')}</div><div class="tn" style="color:${r.c}">${it.name}${it.ref?' <span style="color:#ffd23f">+'+it.ref+'</span>':''}</div><div style="color:${r.c}">${r.n} · ${SLOTNAME[it.slot]} · Bậc ${it.tier+1}</div>`;
   h+=`<div style="color:${it.lvReq>player.lv?'#ff7a6a':'#ccc'}">Yêu cầu cấp ${it.lvReq}</div><div style="margin-top:4px">`;
   for(const k in it.st){const v=it.st[k],o=cmp&&cmp.st[k]||0,dv=v-o;h+=`${STATNAME[k]}: <b>+${v}${k==='crit'||k==='spd'?'%':''}</b>`+(cmp&&cmp!==it&&dv!==0?` <span style="color:${dv>0?'#7f7':'#f77'}">(${dv>0?'+':''}${dv})</span>`:'')+'<br>';}
   if(it.ref){const rb=refBonus(it);h+=`<span style="color:#ffd23f">Cường hóa +${it.ref}: ${Object.entries(rb).map(([k,v])=>STATNAME[k]+' +'+v).join(', ')}</span><br>`;}
@@ -96,7 +96,7 @@ function withCtx(cnv,fn){const old=ctx;ctx=cnv.getContext('2d');ctx.setTransform
 const EQ_LEFT=['helmet','armor','vest','gloves','wrist'],EQ_RIGHT=['necklace','amulet','ring1','ring2','boots'];
 function eqSlotHTML(k){const it=player.eq[k],ic=k==='weapon'?(it?WICON[it.wtype]:WICON[SECTS[player.sect].wtype]):SLOTICON[k];
   if(!it)return`<div class="eqbox empty" data-tip="eq:${k}" data-slot="${k}"><div class="eqic">${ic}</div><div class="eqnm">${SLOTNAME[k]}</div></div>`;
-  const c=RARITY[it.rar].c;return`<div class="eqbox" data-tip="eq:${k}" data-slot="${k}" style="border-color:${c};box-shadow:0 0 ${it.rar>=2?10:0}px ${c}66 inset"><div class="eqic" style="color:${c}">${ic}</div><div class="eqnm" style="color:${c}">${it.name}</div><div class="eqt">B${it.tier+1}${it.ref?' <b style="color:#ffd23f">+'+it.ref+'</b>':''}</div></div>`;}
+  const c=it.god?GOD_COL:it.set?SETS[it.set].col:RARITY[it.rar].c;return`<div class="eqbox" data-tip="eq:${k}" data-slot="${k}" style="border-color:${c};box-shadow:0 0 ${it.rar>=2?10:0}px ${c}66 inset"><div class="eqic">${itemIcon(it)}</div><div class="eqnm" style="color:${c}">${it.name}</div><div class="eqt">B${it.tier+1}${it.ref?' <b style="color:#ffd23f">+'+it.ref+'</b>':''}</div></div>`;}
 // khung cường hóa của món đang chọn trong bảng Nhân vật
 let eqSel=null;
 function refineBoxHTML(it){if(!it)return'';const r=it.ref||0;
@@ -126,7 +126,7 @@ function renderBag(){const g=$('bagGrid');let h='';
   for(let i=0;i<BAG_MAX;i++){const it=player.inv[i];
     if(!it){h+='<div class="cell" style="cursor:default"></div>';continue;}
     const ic=it.slot==='weapon'?WICON[it.wtype]:SLOTICON[it.slot];
-    h+=`<div class="cell${bagSel===it.uid?' sel':''}" data-tip="item:${it.uid}" data-uid="${it.uid}" style="border-color:${RARITY[it.rar].c}66"><div class="ic" style="color:${RARITY[it.rar].c}">${ic}</div><span style="color:${RARITY[it.rar].c}">${it.name}</span><span class="tb">B${it.tier+1}${it.ref?' +'+it.ref:''}</span>${isUpgrade(it)?'<span class="up">▲</span>':''}</div>`;}
+    h+=`<div class="cell${bagSel===it.uid?' sel':''}" data-tip="item:${it.uid}" data-uid="${it.uid}" style="border-color:${RARITY[it.rar].c}66"><div class="ic">${itemIcon(it)}</div><span style="color:${it.god?GOD_COL:it.set?SETS[it.set].col:RARITY[it.rar].c}">${it.name}</span><span class="tb">B${it.tier+1}${it.ref?' +'+it.ref:''}</span>${isUpgrade(it)?'<span class="up">▲</span>':''}</div>`;}
   g.innerHTML=h;
   g.querySelectorAll('.cell[data-uid]').forEach(el=>el.onclick=()=>{const uid=+el.dataset.uid;
     if(bagSellMode){const it=player.inv.find(x=>x.uid===uid);if(!it)return;if((it.rar>=3||it.set)&&!confirm('Bán '+it.name+' ('+RARITY[it.rar].n+') được '+it.price+' lượng?'))return;$('tip').hidden=true;bagSel=null;sellItem(uid);renderBag();return;}

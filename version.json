@@ -1,6 +1,6 @@
 {
-  "version": "1.3.22",
-  "notes": "To doi: them Xin vao doi (o bang Ban be, danh sach online, menu nguoi choi). Doi truong bat Tu nhan thi nguoi xin vao ngay khong can dong y.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.22/www.zip",
-  "sha256": "e85579de27645ce32900f4f929021420f683e79bc8c72b30822d49a8b3d8a882"
+  "version": "1.3.23",
+  "notes": "Bieu tuong vat pham va trang bi moi: hinh mau, chat lieu doi theo bac, da quy theo do hiem, do Truyen thuyet/Than thoai/Trung Lau/Than khi phat sang.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.23/www.zip",
+  "sha256": "278f3a0a2e74362277e4f4db41d4e4fe4e4c9e65790d9e2e5af209e9603106ac"
 }
