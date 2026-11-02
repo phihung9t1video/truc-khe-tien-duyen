@@ -97,3 +97,27 @@ NEWMAPS.forEach((d,k)=>{const [a,b,c,boss]=d.mobs,giver=d.npcs[0].id,healer=d.np
     {map:d.id,title:'Diệt '+C.name,giver,type:'kill',target:c,n:28,short:`Hạ ${C.name}`,desc:`Đạo quân ${C.name} canh giữ đường vào sào huyệt. Hạ 28 tên.`,reward:{exp:Math.round(need(C.lv[0])*0.16),gold:C.lv[0]*240,hp:20}},
     {map:d.id,title:'Tín vật của '+C.name,giver:smith,type:'drop',target:c,n:6,item:'Tín vật',chance:0.4,short:`Đoạt Tín vật từ ${C.name}`,desc:`Đoạt 6 tín vật, ta rèn cho thiếu hiệp một thần binh bậc ${TIER_PRE[tier]}.`,reward:{exp:Math.round(need(C.lv[0])*0.14),gold:C.lv[0]*240,item:{slot:'weapon',tier,rar:3}}},
     {map:d.id,title:X.name,giver,type:'kill',target:boss,n:1,short:`Hạ ${X.name}`,desc:`${X.name} là chủ nhân của vùng đất này. Nên đạt cấp ${X.lv[0]} trở lên!`,reward:{exp:Math.round(need(X.lv[0])*0.3),gold:X.lv[0]*600,hp:50,item:{slot:'armor',tier,rar:4}}});});
+// ===================== MỞ RỘNG BẢN ĐỒ =====================
+// Mọi bản đồ rộng thêm 35%: bãi quái giữ nguyên cỡ nên giữa các bãi có khoảng trống để đặt đồi, núi, vực, đồng hoa.
+const WIDEN=1.35;
+function widenMap(id,f){const M=MAPS[id],g=M.gen,sz=g.size||[64,48],S=v=>Math.round(v*f),SF=v=>Math.round(v*f*2)/2;
+  g.size=[S(sz[0]),S(sz[1])];if(g.river)g.river.x=S(g.river.x);
+  g.lakes=g.lakes.map(([x,y,w,h])=>[S(x),S(y),S(w),S(h)]);
+  const sf=g.safe;Object.assign(sf,{x0:S(sf.x0),y0:S(sf.y0),x1:S(sf.x1),y1:S(sf.y1)});sf.gates=sf.gates.map(([s,a,b])=>[s,S(a),S(b)+1]);
+  g.houses=g.houses.map(([x,y])=>[S(x),S(y)]);if(g.well)g.well=[S(g.well[0]),S(g.well[1])];
+  const A=g.arena;if(A){Object.assign(A,{x0:S(A.x0),y0:S(A.y0),x1:S(A.x1),y1:S(A.y1)});A.gap=[A.gap[0],S(A.gap[1]),S(A.gap[2])+1];}
+  g.roads=g.roads.map(r=>r.map(S));M.revive=M.revive.map(SF);
+  for(const k in M.zones){const z=M.zones[k];z.x=S(z.x);z.y=S(z.y);}
+  M.herbs.zones.forEach(z=>{z.x=S(z.x);z.y=S(z.y);});
+  M.regions.forEach(r=>{r.x=S(r.x);r.y=S(r.y);r.r=S(r.r);});
+  M.npcs.forEach(n=>{n.x=SF(n.x);n.y=SF(n.y);});
+  M.portals.forEach(p=>{p.x=SF(p.x);p.y=SF(p.y);});
+  for(const o in MAPS)for(const p of MAPS[o].portals)if(p.to===id){p.tx=SF(p.tx);p.ty=SF(p.ty);}}
+for(const id in MAPS)widenMap(id,WIDEN);
+// ===================== TRUYỀN TỐNG SỨ =====================
+// Mỗi thành có một Truyền Tống Sứ: trả lượng để dịch chuyển ngay tới thành của bản đồ khác.
+const teleCost=id=>{const l=MAPS[id].minLv||1;return Math.round(50+l*l*3);};
+for(const id in MAPS){const M=MAPS[id],sf=M.gen.safe;let x=M.revive[0]+2,y=M.revive[1]-1.5;
+  x=Math.min(Math.max(x,sf.x0+1.5),sf.x1-1.5);y=Math.min(Math.max(y,sf.y0+1.5),sf.y1-1.5);
+  M.npcs.push({id:'tele_'+id,name:'Truyền Tống Sứ',kind:'tele',look:'immortal',x,y});}
+for(const id in MAPS)for(const n of MAPS[id].npcs)NPC_INDEX[n.id]=Object.assign({map:id},n);

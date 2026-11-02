@@ -22,8 +22,9 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 
 // ===================== BẢN ĐỒ HIỆN TẠI =====================
 const T=32;let MW=64,MH=48; // kích thước đổi theo bản đồ (gen.size)
-const G=0,TR=1,WA=2,PA=3,RO=4,HO=5,FL=6,FE=7,BR=8,DK=9;
-const BLK=[0,1,1,0,1,1,0,1,0,0];
+const G=0,TR=1,WA=2,PA=3,RO=4,HO=5,FL=6,FE=7,BR=8,DK=9,MO=10,CH=11;
+const BLK=[0,1,1,0,1,1,0,1,0,0,1,1];
+let HILLS=[],MEADOWS=[],STONES=[];
 let map=new Uint8Array(MW*MH);
 let reach=new Uint8Array(MW*MH);
 let curMapId='trukhe',CM=MAPS.trukhe,TH=THEMES.spring;
@@ -76,6 +77,30 @@ function genMap(def){const sz=def.gen.size;MW=sz?sz[0]:64;MH=sz?sz[1]:48;map=new
       if(srand()<0.5)setT(x,y,TR);
     }
   }
+  // ---- địa hình: núi, vực, đồi, đồng hoa, cột đá ở các khoảng trống giữa bãi quái ----
+  HILLS=[];MEADOWS=[];STONES=[];
+  const nearRoad=(x,y)=>{for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=getT(x+dx,y+dy);if(t===PA||t===BR||t===FL||t===FE||t===HO||t===DK)return true;}return false;};
+  const inTown=(x,y,p)=>x>=S.x0-p&&x<=S.x1+p&&y>=S.y0-p&&y<=S.y1+p;
+  const okCell=(x,y,pad)=>x>=3&&y>=3&&x<MW-3&&y<MH-3&&(getT(x,y)===G||getT(x,y)===TR||getT(x,y)===RO)&&!nearZone(x,y,pad)&&!inTown(x,y,4)&&!nearRoad(x,y)&&!def.npcs.some(n=>Math.hypot(n.x-x,n.y-y)<4);
+  const targets=[[def.revive[0],def.revive[1]]].concat(zl.map(z=>[z.x,z.y]),def.portals.map(p=>[p.x,p.y]),def.npcs.map(n=>[n.x,n.y]));
+  const linked=()=>{const R=new Uint8Array(MW*MH),q=[idx(Math.floor(def.revive[0]),Math.floor(def.revive[1]))];R[q[0]]=1;
+    while(q.length){const c=q.pop(),x=c%MW,y=(c/MW)|0;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(blocked(nx,ny))continue;const ni=idx(nx,ny);if(R[ni])continue;R[ni]=1;q.push(ni);}}
+    return targets.every(([tx,ty])=>{tx=Math.floor(tx);ty=Math.floor(ty);for(let r=0;r<=3;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const x=tx+dx,y=ty+dy;if(x>=0&&y>=0&&x<MW&&y<MH&&R[idx(x,y)])return true;}return false;});};
+  const tryPlace=(cells,t)=>{const old=[];for(const [x,y] of cells){if(!okCell(x,y,3))continue;old.push([x,y,getT(x,y)]);setT(x,y,t);}
+    if(old.length<4||!linked()){for(const [x,y,o] of old)setT(x,y,o);return false;}return true;};
+  const seedCell=pad=>{for(let k=0;k<60;k++){const x=4+Math.floor(srand()*(MW-8)),y=4+Math.floor(srand()*(MH-8));if(okCell(x,y,pad))return[x,y];}return null;};
+  if(g.terrain!==false){const area=MW*MH;
+    for(let k=0,n=Math.round(area/750);k<n;k++){const s0=seedCell(6);if(!s0)continue;let [x,y]=s0;const cells=[],a0=srand()*6.28;
+      for(let st=0,L=4+Math.floor(srand()*7);st<L;st++){const r=1+Math.floor(srand()*2.4);for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(dx*dx+dy*dy<=r*r+0.5)cells.push([x+dx,y+dy]);
+        const a=a0+(srand()-0.5)*1.6;x+=Math.round(Math.cos(a)*2);y+=Math.round(Math.sin(a)*1.5);}
+      tryPlace(cells,MO);}
+    for(let k=0,n=Math.round(area/1500);k<n;k++){const s0=seedCell(5);if(!s0)continue;let [x,y]=s0;const cells=[];let a=srand()*6.28;
+      for(let st=0,L=7+Math.floor(srand()*9);st<L;st++){cells.push([x,y]);if(st>1&&st<L-2){cells.push([x+1,y]);if(srand()<0.5)cells.push([x,y+1]);}a+=(srand()-0.5)*0.7;x+=Math.round(Math.cos(a));y+=Math.round(Math.sin(a));}
+      tryPlace(cells,CH);}
+    for(let k=0,n=Math.round(area/420);k<n;k++){const s0=seedCell(2);if(s0)HILLS.push([s0[0]+0.5,s0[1]+0.5,2.5+srand()*4,srand()]);}
+    for(let k=0,n=Math.round(area/1100);k<n;k++){const s0=seedCell(2);if(!s0)continue;MEADOWS.push([s0[0]+0.5,s0[1]+0.5,2+srand()*2.5]);
+      const [mx,my]=s0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)if(getT(mx+dx,my+dy)===TR||getT(mx+dx,my+dy)===RO)setT(mx+dx,my+dy,G);}
+    for(let k=0,n=Math.round(area/2600);k<n;k++){const s0=seedCell(3);if(s0)STONES.push([s0[0]+0.5,s0[1]+0.5,srand()]);}}
   reach=new Uint8Array(MW*MH);
   const st=[idx(Math.floor(def.revive[0]),Math.floor(def.revive[1]))];reach[st[0]]=1;
   while(st.length){const c=st.pop(),x=c%MW,y=(c/MW)|0;

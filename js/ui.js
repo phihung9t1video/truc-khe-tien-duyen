@@ -222,7 +222,7 @@ function openDlg(title,html,btns){$('dlgT').textContent=title;$('dlgX').innerHTM
   for(const o of btns.concat([{t:'Đóng',gray:true,fn:closeDlg}])){const e=document.createElement('button');e.className='btn'+(o.gray?' gray':'');e.textContent=o.t;e.onclick=()=>{sfx('click');o.fn();};b.appendChild(e);}
   $('dlg').hidden=false;}
 function closeDlg(){$('dlg').hidden=true;}
-const GREET={elder:'Trúc Khê Thôn tuy nhỏ nhưng là chốn bình yên. Gần đây thú dữ và sơn tặc quấy nhiễu, mong thiếu hiệp ra tay tương trợ.',
+const GREET={...Object.fromEntries(Object.keys(MAPS).map(id=>['tele_'+id,'Trận pháp truyền tống của ta nối liền mọi thành trấn. Chỉ cần chút lộ phí, thiếu hiệp đi đâu cũng tới ngay.'])),elder:'Trúc Khê Thôn tuy nhỏ nhưng là chốn bình yên. Gần đây thú dữ và sơn tặc quấy nhiễu, mong thiếu hiệp ra tay tương trợ.',
   healer:'Thiếu hiệp bị thương ư? Để ta xem nào. Ta cũng có bán linh dược đây.',smith:'Muốn binh khí sắc bén hơn thì tìm lão! Lão còn thu mua đồ cũ.',
   fisher:'Đầm Vân Mộng mênh mông, cá tôm nhiều nhưng yêu quái cũng chẳng ít. Thiếu hiệp từ xa tới, hãy giúp lão một tay.',herbalist:'Sen ở đầm này có linh tính, chữa được bách độc. Thiếu hiệp cần thuốc cứ hỏi ta.',
   merchant:'Hàng của ta đi khắp đầm lầy! Binh khí cần cường hóa, đồ cũ cần bán, cứ để ta lo.',taoist:'Vô lượng thiên tôn. Ma khí trên Thiên Sơn ngày một nặng, bần đạo đang đợi người hữu duyên.',
@@ -241,6 +241,10 @@ function openNpc(n){const q=curQ();player.face=n.x>=player.x?1:-1;
     btns.push({t:'Mua 5 Kim Sang Dược — 30 lượng',fn:()=>{if(player.gold<30)return log('Không đủ lượng','#ff9a8a');player.gold-=30;player.hpPot+=5;sfx('coin');openNpc(n);}});
     btns.push({t:'Mua 5 Ngưng Thần Đan — 30 lượng',fn:()=>{if(player.gold<30)return log('Không đủ lượng','#ff9a8a');player.gold-=30;player.mpPot+=5;sfx('coin');openNpc(n);}});
     html+=`<br><br>Bạn đang có <b style="color:#ffd977">${player.gold.toLocaleString('vi-VN')}</b> lượng.`;}
+  if(n.kind==='tele'){const gm=typeof isGM==='function'&&isGM();html+=`<br><br>Trả lượng để truyền tống ngay tới thành của bản đồ khác. Bạn đang có <b style="color:#ffd977">${player.gold.toLocaleString('vi-VN')}</b> lượng.`;
+    Object.keys(MAPS).filter(id=>id!==curMapId).sort((a,b)=>(MAPS[a].minLv||1)-(MAPS[b].minLv||1)).forEach(id=>{const M=MAPS[id],cost=gm?0:teleCost(id),lock=!gm&&player.lv<(M.minLv||1);
+      btns.push({t:`${M.name} (cấp ${M.lvText}) — ${lock?'cần cấp '+M.minLv:cost?cost.toLocaleString('vi-VN')+' lượng':'miễn phí'}`,gray:lock,fn:()=>{if(lock)return log(`Cần đạt cấp ${M.minLv} để tới ${M.name}`,'#ffb36b');if(player.gold<cost)return log('Không đủ lượng','#ff9a8a');
+        player.gold-=cost;closeDlg();navGoal=null;player.target=null;player.npc=null;player.gather=null;player.path=[];loadMap(id);sfx('quest');addRing(player.x,player.y-14,60,'#9fd3ff',0.8);log(`Đã truyền tống tới ${M.name}${cost?' (-'+cost.toLocaleString('vi-VN')+' lượng)':''}`,'#9fd3ff');save();}});});}
   if(n.kind==='smith'){html+='<br><br>Mỗi món trang bị đều cường hóa riêng được (tối đa +15). Khi thay đồ mới, cường hóa của món cũ sẽ chuyển sang món mới.';
     btns.push({t:'Cường hóa trang bị',fn:()=>{closeDlg();eqSel=eqSel||'weapon';openPanel('panelChar');}});
     btns.push({t:'Bán toàn bộ đồ Thường & Tinh xảo (trừ đồ tốt hơn)',fn:()=>{sellJunk();openNpc(n);}});
