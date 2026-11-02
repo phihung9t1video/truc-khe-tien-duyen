@@ -1,6 +1,6 @@
 {
-  "version": "1.3.20",
-  "notes": "Tu ban: them muc den do Truyen thuyet (vang), chon muc la ban luon do trong tui, dung duoc ca khi to doi. Giao dich mo rong 12 o.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.20/www.zip",
-  "sha256": "3edb1d6d3f2143894a9d0a8a463eae03cc879e431fae78482ae46429128a9241"
+  "version": "1.3.21",
+  "notes": "Bo Trung Lau du 10 mon (moi o tru vu khi, 2 nhan), thuong theo 2/4/6/8/10 mon. Vu khi tach thanh Than khi rieng tung phai. Do cu tu doi sang.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.21/www.zip",
+  "sha256": "098b0fbde0800ffe0f37dd30122cd5e727363bf106763af48a6064e40341ec48"
 }

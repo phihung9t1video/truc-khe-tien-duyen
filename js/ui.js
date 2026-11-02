@@ -71,6 +71,7 @@ function itemHTML(it,cmp){if(!it)return'';if(cmp===undefined&&player.inv.include
   h+=`<div style="color:${it.lvReq>player.lv?'#ff7a6a':'#ccc'}">Yêu cầu cấp ${it.lvReq}</div><div style="margin-top:4px">`;
   for(const k in it.st){const v=it.st[k],o=cmp&&cmp.st[k]||0,dv=v-o;h+=`${STATNAME[k]}: <b>+${v}${k==='crit'||k==='spd'?'%':''}</b>`+(cmp&&cmp!==it&&dv!==0?` <span style="color:${dv>0?'#7f7':'#f77'}">(${dv>0?'+':''}${dv})</span>`:'')+'<br>';}
   if(it.ref){const rb=refBonus(it);h+=`<span style="color:#ffd23f">Cường hóa +${it.ref}: ${Object.entries(rb).map(([k,v])=>STATNAME[k]+' +'+v).join(', ')}</span><br>`;}
+  if(it.god)h+=`<div style="margin-top:4px;color:${GOD_COL}"><b>✦ THẦN KHÍ</b> — vũ khí tối thượng, ai cũng cầm được</div>`;
   if(it.set&&typeof SETS!=='undefined'&&SETS[it.set]){const S=SETS[it.set],n=setCount(it.set);h+=`<div style="margin-top:4px;color:${S.col}"><b>Bộ ${S.name}</b> (đang mặc ${n}/${S.pieces.length})</div>`+Object.entries(S.desc).map(([c,t])=>`<div style="color:${n>=+c?'#9fffb0':'#888'}">${c} món: ${t}</div>`).join('');}
   h+=`</div><div style="color:#ffd977;margin-top:3px">Giá bán: ${it.price} lượng</div>`;return h;}
 function tipContent(key){const [k,v]=key.split(':');

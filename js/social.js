@@ -96,7 +96,8 @@ function cleanItem(x){if(!x||typeof x!=='object'||!SLOT_STATS[x.slot])return nul
   const base=SLOT_STATS[x.slot](tier),m=RARITY[rar].m,b=RARITY[rar].b,maxAdd={crit:2+Math.ceil(tier/3),atk:Math.ceil((tier+1)*3*0.8),hp:(tier+1)*20,mp:(tier+1)*15,def:Math.ceil((tier+1)*2*0.8)};
   const st={};for(const k in (x.st||{})){if(!(k in maxAdd)&&!(k in base))continue;const cap=Math.max(1,Math.round((base[k]||0)*m))+b*(maxAdd[k]||0);const v=clamp(Math.round(+x.st[k]||0),0,cap);if(v)st[k]=v;}
   if(Object.keys(st).length)it.st=st;it.ref=clamp(x.ref|0,0,REF_MAX);
-  if(x.set&&SETS[x.set]&&SETS[x.set].pieces.includes(x.slot)){const s=makeSetItem(x.slot,x.set,wt);s.ref=it.ref;return s;}return it;}
+  if(x.god&&x.slot==='weapon'){const s=makeGodWeapon(wt);s.ref=it.ref;return s;}
+  if(x.set&&SETS[x.set]&&SETS[x.set].pieces.includes(x.slot)){const s=makeSetItem(x.slot,x.set);s.ref=it.ref;return s;}return it;}
 function tradeCommit(){const give=TRD.my.map(uid=>player.inv.find(x=>x.uid===uid));
   if(give.some(x=>!x)||player.gold<TRD.myGold){log('Giao dịch lỗi: đồ hoặc lượng đã thay đổi','#ff9a8a');tradeCancel(true);return;}
   player.inv=player.inv.filter(x=>!TRD.my.includes(x.uid));player.gold-=TRD.myGold;

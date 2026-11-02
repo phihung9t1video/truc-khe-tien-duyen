@@ -106,10 +106,14 @@ for(const [id,base] of Object.entries(BIG)){scaleMap(id,1.5);const b=MT[base],k=
 for(const id in MAPS)for(const n of MAPS[id].npcs)NPC_INDEX[n.id]=Object.assign({map:id},n);
 
 // ===================== BỘ TRÙNG LÂU (đồ Thần thoại cao nhất) =====================
-// Rơi khi hạ Hỗn Độn Ma Thần (trùm cấp 90). Tài khoản GM nhận đủ bộ.
-const SETS={trunglau:{name:'Trùng Lâu',col:'#ff4a6a',pieces:['weapon','armor','amulet','necklace','ring'],
-  suf:{armor:'Bào',amulet:'Ngọc',necklace:'Liên',ring:'Giới',sword:'Kiếm',fan:'Phiến',flute:'Tiêu',staff:'Trượng',hammer:'Chùy',dagger:'Song Chủy'},
-  bonus:{2:{atk:0.08},3:{hp:0.12,def:0.1},5:{atk:0.15,crit:0.1}},desc:{2:'Công lực +8%',3:'Sinh lực +12%, phòng thủ +10%',5:'Công lực +15%, bạo kích +10%'}}};
+// Đủ 10 món (mọi ô trừ vũ khí, nhẫn 2 chiếc). Vũ khí là THẦN KHÍ riêng (GODW). Rơi khi hạ Hỗn Độn Ma Thần (cấp 90) và Hỗn Nguyên Thiên Đế (cấp 199). GM nhận đủ.
+const SETS={trunglau:{name:'Trùng Lâu',col:'#ff4a6a',pieces:['helmet','armor','vest','gloves','wrist','boots','amulet','necklace','ring','ring'],
+  suf:{helmet:'Quan',armor:'Bào',vest:'Giáp',gloves:'Thủ',wrist:'Uyển',boots:'Ngoa',amulet:'Ngọc',necklace:'Liên',ring:'Giới'},
+  bonus:{2:{atk:0.05},4:{hp:0.1,def:0.08},6:{atk:0.08,crit:0.05},8:{hp:0.1,def:0.1},10:{atk:0.15,crit:0.1}},
+  desc:{2:'Công lực +5%',4:'Sinh lực +10%, phòng thủ +8%',6:'Công lực +8%, bạo kích +5%',8:'Sinh lực +10%, phòng thủ +10%',10:'Công lực +15%, bạo kích +10%'}}};
+// THẦN KHÍ: vũ khí tối thượng theo từng loại, một cấp duy nhất, ai cũng cầm được
+const GODW={sword:'Trảm Thiên Thần Kiếm',fan:'Phong Vân Thần Phiến',flute:'Thiên Âm Thần Tiêu',staff:'Bách Thảo Thần Trượng',hammer:'Khai Sơn Thần Chùy',dagger:'U Ảnh Thần Chủy'};
+const GOD_COL='#ffd040';
 
 // ===================== BIỂU TƯỢNG TRANG BỊ (hình vẽ) =====================
 const svgIcon=inner=>'<svg class="gi" viewBox="0 0 24 24" width="1.2em" height="1.2em" fill="currentColor" stroke="currentColor" stroke-width="0" style="vertical-align:-0.22em">'+inner+'</svg>';

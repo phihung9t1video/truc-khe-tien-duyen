@@ -74,7 +74,13 @@ function makeItem(slot,tier,rar,wtype){tier=clamp(tier,0,MAXTIER);const m=RARITY
 }
 // đồ bộ (Trùng Lâu): một cấp duy nhất, Thần thoại bậc cao nhất, chỉ số x1,5, ai cũng mặc được, điểm thưởng theo số món đang mặc
 function makeSetItem(slot,setId,wtype){const S=SETS[setId],wt=wtype||SECTS[player.sect].wtype,it=makeItem(slot,MAXTIER,RARITY.length-1,wt);for(const k in it.st)it.st[k]=Math.round(it.st[k]*1.5);
-  it.set=setId;it.name=S.name+' '+(slot==='weapon'?S.suf[wt]:S.suf[slot]);it.lvReq=1;it.price*=5;return it;}
+  it.set=setId;it.name=S.name+' '+S.suf[slot];it.lvReq=1;it.price*=5;return it;}
+function makeGodWeapon(wtype){const wt=GODW[wtype]?wtype:SECTS[player.sect].wtype,it=makeItem('weapon',MAXTIER,RARITY.length-1,wt);for(const k in it.st)it.st[k]=Math.round(it.st[k]*1.8);
+  it.god=1;it.name=GODW[wt];it.lvReq=1;it.price*=8;return it;}
+// rơi đồ tối thượng từ trùm cuối
+function dropUltimate(m,pSet,pGod){const S=SETS.trunglau;
+  if(Math.random()<pSet){const it=makeSetItem(S.pieces[rint(0,S.pieces.length-1)],'trunglau');addItem(it);toast(`Rơi đồ ${S.name}: ${it.name}!`,S.col);log(`${m.t.name} để lại ${it.name}!`,S.col);}
+  if(Math.random()<pGod){const it=makeGodWeapon();addItem(it);toast(`Rơi THẦN KHÍ: ${it.name}!`,GOD_COL);log(`${m.t.name} để lại Thần khí ${it.name}!`,GOD_COL);}}
 const setCount=id=>EQ_KEYS.filter(k=>player.eq[k]&&player.eq[k].set===id).length;
 function eqKeyFor(it){if(it.slot!=='ring')return it.slot;if(!player.eq.ring1)return'ring1';if(!player.eq.ring2)return'ring2';return itemScore(player.eq.ring1)<=itemScore(player.eq.ring2)?'ring1':'ring2';}
 function itemScore(it){if(!it)return 0;const s=it.st;return(s.atk||0)*2+(s.def||0)*1.6+(s.hp||0)*0.12+(s.mp||0)*0.08+(s.crit||0)*3+(s.spd||0)*1.2;}
@@ -82,7 +88,7 @@ const wtypeOk=it=>it.slot!=='weapon'||!it.wtype||it.wtype===SECTS[player.sect].w
 function isUpgrade(it){return it.lvReq<=player.lv&&wtypeOk(it)&&itemScore(it)>itemScore(player.eq[eqKeyFor(it)]);}
 let LOOT_TO=null; // danh sách người được chia đồ khi đang tổ đội
 // tự bán: chỉ áp dụng cho đồ rơi/được chia (drop=true), không bán đồ mua ở cửa hàng hay phần thưởng nhiệm vụ
-const autoSellHit=it=>player.autoSellRar>=0&&it.rar<=player.autoSellRar&&it.rar<RARITY.length-1&&!it.set&&!isUpgrade(it);
+const autoSellHit=it=>player.autoSellRar>=0&&it.rar<=player.autoSellRar&&it.rar<RARITY.length-1&&!it.set&&!it.god&&!isUpgrade(it);
 function addItem(it,silent,drop){
   if(LOOT_TO&&LOOT_TO.length>1){const r=LOOT_TO[rint(0,LOOT_TO.length-1)];if(r!==NET.id&&partyAPI('netSendLoot',r,it))return;}
   if(drop&&autoSellHit(it)){player.gold+=it.price;log(`Tự bán ${it.name} (${RARITY[it.rar].n}) được ${it.price} lượng`,'#ffd977');return false;}
@@ -117,7 +123,7 @@ function sellJunk(){let n=0,g=0;player.inv=player.inv.filter(it=>{if(it.rar<=1&&
   if(n){player.gold+=g;sfx('coin');log(`Đã bán ${n} món đồ, thu ${g} lượng`,'#ffd977');}else log('Không có đồ Thường/Tinh xảo nào để bán','#ccc');refreshPanels();}
 function autoEquip(){for(const it of [...player.inv])if(isUpgrade(it))equipItem(it.uid);}
 function rollLoot(m){const t=m.t,w=SECTS[player.sect].wtype;
-  if(m.type==='hondon'&&Math.random()<0.12){const S=SETS.trunglau,it=makeSetItem(S.pieces[rint(0,S.pieces.length-1)],'trunglau');addItem(it);toast(`Rơi đồ ${S.name}: ${it.name}!`,S.col);log(`${m.t.name} để lại ${it.name}!`,S.col);}
+  if(m.type==='hondon')dropUltimate(m,0.12,0.03);if(m.type==='hn_de')dropUltimate(m,0.2,0.06);
   if(t.boss){for(let k=0;k<2;k++)addItem(makeItem(SLOTS[rint(0,SLOTS.length-1)],t.tier,t.tier>=10&&Math.random()<0.15?4:Math.random()<0.4?3:2,w),false,true);return;}
   if(Math.random()>t.loot)return;
   const r=Math.random(),rar=t.tier>=10&&r<0.002?4:r<0.02?3:r<0.12?2:r<0.4?1:0;
@@ -534,10 +540,22 @@ function applySave(s){
   if(s.refine&&player.eq.weapon&&!player.eq.weapon.ref)player.eq.weapon.ref=s.refine; // bản cũ: cường hóa gắn với nhân vật -> chuyển vào vũ khí đang cầm
 for(const it of player.inv.concat(Object.values(player.eq)))if(it&&it.slot==='jade')it.slot='amulet';
   // đồ bộ cũ (bậc thấp, cần cấp 85) -> nâng thành đồ bộ tối thượng, ai cũng mặc được; giữ cường hóa
-  const upSet=it=>{if(!it||!it.set||!SETS[it.set]||(it.tier>=MAXTIER&&it.lvReq<=1))return it;const n=makeSetItem(it.slot,it.set,it.wtype||undefined);n.uid=it.uid;if(it.ref)n.ref=it.ref;return n;};
+  // vũ khí Trùng Lâu cũ -> Thần khí
+  const upSet=it=>{if(!it)return it;let n=null;if(it.slot==='weapon'&&(it.set||it.god)){if(!it.god||it.tier<MAXTIER)n=makeGodWeapon(it.wtype);}
+    else if(it.set&&SETS[it.set]&&!(it.tier>=MAXTIER&&it.lvReq<=1&&SETS[it.set].suf[it.slot]&&it.name===SETS[it.set].name+' '+SETS[it.set].suf[it.slot]))n=makeSetItem(it.slot,it.set);
+    if(!n)return it;n.uid=it.uid;if(it.ref)n.ref=it.ref;return n;};
   player.inv=player.inv.map(upSet);for(const k in player.eq)player.eq[k]=upSet(player.eq[k]);if(Array.isArray(player.stash))player.stash=player.stash.map(upSet);
   let mx=0;for(const it of player.inv.concat(Object.values(player.eq)))if(it&&it.uid>mx)mx=it.uid;uidN=mx+1;
   refreshLook();AU.music=s.music!==false;AU.sfx=s.sfx!==false;
   const mid=MAPS[s.map]?s.map:'trukhe';loadMap(mid,s.v===3?s.x:null,s.v===3?s.y:null);
   const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;}
 addEventListener('beforeunload',save);
+
+// trao các món tối thượng còn thiếu (đếm cả túi, kho, đồ đang mặc); equip=true thì mặc luôn
+function giveUltimate(equip){const S=SETS.trunglau,all=player.inv.concat(Object.values(player.eq),player.stash||[]).filter(Boolean),have={};let n=0;
+  for(const it of all)if(it.set==='trunglau')have[it.slot]=(have[it.slot]||0)+1;
+  const need={};for(const sl of S.pieces)need[sl]=(need[sl]||0)+1;
+  for(const sl in need)for(let k=have[sl]||0;k<need[sl];k++){const it=makeSetItem(sl,'trunglau');player.inv.push(it);n++;if(equip)equipItem(it.uid);}
+  if(!all.some(it=>it.god)){const it=makeGodWeapon();player.inv.push(it);n++;if(equip)equipItem(it.uid);}
+  if(equip)for(const it of [...player.inv])if((it.god||it.set)&&isUpgrade(it))equipItem(it.uid);
+  return n;}
