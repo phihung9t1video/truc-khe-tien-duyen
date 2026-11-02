@@ -2,14 +2,21 @@
 // ===================== ĐIỆN THOẠI: CHẠY NỀN, CỬA SỔ NỔI, VÀO LẠI =====================
 // - App Android: nút "Thu nhỏ" (và tự thu nhỏ khi bấm Home) -> game thành cửa sổ nổi, vẫn chạy, vẫn ở trong tổ đội.
 // - Trình duyệt điện thoại tự dừng trang khi ẩn: khi quay lại, game tự vào lại tài khoản, tự kết nối và xin vào lại tổ đội cũ.
-const NATIVE=typeof window.TKNative!=='undefined'&&window.TKNative;
-const canPip=()=>{try{return !!(NATIVE&&NATIVE.canPip());}catch(e){return false;}};
+const TKN=()=>(window.Capacitor&&typeof Capacitor.isNativePlatform==='function'&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.TKNative)||null;
 // cửa sổ nổi: ẩn bớt giao diện cho gọn
 window.onPipChange=inPip=>{document.body.classList.toggle('pip',!!inPip);if(inPip)PANELS.forEach(p=>$(p).hidden=true);};
-(()=>{const st=document.createElement('style');st.textContent='body.pip #hud{display:none!important}body.pip #dlg{display:none!important}';document.head.appendChild(st);
-  if(canPip()){const b=document.createElement('button');b.id='btnPip';b.textContent='Thu nhỏ';b.title='Thu nhỏ game thành cửa sổ nổi, game vẫn chạy';$('menuBtns').appendChild(b);b.onclick=()=>{sfx('click');try{NATIVE.pip();}catch(e){}};
-    const m=$('optMusic');if(m){const row=document.createElement('div');row.className='setrow';row.innerHTML='<span>Tự thu nhỏ thành cửa sổ nổi khi bấm Home</span><input type="checkbox" id="optPip">';m.parentNode.parentNode.insertBefore(row,m.parentNode);
-      const c=$('optPip');try{c.checked=NATIVE.autoPip();}catch(e){c.checked=true;}c.onchange=()=>{try{NATIVE.setAutoPip(c.checked);}catch(e){}sfx('click');};}}})();
+function pipBlocked(){openDlg('Máy đang chặn cửa sổ nổi','Điện thoại của bạn đang tắt quyền <b>Hình trong hình</b> cho game.<br><br>Bấm nút dưới để mở cài đặt, bật <b>Cho phép hình trong hình</b> (có máy ghi là <i>Picture-in-picture</i> hoặc <i>Cửa sổ nổi</i>), rồi quay lại game bấm <b>Thu nhỏ</b>.',
+  [{t:'Mở cài đặt',fn:()=>{closeDlg();try{TKN().openPipSettings();}catch(e){}}},{t:'Để sau',gray:true,fn:closeDlg}]);}
+(async()=>{const st=document.createElement('style');st.textContent='body.pip #hud{display:none!important}body.pip #dlg{display:none!important}';document.head.appendChild(st);
+  const P=TKN();if(!P)return;let info=null;try{info=await P.info();}catch(e){return;}if(!info||!info.canPip)return;
+  try{P.addListener('pipChange',e=>window.onPipChange(e&&e.inPip));}catch(e){}
+  const b=document.createElement('button');b.id='btnPip';b.textContent='Thu nhỏ';b.title='Thu nhỏ game thành cửa sổ nổi, game vẫn chạy';$('menuBtns').appendChild(b);
+  b.onclick=async()=>{sfx('click');try{const r=await P.pip();if(!r||!r.ok)pipBlocked();}catch(e){pipBlocked();}};
+  const h=document.createElement('button');h.id='btnHide';h.textContent='Ẩn';h.title='Ẩn game xuống nền, nhân vật vẫn chạy (bấm thông báo để mở lại)';$('menuBtns').appendChild(h);
+  h.onclick=()=>{sfx('click');save();log('Game chạy nền: bấm thông báo "đang chạy nền" để mở lại','#9fffb0');try{P.hide();}catch(e){}};
+  const m=$('optMusic');if(m){const row=document.createElement('div');row.className='setrow';row.innerHTML='<span>Tự thu nhỏ thành cửa sổ nổi khi bấm Home</span><input type="checkbox" id="optPip">';m.parentNode.parentNode.insertBefore(row,m.parentNode);
+    const c=$('optPip');c.checked=info.autoPip!==false;c.onchange=()=>{try{P.setAutoPip({on:c.checked});}catch(e){}sfx('click');};}
+  if(info.pipAllowed===false)setTimeout(()=>log('Máy đang chặn cửa sổ nổi cho game: bấm Thu nhỏ để xem cách bật','#ffb36b'),5000);})();
 // quay lại sau khi bị ẩn: kết nối lại, chào lại, xin vào lại đội cũ
 function onBack(){if(!started)return;
   try{if(NET.ws&&NET.ws.readyState>1){NET.ws=null;}if(!NET.ws&&typeof netConnect==='function'){NET.retryT=0;netConnect();}}catch(e){}

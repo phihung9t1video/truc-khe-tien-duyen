@@ -1,6 +1,6 @@
-{
+﻿{
   "appId": "io.github.phihung9t1video.truckhetienduyen",
-  "appName": "Trúc Khê Tiên Duyên",
+  "appName": "TrÃºc KhÃª TiÃªn DuyÃªn",
   "webDir": "www",
   "android": { "backgroundColor": "#120e18" },
   "plugins": {

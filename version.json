@@ -1,6 +1,7 @@
 {
-  "version": "1.3.33",
-  "notes": "Luyen Tai Cho: bam vao man hinh khong con tu tat, chi tat khi bam lai nut LUYEN TAI CHO.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.33/www.zip",
-  "sha256": "665334e068b1dfac31381594dbfa378bd1ef928a632ec72e16cbffb366b5f4b0"
+  "version": "1.3.34",
+  "notes": "App Android: them nut An (an xuong nen, game van chay, bam thong bao de mo lai); nut Thu nho bao cach bat neu may chan cua so noi. Them Nhac rieng: chon file nhac tren may cho tung ban do (Cai dat).",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.34/www.zip",
+  "sha256": "46d41c7a0f4afd54fbc136bb1b9f66419d90160d105139f9b483594c5e5c35a2",
+  "apk": true
 }

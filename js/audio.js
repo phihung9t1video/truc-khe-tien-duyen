@@ -55,7 +55,7 @@ function pluck(f,when,vol){const a=AU.ctx,t=when,o=a.createOscillator(),o2=a.cre
 function drum(when,vol){const a=AU.ctx,o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.setValueAtTime(110,when);o.frequency.exponentialRampToValueAtTime(40,when+0.3);
   g.gain.setValueAtTime(vol,when);g.gain.exponentialRampToValueAtTime(0.0001,when+0.4);o.connect(g);g.connect(AU.musG);o.start(when);o.stop(when+0.45);}
 function pad(f,when,dur){const a=AU.ctx,o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,when);g.gain.linearRampToValueAtTime(0.05,when+1.2);g.gain.linearRampToValueAtTime(0.0001,when+dur);o.connect(g);g.connect(AU.musG);o.start(when);o.stop(when+dur+0.1);}
-function musicTick(){const a=AU.ctx;if(!a||!AU.music)return;
+function musicTick(){const a=AU.ctx;if(!a||!AU.music||AU.custom)return;
   const battle=AU.mood==='battle',sc=SCALES[AU.mood]||SCALES.calm,stepLen=battle?0.26:AU.mood==='snow'?0.5:AU.mood==='marsh'?0.46:0.4;
   while(AU.next<a.currentTime+0.4){const t=AU.next,s=AU.step;
     if(s%16===0)pad(sc[0]/2,t,stepLen*16);
