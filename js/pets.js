@@ -48,7 +48,7 @@ function petTick(dt){const P=petDef();if(!P||!player.petOn||!started){return;}
             addSlash(hx,hy,PET.face,col);fx.push({k:'s',x:hx+6,y:hy+6,face:-PET.face,col,t:0,life:0.2});addParts(hx,hy,col,10,110);addRing(hx,hy,22,col,0.25,2);sfx('hit');
             hurtMob(tg,dmgCalc(stats().atk*pw,tg.armor,1,stats().crit));}});}}
       if(P.skill&&PET.skillCd<=0)petSkill(P,tg);}}
-  else if(P.skill&&player.pet==='huyenbang'&&PET.skillCd<=0)petSkill(P,null);}
+  else if(P.skill&&(player.pet==='huyenbang'||P.skill.type==='heal')&&PET.skillCd<=0)petSkill(P,null);}
 function petSkill(P,tg){const st=stats();
   if(player.pet==='thienlang'){PET.skillCd=P.skill.cd;addBuff({id:'howl',t:8,max:8,crit:0.2,icon:'☾',col:'#ffe08a',name:P.skill.name});addRing(PET.x,PET.y-10,60,'#ffe08a',0.6);sfx('slam');}
   else if(player.pet==='huyenbang'){if(player.hp<st.maxhp*0.7&&!player.dead){PET.skillCd=P.skill.cd;healPlayer(Math.round(st.maxhp*0.12));addRing(player.x,player.y-10,46,'#9fe8ff',0.6);sfx('heal');}}

@@ -363,10 +363,12 @@ function drawPlayer(){const p=player;
   const fy=p.flying?-16-Math.sin(nowT*3)*3:0;
   drawShadow(p.x,p.y,p.flying?10:13,p.flying?0.18:0.32);
   const ag=ctx.createRadialGradient(p.x,p.y-4+fy,2,p.x,p.y-4+fy,28);ag.addColorStop(0,'rgba(170,215,255,.3)');ag.addColorStop(1,'rgba(170,215,255,0)');ctx.fillStyle=ag;ctx.beginPath();ctx.ellipse(p.x,p.y-4+fy,28,13,0,0,Math.PI*2);ctx.fill();
+  const auraLv=typeof setAuraLv==='function'?setAuraLv():0;if(auraLv)drawSetAura(p.x,p.y,fy,auraLv,0);
   if(p.flying)drawFlySword(p.x,p.y+fy+1,p.dir==='side'?p.face:1,playerW.type==='sword'?playerW.col:'#bfe0ff',playerW.glow||'#9fd3ff');
-  const rideM=p.riding&&typeof MOUNTS!=='undefined'&&MOUNTS[p.mount];let rdy=0;if(rideM){drawSteed(p.mount,p.x,p.y,p.face,p.moving,0);rdy=rideM.kind==='crane'?-40:-24;}
+  const rideM=p.riding&&typeof MOUNTS!=='undefined'&&MOUNTS[p.mount];let rdy=0;if(rideM){drawSteed(p.mount,p.x,p.y,p.face,p.moving,0);rdy=typeof mountRideY==='function'?mountRideY(rideM):rideM.kind==='crane'?-40:-24;}
   const stl=p.buffs.some(b=>b.id==='stealth');if(stl){ctx.save();ctx.globalAlpha=0.42;}
   drawChibi(playerLook,p.x,p.y+fy+rdy,1,rideM?'side':(p.dir||'down'),p.face,p.moving&&!p.flying&&!rideM,p.atkAnim,p.hitFlash>0,Object.assign({},playerW,{style:p.combo||0}),0.3);
+  if(auraLv)drawSetAura(p.x,p.y,fy+rdy,auraLv,1);
   if(stl)ctx.restore();
   for(const b of p.buffs){
     if(b.id==='shield'){ctx.save();ctx.globalAlpha=0.35+0.1*Math.sin(nowT*5);const g=ctx.createRadialGradient(p.x,p.y-28+fy,8,p.x,p.y-28+fy,34);g.addColorStop(0,'rgba(255,230,140,0)');g.addColorStop(1,'rgba(255,220,120,.7)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y-28+fy,34,0,Math.PI*2);ctx.fill();
