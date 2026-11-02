@@ -49,7 +49,7 @@ const localData=()=>{try{return JSON.parse(localStorage.getItem(SKEY));}catch(e)
 // đẩy nhân vật lên máy chủ (tài khoản máy chủ)
 // nhân vật GM lưu vào bảng tk_players theo danh tính suy ra từ mật khẩu (không lên bảng xếp hạng)
 async function gmCloud(silent){if(!netEnabled()||!player.sect)return false;save();const d=localData();if(!d)return false;
-  try{const ok=await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:Math.min(99,player.lv),p_exp:player.exp,p_data:d});if(!silent)log(ok?'Đã lưu nhân vật GM lên máy chủ':'Máy chủ từ chối lưu nhân vật GM',ok?'#8fd8ff':'#ff9a8a');return !!ok;}
+  try{const ok=await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:d});if(!silent)log(ok?'Đã lưu nhân vật GM lên máy chủ':'Máy chủ từ chối lưu nhân vật GM',ok?'#8fd8ff':'#ff9a8a');return !!ok;}
   catch(e){if(!silent)log('Chưa lưu lên máy chủ được (mất mạng?)','#ff9a8a');return false;}}
 async function accSync(silent){const c=ACC.cur;if(c&&isGM())return gmCloud(silent);if(!c||!c.server||!c.token||ACC.lost||!player.sect)return false;
   if(ACC.syncing){ACC.again=true;return ACC.syncing;}ACC.syncing=accSyncRun(silent).finally(()=>{ACC.syncing=false;if(ACC.again){ACC.again=false;accSync(true);}});return ACC.syncing;}
@@ -59,13 +59,13 @@ async function accSyncRun(silent){const c=ACC.cur;save();const d=localData();if(
   if(r.msg==='session'){accKicked();return false;}
   if(!silent)log('Chưa lưu lên máy chủ được (mất mạng?), sẽ thử lại sau','#ff9a8a');return false;}
 setInterval(()=>{if(started&&ACC.cur&&(ACC.cur.server||isGM()))accSync(true);},30000);
-addEventListener('beforeunload',()=>{const c=ACC.cur;if(c&&isGM()&&netEnabled()&&player.sect){try{save();const d=localData();if(d)fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/tk_save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify({p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:Math.min(99,player.lv),p_exp:player.exp,p_data:d})});}catch(e){}return;}
+addEventListener('beforeunload',()=>{const c=ACC.cur;if(c&&isGM()&&netEnabled()&&player.sect){try{save();const d=localData();if(d)fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/tk_save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify({p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:d})});}catch(e){}return;}
   if(!c||!c.server||!c.token||ACC.lost||!netEnabled())return;try{save();const d=localData();if(!d)return;
   fetch(NET.cfg.url.replace(/\/$/,'')+'/rest/v1/rpc/tk_acc_save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:NET.cfg.key,Authorization:'Bearer '+NET.cfg.key},body:JSON.stringify({p_user:c.user,p_token:c.token,p_data:d,p_ts:d.ts||Date.now()})});}catch(e){}});
 // nút Xếp hạng gọi cloudSave: tài khoản máy chủ lưu vào tk_accounts; GM lưu riêng (không lên bảng xếp hạng)
 const _cloudSave0=cloudSave;
 cloudSave=async function(silent){if(ACC.cur&&(ACC.cur.server||isGM()))return accSync(silent);if(!isGM())return _cloudSave0(silent);if(!netEnabled()||!player.sect)return false;save();
-  try{await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:Math.min(99,player.lv),p_exp:player.exp,p_data:JSON.parse(localStorage.getItem(SKEY))});if(!silent)log('Đã lưu nhân vật GM lên mạng (không hiện trên bảng xếp hạng)','#8fd8ff');return true;}
+  try{await rpc('tk_save',{p_id:NET.id,p_secret:NET.secret,p_name:player.name,p_sect:'GM',p_lv:player.lv,p_exp:player.exp,p_data:JSON.parse(localStorage.getItem(SKEY))});if(!silent)log('Đã lưu nhân vật GM lên mạng (không hiện trên bảng xếp hạng)','#8fd8ff');return true;}
   catch(e){if(!silent)log('Chưa lưu lên mạng được (máy chủ chưa bật bảng lưu trữ)','#ff9a8a');return false;}};
 // mã khôi phục: tải nhân vật trên mạng vào tài khoản đang đăng nhập
 cloudLoad=async function(code){if(!netEnabled())throw new Error('off');const m=String(code).trim().toUpperCase().match(/^([A-Z0-9]{8})-([A-Z0-9]{12})$/);if(!m)throw new Error('ma');
