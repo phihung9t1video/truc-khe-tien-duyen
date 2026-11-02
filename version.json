@@ -1,6 +1,6 @@
 {
-  "version": "1.3.26",
-  "notes": "Anh sang moi: ban do sang sua co nang, tia nang, buom, chim bay, bui khi chay, bong do co huong. Vung u toi (U Minh, Huyet Hai, Hon Nguyen) toi han, chi sang quanh nhan vat va den duoc.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.26/www.zip",
-  "sha256": "e488c740f6b87afe0d74329c1de712b32c2623a4cc133003860114c277c3d1a8"
+  "version": "1.3.27",
+  "notes": "Goc nhin nghieng gia 3D: phia xa nho dan va co suong mo. Tat/bat trong Cai dat (Goc nhin 3D).",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.27/www.zip",
+  "sha256": "432fc97c97a939fff2cdc4beb6a536e550de7ab9cf3c1726421f4fee926cbc8e"
 }

@@ -283,7 +283,7 @@ function enterGame(isNew){$('start').hidden=true;$('hud').hidden=false;buildHotb
 
 // ===================== ĐIỀU KHIỂN =====================
 const mouse={x:0,y:0,down:false,hold:false,holdT:0};
-const toWorld=(sx,sy)=>({x:sx/Z+cam.x,y:sy/Z+cam.y});
+let toWorld=(sx,sy)=>({x:sx/Z+cam.x,y:sy/Z+cam.y});
 function pickAt(w){
   for(const n of npcs)if(Math.abs(w.x-n.x)<16&&w.y<n.y+6&&w.y>n.y-64)return{npc:n};
   if(typeof NET!=='undefined')for(const o of NET.others.values())if(Math.abs(w.x-o.x)<15&&w.y<o.y+6&&w.y>o.y-60)return{other:o};
