@@ -18,7 +18,8 @@ const SHOP_ITEMS=[
 ];
 const EQ_SHOP=['weapon','helmet','armor','vest','gloves','wrist','boots','amulet','necklace','ring'];
 const shopTierFor=lv=>{let t=0;for(let i=0;i<TIER_LV.length;i++)if(TIER_LV[i]<=lv)t=i;return t;};
-const eqPrice=(tier,rar)=>Math.round((8+tier*24)*(1+rar*0.9)*6);
+const eqPrice=(tier,rar)=>Math.round((8+tier*24)*(1+rar*0.9)*6*[1,1,6,30,150][rar]);
+let shopRar=1;
 let shopTab='item',gmTier=9,gmRar=3;
 function shopPay(price){if(isGM())return true;if(player.gold<price){log('Không đủ lượng','#ff9a8a');sfx('hurt');return false;}player.gold-=price;return true;}
 const priceTxt=p=>isGM()?'<span style="color:#ffd23f">Miễn phí (GM)</span>':`<b style="color:#ffd977">${p.toLocaleString('vi-VN')}</b> lượng`;
@@ -27,10 +28,10 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
   $('shopGold').innerHTML=isGM()?'<span class="gmtag">GM</span> Mua mọi thứ miễn phí, không giới hạn cấp':`Lượng: <b style="color:#ffd977">${player.gold.toLocaleString('vi-VN')}</b>`;
   let h='';
   if(shopTab==='item')h=SHOP_ITEMS.map(it=>`<div class="shr"><span class="shi">${consIcon(it.id)||(it.iconHTML?it.iconHTML():it.icon||'')}</span><div class="shd"><b>${it.name}</b>${it.lv&&player.lv<it.lv&&!isGM()?` <span style="color:#ff7a6a">cần cấp ${it.lv}</span>`:''}<br><span>${it.desc}</span></div><div class="shp">${priceTxt(it.price)}<button data-buy="${it.id}">Mua</button></div></div>`).join('');
-  else if(shopTab==='eq'){const gm=isGM(),tier=gm?gmTier:shopTierFor(player.lv),rar=gm?gmRar:1;
+  else if(shopTab==='eq'){const gm=isGM(),tier=gm?gmTier:shopTierFor(player.lv),rar=gm?gmRar:shopRar;
     if(gm)h+=`<div class="shr"><span class="shi">${itemIcon({slot:'armor',tier:17,rar:4,set:'trunglau'})}</span><div class="shd"><b style="color:${SETS.trunglau.col}">Bộ ${SETS.trunglau.name}</b><br><span>Đủ 10 món + Thần khí, mạnh nhất game, có điểm thưởng khi mặc đủ bộ</span></div><div class="shp">${priceTxt(0)}<button id="gmSetBtn">Nhận cả bộ</button></div></div>`;
     if(gm)h+=`<div class="shgm">Bậc <select id="gmTier">${TIER_PRE.map((n,i)=>`<option value="${i}"${i===gmTier?' selected':''}>${i+1} · ${n}</option>`).join('')}</select> Độ hiếm <select id="gmRar">${RARITY.map((r,i)=>`<option value="${i}"${i===gmRar?' selected':''}>${r.n}</option>`).join('')}</select></div>`;
-    else h+=`<div class="shgm">Bán đồ <b style="color:${RARITY[1].c}">Tinh xảo</b> bậc ${tier+1} (${TIER_PRE[tier]}), hợp với cấp của bạn. Đồ Hiếm và Truyền thuyết phải đánh quái, đánh trùm mới có.</div>`;
+    else h+=`<div class="shgm">Đồ bậc ${tier+1} (${TIER_PRE[tier]}), hợp với cấp của bạn. Độ hiếm: <select id="shRar">${RARITY.map((r,i)=>i?`<option value="${i}"${i===shopRar?' selected':''}>${r.n}</option>`:'').join('')}</select> <span style="color:#aaa">(đồ hiếm càng cao giá càng đắt)</span></div>`;
     const rows=[];const mine=SECTS[player.sect].wtype;
     for(const S of [SECTS[player.sect],...Object.values(SECTS).filter(x=>x!==SECTS[player.sect])])rows.push(['weapon',S.wtype,S]);
     for(const sl of EQ_SHOP)if(sl!=='weapon')rows.push([sl,null,null]);
@@ -42,7 +43,8 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
       <div class="shp">${own?(cur?'<b style="color:#9fffb0">Đang dùng</b>':`<button data-use="${k}">Dùng</button>`):`${priceTxt(m.price)}<button data-mount="${k}" ${lock?'disabled':''}>Mua</button>`}</div></div>`;}).join('');
   b.innerHTML=h;
   b.querySelectorAll('[data-buy]').forEach(e=>e.onclick=()=>{const it=SHOP_ITEMS.find(x=>x.id===e.dataset.buy);if(it.lv&&player.lv<it.lv&&!isGM())return log(`Cần đạt cấp ${it.lv}`,'#ff9a8a');if(!shopPay(it.price))return;it.buy();sfx('coin');log(`Đã mua ${it.name}`,'#ffd977');save();renderShop();});
-  b.querySelectorAll('[data-eq]').forEach(e=>e.onclick=()=>{if(player.inv.length>=BAG_MAX)return log('Túi đồ đã đầy','#ff9a8a');const gm=isGM(),tier=gm?gmTier:shopTierFor(player.lv),rar=gm?gmRar:1;
+  if($('shRar')){$('shRar').onchange=e=>{shopRar=+e.target.value;sfx('click');renderShop();};$('shRar').onkeydown=e=>e.stopPropagation();}
+  b.querySelectorAll('[data-eq]').forEach(e=>e.onclick=()=>{if(player.inv.length>=BAG_MAX)return log('Túi đồ đã đầy','#ff9a8a');const gm=isGM(),tier=gm?gmTier:shopTierFor(player.lv),rar=gm?gmRar:shopRar;
     if(!shopPay(eqPrice(tier,rar)))return;const it=makeItem(e.dataset.eq,tier,rar,e.dataset.wt||SECTS[player.sect].wtype);if(gm)it.lvReq=1;addItem(it);save();renderShop();});
   b.querySelectorAll('[data-mount]').forEach(e=>e.onclick=()=>{const k=e.dataset.mount,m=MOUNTS[k];if(!isGM()&&player.lv<m.lv)return;if(!shopPay(m.price))return;
     player.mounts=player.mounts||[];player.mounts.push(k);setMount(k);toast(`Đã mua thú cưỡi ${m.name}`,'#ffd23f');sfx('level');save();renderShop();});

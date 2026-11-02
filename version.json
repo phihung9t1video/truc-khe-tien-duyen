@@ -1,6 +1,7 @@
 {
-  "version": "1.3.31",
-  "notes": "Thanh ho tro o giua dau man hinh: Song boi, Tam boi (kem thoi gian con lai), Hoan Hon Dan, May Man Phu va cac hieu ung dang co.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.31/www.zip",
-  "sha256": "6809e40d4caee6dfedb6023ddbfa8fc4095b15d08166ea44e5f5bfb26d4d2298"
+  "version": "1.3.32",
+  "notes": "App Android: nut Thu nho (va tu thu nho khi bam Home) thanh cua so noi, game van chay va giu to doi. Sua loi bi ra khoi doi khi mo lai app. Web: tu vao lai game va xin vao lai doi cu khi quay lai. Cua hang ban do toi Than thoai (gia cao).",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.32/www.zip",
+  "sha256": "4b581d00f89a6ea1a7a0ed701c4de3bdb79e98430fc43c6c671fd7ac13375726",
+  "apk": true
 }

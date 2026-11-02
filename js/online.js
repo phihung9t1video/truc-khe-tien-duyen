@@ -94,7 +94,7 @@ const PARTY_MAX=5;
 const inParty=()=>!!PARTY.leader;
 const isLeader=()=>PARTY.leader===NET.id;
 const isMate=id=>inParty()&&id!==NET.id&&PARTY.members.some(m=>m.id===id);
-function partyReset(msg){const was=inParty();PARTY.leader=null;PARTY.members=[];PARTY.st.clear();if(was&&msg)log(msg,'#ffb36b');if(typeof renderParty==='function')renderParty();}
+function partyReset(msg,self){const was=inParty();if(was&&!self&&PARTY.leader&&PARTY.leader!==NET.id){PARTY.prev={id:PARTY.leader,t:Date.now()};}else if(self)PARTY.prev=null;PARTY.leader=null;PARTY.members=[];PARTY.st.clear();if(was&&msg)log(msg,'#ffb36b');if(typeof renderParty==='function')renderParty();}
 function partyBroadcastSet(){if(!isLeader())return;PARTY.setT=8;netCast('tk_world','pset',{id:NET.id,members:PARTY.members});if(typeof renderParty==='function')renderParty();}
 function netInvite(o){if(NET.status!=='on'){log('Chưa kết nối mạng','#ff9a8a');return;}
   if(inParty()&&!isLeader()){log('Chỉ đội trưởng mới mời được người khác','#ffb36b');return;}
@@ -112,8 +112,8 @@ function netAskJoin(o){if(NET.status!=='on'){log('Chưa kết nối mạng','#ff
   netCast('tk_world','preq',{id:NET.id,name:player.name,lv:player.lv,sect:player.sect,to:o.id});log(`Đã xin vào đội của ${o.name}`,'#9fffb0');}
 function partyAddMember(id,name){if(!inParty()){PARTY.leader=NET.id;PARTY.members=[{id:NET.id,name:player.name}];}
   if(!isLeader()||PARTY.members.length>=PARTY_MAX)return false;
-  if(!PARTY.members.some(m=>m.id===id))PARTY.members.push({id,name:String(name).slice(0,14)});partyBroadcastSet();return true;}
-function netLeaveParty(){if(!inParty())return;netCast('tk_world','pleave',{id:NET.id});partyReset('Bạn đã rời tổ đội');}
+  PARTY.st.delete(id);if(!PARTY.members.some(m=>m.id===id))PARTY.members.push({id,name:String(name).slice(0,14)});partyBroadcastSet();return true;}
+function netLeaveParty(){if(!inParty())return;netCast('tk_world','pleave',{id:NET.id});partyReset('Bạn đã rời tổ đội',true);}
 function partyOnMsg(ev,p){
   if(ev==='pinv'&&p.to===NET.id){
     if(inParty()){netCast('tk_world','pno',{id:NET.id,name:player.name,to:p.id,busy:1});return;}
@@ -133,7 +133,7 @@ function partyOnMsg(ev,p){
   if(ev==='pacc'&&p.to===NET.id){
     if(!inParty()){PARTY.leader=NET.id;PARTY.members=[{id:NET.id,name:player.name}];}
     if(!isLeader()||PARTY.members.length>=PARTY_MAX)return;
-    if(!PARTY.members.some(m=>m.id===p.id))PARTY.members.push({id:p.id,name:String(p.name).slice(0,14)});
+    PARTY.st.delete(p.id);if(!PARTY.members.some(m=>m.id===p.id))PARTY.members.push({id:p.id,name:String(p.name).slice(0,14)});
     log(`${p.name} đã vào tổ đội`,'#9fffb0');partyBroadcastSet();return;}
   if(ev==='pset'){const mine=Array.isArray(p.members)&&p.members.some(m=>m.id===NET.id);
     if(mine){if(inParty()&&PARTY.leader!==p.id)return;
@@ -167,14 +167,14 @@ const SHARE_R=900;
 function partyShareIds(x,y){if(!inParty()||NET.status!=='on')return[NET.id];const ids=[NET.id];for(const o of NET.others.values())if(isMate(o.id)&&!o.dead&&Math.hypot(o.x-x,o.y-y)<=SHARE_R)ids.push(o.id);return ids;}
 function netPartyKill(e,g,m){if(inParty()&&NET.status==='on')netCast('tk_world','pkill',{id:NET.id,exp:e,gold:g,type:m.type,map:curMapId,x:Math.round(m.x),y:Math.round(m.y)});}
 function netSendLoot(to,it){if(NET.status!=='on')return false;netCast('tk_world','ploot',{id:NET.id,name:player.name,to,item:it});const nm=(PARTY.members.find(x=>x.id===to)||{}).name||'đồng đội';log(`Chia ${it.name} cho ${nm}`,'#c8f0a0');return true;}
-function partyTick(dt){if(!inParty())return;
+function partyTick(dt){const now_=Date.now();if(PARTY.lastTick&&now_-PARTY.lastTick>8000){PARTY.lastSet=now_;for(const v of PARTY.st.values())v.seen=now_;PARTY.stT=0;PARTY.setT=0;}PARTY.lastTick=now_;if(!inParty())return;
   PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=2;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0,x:Math.round(player.x),y:Math.round(player.y)});}
   if(isLeader()){PARTY.setT-=dt;
-    const gone=PARTY.members.filter(m=>m.id!==NET.id&&(!PARTY.st.has(m.id)?false:Date.now()-PARTY.st.get(m.id).seen>120000));
+    const gone=PARTY.members.filter(m=>m.id!==NET.id&&(!PARTY.st.has(m.id)?false:Date.now()-PARTY.st.get(m.id).seen>300000));
     if(gone.length){PARTY.members=PARTY.members.filter(m=>!gone.includes(m));for(const g of gone)log(`${g.name} mất kết nối, rời tổ đội`,'#ffb36b');
       if(PARTY.members.length<=1){partyReset('Tổ đội đã giải tán');return;}partyBroadcastSet();}
     if(PARTY.setT<=0)partyBroadcastSet();}
-  else if(Date.now()-PARTY.lastSet>90000)partyReset('Mất liên lạc với đội trưởng, tổ đội đã giải tán');}
+  else if(Date.now()-PARTY.lastSet>300000)partyReset('Mất liên lạc với đội trưởng, tổ đội đã giải tán');}
 
 // ===================== THEO ĐỘI =====================
 // Đội trưởng bấm "Gọi theo đội": đội viên đồng ý sẽ dịch chuyển ngay tới chỗ đội trưởng rồi tự đi theo.

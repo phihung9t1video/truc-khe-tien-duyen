@@ -72,17 +72,17 @@ cloudLoad=async function(code){if(!netEnabled())throw new Error('off');const m=S
   const data=await rpc('tk_load',{p_id:m[1],p_secret:m[2]});if(!data)throw new Error('khong');
   if(!(ACC.cur&&ACC.cur.server))accUpdate({netId:m[1],netSecret:m[2]});netIdent();localStorage.setItem(SKEY,JSON.stringify(data));return data;};
 
-function accLogin(acc){ACC.cur=acc;ACC.lost=false;ACC.sid=rndStr(12);ACC.announced=false;SKEY='tk_save_'+acc.user;sessionStorage.setItem('tk_cur',acc.user);netIdent();liveBeat();accAnnounce();}
+function accLogin(acc){ACC.cur=acc;ACC.lost=false;ACC.sid=rndStr(12);ACC.announced=false;SKEY='tk_save_'+acc.user;sessionStorage.setItem('tk_cur',acc.user);sessionStorage.setItem('tk_resume',acc.user);netIdent();liveBeat();accAnnounce();}
 // ===== một tài khoản chỉ chơi ở một nơi: đăng nhập nơi mới thì nơi cũ văng ra ngay =====
 // Vừa đăng nhập (và khi kết nối lại mạng), máy báo cho mọi nơi "tài khoản X đang ở phiên S"; máy nào đang mở X với phiên khác thì tự thoát.
 function accAnnounce(){if(!ACC.cur||ACC.lost)return;if(NET.status!=='on'){ACC.announced=false;return;}netCast('tk_world','akick',{user:ACC.cur.user,sid:ACC.sid,t:Date.now()});ACC.announced=true;}
 setInterval(()=>{if(ACC.cur&&!ACC.lost&&!ACC.announced&&NET.status==='on')accAnnounce();},1000); // chỉ báo một lần sau khi đăng nhập
 function accOnKick(p){if(!ACC.cur||ACC.lost||p.user!==ACC.cur.user||p.sid===ACC.sid)return;accKicked();}
-function accKicked(){if(ACC.lost)return;const u=ACC.cur?ACC.cur.user:'';ACC.lost=true;removeEventListener('beforeunload',save);liveLeave();auto=false;autoRest=false;navGoal=null;
+function accKicked(){if(ACC.lost)return;const u=ACC.cur?ACC.cur.user:'';ACC.lost=true;sessionStorage.removeItem('tk_resume');removeEventListener('beforeunload',save);liveLeave();auto=false;autoRest=false;navGoal=null;
   try{if(typeof netLeaveParty==='function'&&typeof inParty==='function'&&inParty())netLeaveParty();}catch(e){}
   try{if(NET.status==='on')netCast(NET.mapRoom,'bye',{id:NET.id});if(NET.ws){NET.ws.onclose=null;NET.ws.close();}NET.ws=null;NET.status='off';NET.retryT=1e9;}catch(e){}
   started=false;PANELS.forEach(x=>$(x).hidden=true);
-  openDlg('Tài khoản đăng nhập ở nơi khác',`Tài khoản <b>${esc(u)}</b> vừa được đăng nhập ở một máy khác, nên máy này đã thoát ra.<br>Nếu không phải bạn đăng nhập, hãy đổi mật khẩu ngay.`,[{t:'Về màn hình đăng nhập',fn:()=>{sessionStorage.removeItem('tk_cur');location.reload();}}]);
+  openDlg('Tài khoản đăng nhập ở nơi khác',`Tài khoản <b>${esc(u)}</b> vừa được đăng nhập ở một máy khác, nên máy này đã thoát ra.<br>Nếu không phải bạn đăng nhập, hãy đổi mật khẩu ngay.`,[{t:'Về màn hình đăng nhập',fn:()=>{sessionStorage.removeItem('tk_cur');sessionStorage.removeItem('tk_resume');location.reload();}}]);
   const b=[...document.querySelectorAll('#dlgB .btn')].find(x=>x.textContent==='Đóng');if(b)b.remove();}
 const userOk=u=>/^[a-z0-9_]{3,16}$/.test(u);
 // nhận dữ liệu từ máy chủ: lấy bản mới hơn giữa máy chủ và bản sao trên máy
@@ -174,7 +174,7 @@ function gmBoost(){if(!isGM()||!player.sect)return;let ch=false;
 setInterval(()=>{if(started)gmBoost();},1000);
 enterGame=function(isNew){_enterGame0(isNew);if(isGM()){gmBoost();toast(`GM: cấp ${MAXLV}, ${GM_GOLD.toLocaleString('vi-VN')} lượng`,'#ffd23f');save();}if(isNew)setTimeout(()=>accSync(true),1000);};
 // nút Quay lại ở bước tạo nhân vật: về màn hình đăng nhập
-$('backBtn').onclick=()=>{$('create').hidden=true;$('startMenu').hidden=false;ACC.cur=null;liveLeave();accShowLogin();};
+$('backBtn').onclick=()=>{sessionStorage.removeItem('tk_resume');$('create').hidden=true;$('startMenu').hidden=false;ACC.cur=null;liveLeave();accShowLogin();};
 // mã khôi phục ở bước tạo nhân vật
 (()=>{const c=$('create');const d=document.createElement('div');d.id='crRestore';d.innerHTML=`<a href="#" id="crRestoreLink">Có mã khôi phục từ bản cũ? Tải nhân vật bằng mã</a>
   <div id="crRestoreBox" hidden><input id="crCode" placeholder="VÍ DỤ: ABCD2345-ABCDEFGH2345" spellcheck="false"><button class="btn" id="crCodeGo" style="width:auto;display:inline-block;margin:0 0 0 6px">Tải</button><span id="crCodeMsg"></span></div>`;c.appendChild(d);
@@ -184,7 +184,7 @@ $('backBtn').onclick=()=>{$('create').hidden=true;$('startMenu').hidden=false;AC
 // cài đặt: đăng xuất, đổi mật khẩu
 (()=>{const r=$('resetBtn');
   const b=document.createElement('button');b.className='btn';b.id='logoutBtn';b.textContent='Đăng xuất (đổi tài khoản)';r.parentNode.insertBefore(b,r);
-  b.onclick=async()=>{b.disabled=true;await accSync(true);save();removeEventListener('beforeunload',save);liveLeave();sessionStorage.removeItem('tk_cur');location.reload();};
+  b.onclick=async()=>{b.disabled=true;await accSync(true);save();removeEventListener('beforeunload',save);liveLeave();sessionStorage.removeItem('tk_cur');sessionStorage.removeItem('tk_resume');location.reload();};
   const p=document.createElement('button');p.className='btn gray';p.id='passBtn';p.textContent='Đổi mật khẩu';r.parentNode.insertBefore(p,r);
   p.onclick=async()=>{const c=ACC.cur;if(!c||!c.server||isGM())return log(isGM()?'Tài khoản GM đổi mật khẩu theo cách riêng (nhờ người làm game)':'Tài khoản này chưa có trên máy chủ, chưa đổi được mật khẩu','#ffb36b');
     const o=prompt('Mật khẩu hiện tại:');if(o==null)return;const n1=prompt('Mật khẩu mới (ít nhất 4 ký tự):');if(n1==null)return;const n2=prompt('Nhập lại mật khẩu mới:');if(n2==null)return;
