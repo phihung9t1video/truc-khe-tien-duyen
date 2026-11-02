@@ -1,6 +1,6 @@
 {
-  "version": "1.3.25",
-  "notes": "Ve lai thu cuoi (ngua, huou, ho, ky lan, hac) va thu nuoi kieu chibi; than thu co hao quang va may duoi chan.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.25/www.zip",
-  "sha256": "196a5faf644b2e5d26fc2983f61c1444790b1e33be992e0fad51d5b239baeed4"
+  "version": "1.3.26",
+  "notes": "Anh sang moi: ban do sang sua co nang, tia nang, buom, chim bay, bui khi chay, bong do co huong. Vung u toi (U Minh, Huyet Hai, Hon Nguyen) toi han, chi sang quanh nhan vat va den duoc.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.26/www.zip",
+  "sha256": "e488c740f6b87afe0d74329c1de712b32c2623a4cc133003860114c277c3d1a8"
 }

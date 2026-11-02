@@ -587,8 +587,8 @@ function renderMap(){
       g.beginPath();g.arc(cx,cy,r,0,Math.PI*2);g.fill();}
     if(blur){c.save();c.setTransform(1,0,0,1,0,0);c.filter='blur('+(blur*RS).toFixed(1)+'px)';c.drawImage(tmp,0,0);c.restore();}};
   const isPath=t=>t===PA||t===BR,isWater=t=>t===WA||t===BR,isArena=(t,x,y)=>(t===DK||t===RO)&&CM.gen.arena&&x>=CM.gen.arena.x0&&x<=CM.gen.arena.x1&&y>=CM.gen.arena.y0&&y<=CM.gen.arena.y1;
-  c.fillStyle=TH.grass;c.fillRect(0,0,W,H);
-  for(let i=0;i<1100;i++){const x=srand()*W,y=srand()*H,r=18+srand()*70,l=srand()<0.5;const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,l?TH.light:TH.dark);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x-r,y-r,2*r,2*r);}
+  const bright=typeof isDarkMap==='function'&&!isDarkMap();c.fillStyle=bright&&TH.grass[0]==='#'?shade(TH.grass,.07):TH.grass;c.fillRect(0,0,W,H);
+  for(let i=0;i<1100;i++){const x=srand()*W,y=srand()*H,r=18+srand()*70,l=srand()<0.5;const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,l?TH.light:TH.dark);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=(!l&&bright)?0.4:1;c.fillStyle=g;c.fillRect(x-r,y-r,2*r,2*r);c.globalAlpha=1;}
   drawHills(c);
   band(isArena,24,TH.arena,4);
   each((t,x,y)=>{if(isArena(t,x,y)){const [cx,cy]=ctr(x,y);for(let i=0;i<4;i++)disc(cx-14+srand()*28,cy-14+srand()*28,1+srand()*2,TH.arenaPeb[srand()<.5?0:1]);

@@ -424,10 +424,11 @@ function drawWorld(dt,cx,cy,withEnt){
     for(const n of npcs)list.push({y:n.y,f:()=>drawNpc(n)});list.push({y:player.y,f:drawPlayer});if(typeof drawOthers==='function')drawOthers(list);if(typeof drawPet==='function')drawPet(list);}
   list.sort((a,b)=>a.y-b.y);for(const e of list)e.f();
   if(withEnt){for(const s of shots)drawShot(s);for(const s of eshots)drawShot(s);for(const f of fx)if(!(f.k==='fire'||f.k==='ice'||f.k==='r'&&f.w===2))drawFx(f);}
+  if(typeof ambientWorld==='function')ambientWorld(dt,cx,cy,vw,vh,withEnt);
   for(const c of clouds){c.x+=8*dt;if(c.x-c.r>MW*T)c.x=-c.r;const g=ctx.createRadialGradient(c.x,c.y,c.r*0.2,c.x,c.y,c.r);g.addColorStop(0,'rgba(10,20,40,.10)');g.addColorStop(1,'rgba(10,20,40,0)');ctx.fillStyle=g;ctx.fillRect(c.x-c.r,c.y-c.r,c.r*2,c.r*2);}
-  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=TH.tint;ctx.fillRect(0,0,VW,VH);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
   drawWeather(dt,withEnt&&inArenaNow()&&TH.weather!=='snow'?'ember':TH.weather);
-  ctx.drawImage(vignette,0,0,VW,VH);}
+  if(typeof ambientPost==='function')ambientPost(dt,cx,cy,withEnt);else{ctx.fillStyle=TH.tint;ctx.fillRect(0,0,VW,VH);ctx.drawImage(vignette,0,0,VW,VH);}}
 function draw(dt){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#0b0b0b';ctx.fillRect(0,0,cv.width,cv.height);
   const vw=VW/Z,vh=VH/Z;
   cam.x=MW*T<vw?(MW*T-vw)/2:clamp(player.x-vw/2,0,MW*T-vw);
