@@ -38,7 +38,7 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
       const who=wt?(wt===mine?' · <b style="color:#9fffb0">phái của bạn</b>':` · <span style="color:${S.color}">${S.name}</span> (bạn không dùng được, để giao dịch)`):'';
       return`<div class="shr"><span class="shi">${itemIcon({slot:sl,wtype:wt,tier,rar})}</span><div class="shd"><b style="color:${RARITY[rar].c}">${nm}</b><br><span>${SLOTNAME[sl]} · yêu cầu cấp ${TIER_LV[tier]}${who}</span></div><div class="shp">${priceTxt(eqPrice(tier,rar))}<button data-eq="${sl}" data-wt="${wt||''}">Mua</button></div></div>`;}).join('');}
   else h=Object.entries(MOUNTS).map(([k,m])=>{const own=(player.mounts||[]).includes(k),cur=player.mount===k,lock=!isGM()&&player.lv<m.lv;
-    return`<div class="shr"><canvas class="shm" width="120" height="84" data-mv="${k}"></canvas><div class="shd"><b>${m.name}</b> <span style="color:${lock?'#ff7a6a':'#9f9'}">cấp ${m.lv}</span><br><span>${m.desc} Sinh lực +${Math.round(m.hp*100)}%${m.def?', phòng thủ +'+Math.round(m.def*100)+'%':''}.</span></div>
+    return`<div class="shr"><canvas class="shm" width="180" height="126" data-mv="${k}"></canvas><div class="shd"><b>${m.name}</b> <span style="color:${lock?'#ff7a6a':'#9f9'}">cấp ${m.lv}</span><br><span>${m.desc} Sinh lực +${Math.round(m.hp*100)}%${m.def?', phòng thủ +'+Math.round(m.def*100)+'%':''}.</span></div>
       <div class="shp">${own?(cur?'<b style="color:#9fffb0">Đang dùng</b>':`<button data-use="${k}">Dùng</button>`):`${priceTxt(m.price)}<button data-mount="${k}" ${lock?'disabled':''}>Mua</button>`}</div></div>`;}).join('');
   b.innerHTML=h;
   b.querySelectorAll('[data-buy]').forEach(e=>e.onclick=()=>{const it=SHOP_ITEMS.find(x=>x.id===e.dataset.buy);if(!shopPay(it.price))return;it.buy();sfx('coin');log(`Đã mua ${it.name}`,'#ffd977');save();renderShop();});
@@ -49,7 +49,7 @@ function renderShop(){if($('panelShop').hidden)return;const b=$('shopBody');
   b.querySelectorAll('[data-use]').forEach(e=>e.onclick=()=>{setMount(e.dataset.use);save();renderShop();});
   if($('gmSetBtn'))$('gmSetBtn').onclick=()=>{const S=SETS.trunglau;if(player.inv.length+S.pieces.length+1>BAG_MAX)return log('Túi đồ không đủ chỗ','#ff9a8a');for(const sl of S.pieces)player.inv.push(makeSetItem(sl,'trunglau'));player.inv.push(makeGodWeapon());refreshPanels();save();toast(`Đã nhận bộ ${S.name} và Thần khí vào túi`,S.col);renderShop();};
   if($('gmTier')){$('gmTier').onchange=e=>{gmTier=+e.target.value;renderShop();};$('gmRar').onchange=e=>{gmRar=+e.target.value;renderShop();};}
-  b.querySelectorAll('canvas[data-mv]').forEach(c=>withCtx(c,()=>{ctx.scale(2,2);drawShadow(30,36,16,0.3);drawSteed(c.dataset.mv,30,36,1,false,0.5);}));}
+  b.querySelectorAll('canvas[data-mv]').forEach(c=>withCtx(c,()=>{ctx.scale(1.75,1.75);drawShadow(46,66,22,0.3);drawSteed(c.dataset.mv,46,66,1,false,0.5);}));}
 // ---------- thú cưỡi ----------
 function setMount(k){player.mount=k;player.mountOn=true;refreshPanels();if(typeof updateMountBtn==='function')updateMountBtn();log(`Đang dùng thú cưỡi ${MOUNTS[k].name}`,'#ffd23f');}
 const mountObj=()=>player.mount&&MOUNTS[player.mount]&&player.mountOn?MOUNTS[player.mount]:null;

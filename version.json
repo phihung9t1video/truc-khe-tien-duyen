@@ -1,6 +1,6 @@
 {
-  "version": "1.3.24",
-  "notes": "Ban do rong hon 35%, giua cac bai quai co doi, nui, vuc, dong hoa, cot da. Moi thanh co Truyen Tong Su: tra luong de toi ngay ban do khac.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.24/www.zip",
-  "sha256": "ffe89de58d3ccbab03df68369980bb21399f412696b8cd442ad83c2b5cf341aa"
+  "version": "1.3.25",
+  "notes": "Ve lai thu cuoi (ngua, huou, ho, ky lan, hac) va thu nuoi kieu chibi; than thu co hao quang va may duoi chan.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.25/www.zip",
+  "sha256": "196a5faf644b2e5d26fc2983f61c1444790b1e33be992e0fad51d5b239baeed4"
 }

@@ -81,14 +81,14 @@ function drawPet(list){if(petDef()&&player.petOn&&!player.dead){const q=PET.lung
 // ---------- cửa hàng: thẻ Thú nuôi ----------
 function renderPetTab(){let h=`<div class="shgm">Thú nuôi đi theo và cùng đánh quái, lên cấp khi cùng bạn hạ quái (tối đa cấp ${PET_MAXLV}). <b style="color:#ffd23f">Thần thú</b> có kỹ năng riêng; đánh trùm có tỉ lệ nhỏ được tặng thần thú.</div>`;
   h+=Object.entries(PETS).map(([k,P])=>{const own=(player.pets||[]).includes(k),cur=player.pet===k&&player.petOn,lock=!isGM()&&player.lv<P.lv;
-    return`<div class="shr"><canvas class="shm" width="120" height="84" data-pv="${k}"></canvas><div class="shd"><b style="color:${P.divine?'#ffd23f':'#cfe8c0'}">${P.divine?'✦ Thần thú · ':''}${P.name}</b> <span style="color:${lock?'#ff7a6a':'#9f9'}">cấp ${P.lv}</span>${own?` <span style="color:#9fd3ff">(thú cấp ${petLv(k)})</span>`:''}<br>
+    return`<div class="shr"><canvas class="shm" width="180" height="126" data-pv="${k}"></canvas><div class="shd"><b style="color:${P.divine?'#ffd23f':'#cfe8c0'}">${P.divine?'✦ Thần thú · ':''}${P.name}</b> <span style="color:${lock?'#ff7a6a':'#9f9'}">cấp ${P.lv}</span>${own?` <span style="color:#9fd3ff">(thú cấp ${petLv(k)})</span>`:''}<br>
       <span>${P.desc} Sức đánh ${Math.round(P.mult*100)}% công lực của chủ${P.shot?', đánh xa':''}.${P.skill?` <b style="color:#ffe9a0">${P.skill.name}</b>: ${P.skill.desc}`:''}</span></div>
       <div class="shp">${own?(cur?`<b style="color:#9fffb0">Đang đi theo</b><button data-petoff="1">Cất đi</button>`:`<button data-petuse="${k}">Gọi ra</button>`):`${priceTxt(P.price)}<button data-pet="${k}" ${lock?'disabled':''}>Mua</button>`}</div></div>`;}).join('');
   return h;}
 function bindPetTab(b){b.querySelectorAll('[data-pet]').forEach(e=>e.onclick=()=>{const k=e.dataset.pet,P=PETS[k];if(!isGM()&&player.lv<P.lv)return;if(!shopPay(P.price))return;givePet(k,'Đã mua');setPet(k);save();renderShop();});
   b.querySelectorAll('[data-petuse]').forEach(e=>e.onclick=()=>{setPet(e.dataset.petuse);save();renderShop();});
   b.querySelectorAll('[data-petoff]').forEach(e=>e.onclick=()=>{player.petOn=false;log('Đã cất thú nuôi','#ccc');save();renderShop();});
-  b.querySelectorAll('canvas[data-pv]').forEach(c=>withCtx(c,()=>{ctx.scale(2,2);drawPetAt(c.dataset.pv,30,34,1,false,0,null);}));}
+  b.querySelectorAll('canvas[data-pv]').forEach(c=>withCtx(c,()=>{ctx.scale(2.1,2.1);drawPetAt(c.dataset.pv,43,54,1,false,0,null);}));}
 (()=>{const tabs=$('shTab_mount').parentNode;tabs.insertAdjacentHTML('beforeend','<button id="shTab_pet">Thú nuôi</button>');
   $('shTab_pet').onclick=()=>{shopTab='pet';sfx('click');renderShop();};
   const _rs=renderShop;renderShop=function(){if(shopTab!=='pet'){$('shTab_pet').classList.remove('sel');return _rs();}
