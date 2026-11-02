@@ -123,7 +123,7 @@ const SLOT_STATS={
   necklace:t=>({mp:12+14*t,atk:1+1.4*t}),
   ring:t=>({atk:1+1.8*t,crit:1+0.25*t})
 };
-const MAXTIER=12;
+const MAXTIER=17;
 const RARITY=[
   {n:'Thường',c:'#e6e6e6',m:1,b:0},
   {n:'Tinh xảo',c:'#72e872',m:1.2,b:1},

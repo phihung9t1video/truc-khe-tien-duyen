@@ -67,7 +67,7 @@ function openLookEditor(onDone){const ap=Object.assign({h:0,hc:0,sk:0,ey:0,acc:0
     const di=Math.floor(nowT/1.5)%4;drawChibi(buildLook(player.sect,player.gender,player.eq,ap),60,126,1.9,['down','side','up','side'][di],di===3?-1:1,false,0,false,playerW,0.3);});requestAnimationFrame(draw);};
   const rows=()=>{const b=$('leRows');b.innerHTML=apRowsHTML(ap);apBind(b,ap);};rows();draw();}
 SHOP_ITEMS.push(
-  {id:'exp3',name:'Tam Bội Kinh Nghiệm Đan',icon:'✸',col:'#ffb040',price:20000,desc:'Dùng ngay: thêm x2 kinh nghiệm trong 30 phút. Cộng dồn với Song bội và các viên khác (tối đa x10).',buy:()=>{addExpBuff(2,1800);}},
+  {id:'exp3',name:'Tam Bội Kinh Nghiệm Đan',icon:'✸',col:'#ffb040',price:20000,desc:'Dùng ngay: nhân ba kinh nghiệm thêm 30 phút. Ăn nhiều viên thì cộng dồn thời gian; dùng hết Tam bội mới tới Song bội.',buy:()=>{addExpBuff(2,1800);}},
   {id:'luck',name:'May Mắn Phù',icon:'☘',col:'#9fffb0',price:1500,desc:'Lần cường hóa kế tiếp +20% tỉ lệ thành công. Tự dùng khi cường hóa.',buy:()=>{player.luck=(player.luck||0)+1;}},
   {id:'luck10',name:'10 May Mắn Phù',icon:'☘',col:'#9fffb0',price:13000,desc:'Gói 10 tấm.',buy:()=>{player.luck=(player.luck||0)+10;}},
   {id:'revive',name:'Cửu Chuyển Hoàn Hồn Đan',icon:'☯',col:'#ffe27a',price:6000,desc:'Khi bị hạ gục sẽ tự sống lại tại chỗ, đầy máu, không mất kinh nghiệm.',buy:()=>{player.reviveC=(player.reviveC||0)+1;}},

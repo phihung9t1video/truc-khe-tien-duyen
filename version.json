@@ -1,6 +1,6 @@
 {
-  "version": "1.3.17",
-  "notes": "Đăng nhập tài khoản ở máy khác thì máy cũ văng ra ngay (cả tài khoản GM)",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.17/www.zip",
-  "sha256": "4d7551c0a4567b406379b26b8e71dc2202f7154512706a5fc351b07694a42c7e"
+  "version": "1.3.18",
+  "notes": "Mo cap toi da 199: 5 ban do moi (Thai Co, Huyet Hai, Loi Am, Than Moc, Hon Nguyen), 5 bac trang bi moi. Dan kinh nghiem cong don thoi gian. Bo Trung Lau 1 cap, ai cung mac duoc, chi so manh nhat.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.18/www.zip",
+  "sha256": "ab9633434afb01a9d01981973257d16a3716ac146c14f9f99761b2d7daf874df"
 }

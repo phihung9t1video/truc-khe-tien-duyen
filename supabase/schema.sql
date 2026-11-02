@@ -22,7 +22,7 @@ returns boolean language plpgsql security definer set search_path = public, exte
 declare cur text;
 begin
   if length(p_id) <> 8 or length(p_secret) <> 12 then return false; end if;
-  if p_lv < 1 or p_lv > 99 or length(p_name) > 20 then return false; end if;
+  if p_lv < 1 or p_lv > 250 or length(p_name) > 20 then return false; end if;
   if pg_column_size(p_data) > 300000 then return false; end if;
   select secret_hash into cur from tk_players where id = p_id;
   if cur is null then
@@ -95,7 +95,7 @@ begin
   if pg_column_size(p_data) > 300000 then raise exception 'too_big'; end if;
   update tk_accounts set data = p_data, data_ts = p_ts,
     name = left(p_data->>'name', 20), sect = left(p_data->>'sect', 10),
-    lv = least(greatest(coalesce((p_data->>'lv')::int, 0), 0), 99), exp = coalesce((p_data->>'exp')::bigint, 0),
+    lv = least(greatest(coalesce((p_data->>'lv')::int, 0), 0), 250), exp = coalesce((p_data->>'exp')::bigint, 0),
     updated_at = now()
   where username = lower(trim(p_user)) and token = p_token;
   if not found then raise exception 'session'; end if;

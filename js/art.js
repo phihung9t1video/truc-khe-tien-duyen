@@ -414,7 +414,7 @@ function canopy(c,bl,C,line){c.strokeStyle=line;c.lineWidth=2.2;for(const b of b
 function trunk(c,h,col){const g=c.createLinearGradient(-3,0,3,0);g.addColorStop(0,shade(col,0.15));g.addColorStop(1,shade(col,-0.25));c.fillStyle=g;c.strokeStyle='rgba(40,25,15,.4)';c.lineWidth=0.9;
   c.beginPath();c.moveTo(-3.4,0);c.quadraticCurveTo(-2,-h*0.5,-2.4,-h);c.lineTo(2.4,-h);c.quadraticCurveTo(2,-h*0.5,3.4,0);c.closePath();c.fill();c.stroke();}
 function treeShadow(c,w){const g=c.createRadialGradient(0,0,1,0,0,w);g.addColorStop(0,'rgba(0,0,0,.28)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.ellipse(0,0,w,w*0.36,0,0,Math.PI*2);c.fill();}
-function makeTrees(theme){const out=[],W=70,H=84,AX=35,AY=72;seed=4242;
+function makeTrees(theme){theme=(THEMES[theme]&&THEMES[theme].art)||theme;const out=[],W=70,H=84,AX=35,AY=72;seed=4242;
   const add=(n,fn)=>{for(let i=0;i<n;i++)out.push(mkSprite(W,H,AX,AY,c=>{treeShadow(c,17);fn(c);}));};
   if(theme==='spring'){
     add(4,c=>{trunk(c,16,'#7a5030');const bl=[[0,-30,13.5],[-10,-22,10],[10,-22,10],[-5,-39,9],[6,-38,9],[srand()*6-3,-27,8]];canopy(c,bl,['#9ade6c','#4aa840','#2c7a30'],'rgba(25,70,25,.35)');
@@ -484,7 +484,7 @@ function makeTrees(theme){const out=[],W=70,H=84,AX=35,AY=72;seed=4242;
   return out;}
 
 // ===================== NHÀ (sprite) =====================
-function makeHouse(theme){theme={volcano:'dark',sea:'marsh',star:'heaven'}[theme]||theme;return mkSprite(150,140,26,34,c=>{
+function makeHouse(theme){theme=(THEMES[theme]&&THEMES[theme].art)||theme;theme={volcano:'dark',sea:'marsh',star:'heaven'}[theme]||theme;return mkSprite(150,140,26,34,c=>{
   const sh=c.createRadialGradient(48,96,4,48,96,62);sh.addColorStop(0,'rgba(0,0,0,.3)');sh.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=sh;c.beginPath();c.ellipse(48,96,62,12,0,0,Math.PI*2);c.fill();
   c.strokeStyle='rgba(40,20,10,.45)';c.lineWidth=1;
   const rr=(x,y,w,h,col,r=1.5)=>{c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=col;c.fill();c.stroke();};
@@ -551,7 +551,7 @@ function makeHouse(theme){theme={volcano:'dark',sea:'marsh',star:'heaven'}[theme
 // ===================== ĐỊA HÌNH (vẽ mềm) =====================
 function smoothBlob(c,pts){const n=pts.length,mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];c.beginPath();let m=mid(pts[0],pts[1]);c.moveTo(m[0],m[1]);
   for(let i=1;i<=n;i++){const p=pts[i%n],q=pts[(i+1)%n];m=mid(p,q);c.quadraticCurveTo(p[0],p[1],m[0],m[1]);}c.closePath();}
-function vRock(c,cx,cy,theme){theme={volcano:'dark',sea:'marsh',star:'snow'}[theme]||theme;const g0=c.createRadialGradient(cx,cy+9,1,cx,cy+9,15);g0.addColorStop(0,'rgba(0,0,0,.25)');g0.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g0;c.beginPath();c.ellipse(cx,cy+9,15,5,0,0,Math.PI*2);c.fill();
+function vRock(c,cx,cy,theme){theme=(THEMES[theme]&&THEMES[theme].art)||theme;theme={volcano:'dark',sea:'marsh',star:'snow'}[theme]||theme;const g0=c.createRadialGradient(cx,cy+9,1,cx,cy+9,15);g0.addColorStop(0,'rgba(0,0,0,.25)');g0.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g0;c.beginPath();c.ellipse(cx,cy+9,15,5,0,0,Math.PI*2);c.fill();
   const pts=[];for(let i=0;i<7;i++){const a=i/7*Math.PI*2,r=10+srand()*3.5;pts.push([cx+Math.cos(a)*r*1.15,cy+1+Math.sin(a)*r*(Math.sin(a)<0?0.95:0.7)]);}
   smoothBlob(c,pts);const g=c.createLinearGradient(cx,cy-12,cx,cy+10);
   if(theme==='snow'){g.addColorStop(0,'#c8d2de');g.addColorStop(1,'#7a8698');}else if(theme==='desert'){g.addColorStop(0,'#e0a870');g.addColorStop(1,'#9a5a32');}else if(theme==='dark'){g.addColorStop(0,'#6a6a74');g.addColorStop(1,'#2e2e36');}else if(theme==='heaven'){g.addColorStop(0,'#ffffff');g.addColorStop(1,'#a8d0c0');}else if(theme==='marsh'){g.addColorStop(0,'#9aa290');g.addColorStop(1,'#56604e');}else{g.addColorStop(0,'#b4b4ac');g.addColorStop(1,'#66665f');}
@@ -694,4 +694,11 @@ Object.assign(NPC_LOOK,{
   seaguard:{robe:'#2a5a7a',trim:'#7fe8d8',belt:'#1a3a5a',boot:'#1a2a3a',skin:'#c8e0e0',hair:'#1a4a5a',armor:'#5aa8b8',brow:true,male:true,inner:'#3a7a9a',weapon:{type:'staff',len:30,col:'#bff0ff'}},
   demongeneral:{robe:'#1a1428',trim:'#c890ff',belt:'#3a2a5a',boot:'#0a0812',skin:'#c8b8d8',hair:'#e8e0ff',longHair:true,glowEye:'#c890ff',brow:true,armor:'#4a3a6a',male:true,inner:'#2a2040',weapon:{type:'saber',len:28,col:'#e8d8ff',glow:'#a070ff'}},
   chaosgod:{robe:'#0a0a14',trim:'#ffd040',belt:'#ffd040',boot:'#050508',skin:'#d8c8e8',hair:'#ffffff',longHair:true,crown:'#c890ff',iceCrown:true,glowEye:'#ff40ff',brow:true,armor:'#2a1a40',male:true,sash:'#ff80ff',sashGlow:'#ff40ff',inner:'#1a1028',weapon:{type:'saber',len:36,col:'#ffffff',glow:'#ff60ff'}}
+});
+
+// ngoại hình quái/trùm cấp 90–199
+Object.assign(NPC_LOOK,{
+  wildwarrior:{robe:'#6a4a2a',trim:'#e8c060',belt:'#3a2a14',boot:'#2a1a0a',skin:'#c8946a',hair:'#3a2414',messy:true,beard:'#3a2414',beardLen:5,armor:'#8a6a3a',brow:true,male:true,inner:'#5a3a1a',weapon:{type:'hammer',len:24,col:'#c8b090'}},
+  thundergod:{robe:'#2a2a5a',trim:'#ffe060',belt:'#ffe060',boot:'#14143a',skin:'#e0d8f0',hair:'#f8f8ff',longHair:true,crown:'#ffe060',iceCrown:true,glowEye:'#9fd8ff',brow:true,armor:'#5a5aa8',male:true,sash:'#bfe0ff',sashGlow:'#8ab8ff',inner:'#3a3a7a',weapon:{type:'saber',len:34,col:'#e8f4ff',glow:'#8ab8ff'}},
+  emperor:{robe:'#1a1408',trim:'#ffd040',belt:'#ffd040',boot:'#0a0804',skin:'#f0dcc0',hair:'#101010',longHair:true,crown:'#ffd040',iceCrown:true,glowEye:'#ffd040',brow:true,beard:'#101010',beardLen:6,armor:'#c9a227',male:true,sash:'#ffe080',sashGlow:'#ffc040',inner:'#3a2a10',weapon:{type:'saber',len:38,col:'#fff6d0',glow:'#ffd040'}}
 });

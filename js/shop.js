@@ -12,7 +12,7 @@ const SHOP_ITEMS=[
   {id:'hp50',name:'50 Kim Sang Dược',icon:'♥',col:'#ff6a5a',price:280,desc:'Gói lớn, rẻ hơn mua lẻ.',buy:()=>{player.hpPot+=50;}},
   {id:'mp5',name:'5 Ngưng Thần Đan',icon:'◆',col:'#5ab4ff',price:30,desc:'Hồi 50% nội lực mỗi viên.',buy:()=>{player.mpPot+=5;}},
   {id:'mp50',name:'50 Ngưng Thần Đan',icon:'◆',col:'#5ab4ff',price:280,desc:'Gói lớn, rẻ hơn mua lẻ.',buy:()=>{player.mpPot+=50;}},
-  {id:'exp2',name:'Song Bội Kinh Nghiệm Đan',icon:'✦',col:'#ffe27a',price:6000,desc:'Dùng ngay: thêm x1 kinh nghiệm trong 30 phút. Ăn nhiều viên thì cộng dồn (tối đa x10).',buy:()=>{addExpBuff(1,1800);}},
+  {id:'exp2',name:'Song Bội Kinh Nghiệm Đan',icon:'✦',col:'#ffe27a',price:6000,desc:'Dùng ngay: nhân đôi kinh nghiệm thêm 30 phút. Ăn nhiều viên thì cộng dồn thời gian.',buy:()=>{addExpBuff(1,1800);}},
   {id:'tp',name:'Hồi Thành Phù',icon:'⌂',col:'#9fd3ff',price:250,desc:'Về ngay thành an toàn của bản đồ đang đứng. Dùng trong Túi đồ.',buy:()=>{player.tp=(player.tp||0)+1;}},
   {id:'tp10',name:'10 Hồi Thành Phù',icon:'⌂',col:'#9fd3ff',price:2200,desc:'Gói 10 tấm.',buy:()=>{player.tp=(player.tp||0)+10;}}
 ];
@@ -121,5 +121,5 @@ tipContent=function(key){if(key==='mount'){const M=player.mount&&MOUNTS[player.m
 // túi đồ: hàng vật phẩm dùng được
 const _rb=renderBag;
 renderBag=function(){_rb();let r=$('bagUse');if(!r){r=document.createElement('div');r.id='bagUse';$('bagDetail').before(r);}
-  r.innerHTML=`<span>⌂ Hồi Thành Phù: <b>${player.tp||0}</b></span> <button id="useTpBtn" ${player.tp>0?'':'disabled'}>Dùng</button>${expMul()>1?` <span style="color:#ffe27a;margin-left:12px">✦ Nhân kinh nghiệm <b>x${expMul()}</b> (lượt sớm hết còn ${Math.ceil(Math.min(...player.expBuffs.map(b=>b.t))/60)} phút)</span>`:''}`;
+  r.innerHTML=`<span>⌂ Hồi Thành Phù: <b>${player.tp||0}</b></span> <button id="useTpBtn" ${player.tp>0?'':'disabled'}>Dùng</button>${expMul()>1?` <span style="color:#ffe27a;margin-left:12px">✦ Đang nhân kinh nghiệm <b>x${expMul()}</b>${expTime(2)>0?` · Tam bội còn ${Math.ceil(expTime(2)/60)} phút`:''}${expTime(1)>0?` · Song bội còn ${Math.ceil(expTime(1)/60)} phút`:''}</span>`:''}`;
   $('useTpBtn').onclick=()=>{useTP();};};

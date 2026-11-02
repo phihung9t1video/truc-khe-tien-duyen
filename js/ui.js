@@ -198,7 +198,7 @@ function drawWorldMap(){const c=ctx;const g=c.createLinearGradient(0,0,0,BMH);g.
   seed=11;for(let i=0;i<60;i++){c.fillStyle=`rgba(255,255,255,${0.04+srand()*0.08})`;c.beginPath();c.ellipse(srand()*BMW,srand()*BMH,30+srand()*90,10+srand()*30,0,0,Math.PI*2);c.fill();}
   const N=WNODES(),byId={};N.forEach(n=>byId[n.id]=n);
   c.lineWidth=3;c.setLineDash([8,6]);c.strokeStyle='rgba(200,220,255,.5)';for(const n of N)for(const p of n.M.portals){const o=byId[p.to];if(!o)continue;c.beginPath();c.moveTo(n.x,n.y);c.lineTo(o.x,o.y);c.stroke();}c.setLineDash([]);
-  const COL={spring:'#6fcf5a',marsh:'#4fb8a0',snow:'#cfe6ff',desert:'#e8b860',dark:'#9a6ad0',heaven:'#ffe08a',volcano:'#ff7a3a',sea:'#3ab0e0',star:'#a890ff'};
+  const COL={spring:'#6fcf5a',marsh:'#4fb8a0',snow:'#cfe6ff',desert:'#e8b860',dark:'#9a6ad0',heaven:'#ffe08a',volcano:'#ff7a3a',sea:'#3ab0e0',star:'#a890ff',wild:'#c8a060',blood:'#e03a4a',thunder:'#c8b0ff',jade:'#3ad08a',void:'#ffd060'};
   for(const n of N){const lk=player.lv<n.M.minLv,cur=n.id===curMapId,r=cur?34:28;
     if(cur){c.fillStyle='rgba(255,230,140,.25)';c.beginPath();c.arc(n.x,n.y,r+12+Math.sin(nowT*3)*3,0,Math.PI*2);c.fill();}
     const gg=c.createRadialGradient(n.x-8,n.y-8,4,n.x,n.y,r);gg.addColorStop(0,'#ffffff');gg.addColorStop(1,lk?'#555a66':COL[n.M.theme]||'#aaa');c.fillStyle=gg;c.beginPath();c.arc(n.x,n.y,r,0,Math.PI*2);c.fill();

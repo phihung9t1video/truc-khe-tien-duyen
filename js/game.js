@@ -1,6 +1,6 @@
 'use strict';
 // ===================== TRẠNG THÁI =====================
-const MAXLV=95;
+const MAXLV=199;
 const expNeed=l=>Math.round(40*Math.pow(l,1.7)*(1+Math.pow(Math.max(0,l-12),1.8)/40));
 const emptyEq=()=>Object.fromEntries(EQ_KEYS.map(k=>[k,null]));
 let uidN=1;
@@ -72,9 +72,9 @@ function makeItem(slot,tier,rar,wtype){tier=clamp(tier,0,MAXTIER);const m=RARITY
   const name=TIER_PRE[tier]+' '+(slot==='weapon'?SLOT_SUF[wtype]:SLOT_SUF[slot]);
   return{uid:uidN++,slot,tier,rar,wtype:slot==='weapon'?wtype:null,name,lvReq:TIER_LV[tier],price:Math.round((8+tier*24)*(1+rar*0.9)),st};
 }
-// đồ bộ (Trùng Lâu): Thần thoại bậc cao nhất, chỉ số x1,25, điểm thưởng theo số món đang mặc
-function makeSetItem(slot,setId,wtype){const S=SETS[setId],wt=wtype||SECTS[player.sect].wtype,it=makeItem(slot,MAXTIER,RARITY.length-1,wt);for(const k in it.st)it.st[k]=Math.round(it.st[k]*1.25);
-  it.set=setId;it.name=S.name+' '+(slot==='weapon'?S.suf[wt]:S.suf[slot]);it.lvReq=85;it.price*=5;return it;}
+// đồ bộ (Trùng Lâu): một cấp duy nhất, Thần thoại bậc cao nhất, chỉ số x1,5, ai cũng mặc được, điểm thưởng theo số món đang mặc
+function makeSetItem(slot,setId,wtype){const S=SETS[setId],wt=wtype||SECTS[player.sect].wtype,it=makeItem(slot,MAXTIER,RARITY.length-1,wt);for(const k in it.st)it.st[k]=Math.round(it.st[k]*1.5);
+  it.set=setId;it.name=S.name+' '+(slot==='weapon'?S.suf[wt]:S.suf[slot]);it.lvReq=1;it.price*=5;return it;}
 const setCount=id=>EQ_KEYS.filter(k=>player.eq[k]&&player.eq[k].set===id).length;
 function eqKeyFor(it){if(it.slot!=='ring')return it.slot;if(!player.eq.ring1)return'ring1';if(!player.eq.ring2)return'ring2';return itemScore(player.eq.ring1)<=itemScore(player.eq.ring2)?'ring1':'ring2';}
 function itemScore(it){if(!it)return 0;const s=it.st;return(s.atk||0)*2+(s.def||0)*1.6+(s.hp||0)*0.12+(s.mp||0)*0.08+(s.crit||0)*3+(s.spd||0)*1.2;}
@@ -159,7 +159,7 @@ function hurtMob(m,r){if(m.dead)return;const em=elMul(SECTS[player.sect].el,m.t.
   sfx(r.crit?'crit':'hit');if(r.crit)shakeT=Math.max(shakeT,0.08);
   if(m.state!=='chase'&&!inSafe(player))m.state='chase';
   if(m.t.elite)for(const o of mobs)if(o!==m&&!o.dead&&o.type===m.type&&o.state==='idle'&&dist(o,m)<150)o.state='chase';
-  if(m.t.draw==='human'&&!m.t.boss)for(const o of mobs)if(o!==m&&!o.dead&&o.type===m.type&&o.state==='idle'&&dist(o,m)<150)o.state='chase';
+  if(m.t.draw==='human'&&!m.t.boss&&!m.t.noChain)for(const o of mobs)if(o!==m&&!o.dead&&o.type===m.type&&o.state==='idle'&&dist(o,m)<150)o.state='chase';
   if(m.t.boss&&!m.enraged&&m.hp<m.maxhp*0.5){m.enraged=true;m.atk=Math.round(m.atk*1.25);m.spd*=1.2;toast(`${m.t.name} nổi giận!`,'#ff6a5a');log(`${m.t.name} nổi giận, gọi đồng bọn tới!`,'#ff6a5a');
     shakeT=0.4;sfx('slam');summonAdd(m);summonAdd(m);}
   if(m.hp<=0)killMob(m);}
@@ -180,8 +180,11 @@ function killMob(m){m.dead=true;m.fade=0.6;m.respawn=m.t.boss?90:12;player.kills
   if(player.target===m){player.target=null;player.pend=null;}
   if(n>1)partyAPI('netPartyKill',e,gs,m);partyAPI('petOnKill',m);
   gainExp(e);}
-const expMul=()=>Math.min(10,1+(player.expBuffs||[]).reduce((a,b)=>a+(b.t>0?b.m:0),0));
-function addExpBuff(m,t){player.expBuffs=(player.expBuffs||[]).filter(b=>b.t>0);player.expBuffs.push({m,t});toast(`Nhân kinh nghiệm: x${expMul()}`,'#ffe27a');}
+// nhân kinh nghiệm: ăn thêm viên thì CỘNG DỒN THỜI GIAN (Song bội x2, Tam bội x3). Đang có Tam bội thì dùng Tam bội trước, giờ Song bội để dành.
+const expTime=m=>(player.expBuffs||[]).filter(b=>b.m===m).reduce((a,b)=>a+Math.max(0,b.t),0);
+const expMul=()=>expTime(2)>0?3:expTime(1)>0?2:1;
+function addExpBuff(m,t){const L=player.expBuffs=(player.expBuffs||[]).filter(b=>b.t>0);const e=L.find(b=>b.m===m);if(e)e.t+=t;else L.push({m,t});
+  toast(`${m===2?'Tam':'Song'} bội kinh nghiệm: còn ${Math.ceil(expTime(m)/60)} phút`,'#ffe27a');}
 function gainExp(e){if(player.lv>=MAXLV)return;e=Math.round(e*expMul());player.exp+=e;
   while(player.lv<MAXLV&&player.exp>=expNeed(player.lv)){player.exp-=expNeed(player.lv);player.lv++;const st=stats();player.hp=st.maxhp;player.mp=st.maxmp;
     fx.push({k:'beam',x:player.x,y:player.y,t:0,life:1.2,col:'rgba(255,230,140,.9)'});addRing(player.x,player.y-20,80,'#ffe27a',0.9);addParts(player.x,player.y-20,'#ffe27a',30,150);
@@ -232,7 +235,7 @@ function castSkill(i){const sk=skillList()[i],st=stats(),tg=player.target;
   switch(sk.kind){
     case 'aoeSelf':{fx.push({k:'spin',x:player.x,y:player.y-14,r:sk.r,t:0,life:0.45,col:sk.col});addRing(player.x,player.y-4,sk.r,sk.col,0.45);
       if(sk.freeze){fx.push({k:'ice',x:player.x,y:player.y,r:sk.r,t:0,life:1});sfx('ice');}else sfx('swing');
-      for(const m of mobs){if(m.dead||dist(m,player)>sk.r)continue;hurtMob(m,dmgCalc(st.atk,m.armor,sk.mult,st.crit));if(sk.freeze&&!m.dead)m.freezeT=m.t.boss?sk.freeze*0.4:sk.freeze;if(sk.stun&&!m.dead)m.stunT=m.t.boss?sk.stun*0.4:sk.stun;if(!player.target&&!m.dead)player.target=m;}
+      for(const m of mobs){if(m.dead||dist(m,player)>sk.r)continue;hurtMob(m,dmgCalc(st.atk,m.armor,sk.mult,st.crit));if(sk.freeze&&!m.dead)m.freezeT=m.t.boss?sk.freeze*0.4:sk.freeze;if(sk.stun&&!m.dead)m.stunT=m.t.boss?sk.stun*0.4:sk.stun;if(!player.target&&!m.dead&&!(auto&&soloAvoid(m.t)))player.target=m;}
       if(sk.stun){fx.push({k:'quake',x:player.x,y:player.y,r:sk.r,t:0,life:0.6});shakeT=Math.max(shakeT,0.18);}break;}
     case 'wave':{const a=Math.atan2(tg.y-player.y,tg.x-player.x);shots.push({kind:'wave',x:player.x,y:player.y-18,vx:Math.cos(a),vy:Math.sin(a),spd:540,mult:sk.mult,pierce:true,hit:new Set(),travel:0,max:sk.range+40,r:28,ang:a});sfx('swing');break;}
     case 'proj':{shots.push({kind:sk.fx,x:player.x+player.face*10,y:player.y-24,tg,spd:500,mult:sk.mult,slow:sk.slow,poison:sk.poison,mark:sk.mark});sfx(sk.fx==='ice'?'ice':sk.fx==='fire'?'fire':'cast');break;}
@@ -355,6 +358,8 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
   if(navGoal&&!player.path.length&&!player.moving){player.navStuck=(player.navStuck||0)+0.2;if(player.navStuck>3){navGoal=null;player.navStuck=0;}}else player.navStuck=0;
   if(player.npc||player.gather||navGoal)return;
   const tg=player.target;
+  // bỏ mục tiêu không đáng đánh: quái đang chạy về hồi máu, hoặc Tinh anh khi đi một mình (trừ khi đang luyện tại chính bãi Tinh anh)
+  if(tg&&!tg.dead&&!tg.isFoe&&(tg.state==='return'||(soloAvoid(tg.t)&&!(player.autoMode==='here'&&player.autoAnchor&&player.autoAnchor.zone===tg.type)))){player.target=null;player.pend=null;return;}
   if(tg&&!tg.dead){const d=dist(player,tg);
     let near=0;for(const m of mobs)if(!m.dead&&dist(m,player)<130)near++;
     for(let i=0;i<sk.length;i++){const s=sk[i];if(player.lv<s.lv||player.cds[i]>0||player.mp<s.mp)continue;
@@ -401,7 +406,7 @@ function updatePlayer(dt){const st=stats();
   const inV=inSafe(player),hr=inV?0.12:(player.combatT<=0?0.03:0.004);
   player.hp=Math.min(st.maxhp,player.hp+st.maxhp*hr*dt);
   player.mp=Math.min(st.maxmp,player.mp+st.maxmp*(inV?0.12:0.02)*dt);
-  if(player.expBuffs&&player.expBuffs.length){for(const b of player.expBuffs)b.t-=dt;if(player.expBuffs.some(b=>b.t<=0))player.expBuffs=player.expBuffs.filter(b=>b.t>0);}
+  if(player.expBuffs&&player.expBuffs.length){const L=player.expBuffs,a=L.find(b=>b.m===2&&b.t>0)||L.find(b=>b.m===1&&b.t>0);if(a)a.t-=dt;if(L.some(b=>b.t<=0))player.expBuffs=L.filter(b=>b.t>0);}
   if(typeof updateRiding==='function'){updateRiding();const M=mountObj();if(M&&M.spd>=0.7&&player.flying&&player.navFly)setFly(false);}
   if(player.stunT>0){player.stunT-=dt;player.path=[];player.moving=false;return;}
   if(mouse.down&&mouse.hold){mouse.holdT-=dt;if(mouse.holdT<=0){mouse.holdT=0.2;const w=toWorld(mouse.x,mouse.y);moveTo(w.x,w.y);}}
@@ -526,6 +531,9 @@ function applySave(s){
   delete player.eq.jade;delete player.refine;
   if(s.refine&&player.eq.weapon&&!player.eq.weapon.ref)player.eq.weapon.ref=s.refine; // bản cũ: cường hóa gắn với nhân vật -> chuyển vào vũ khí đang cầm
 for(const it of player.inv.concat(Object.values(player.eq)))if(it&&it.slot==='jade')it.slot='amulet';
+  // đồ bộ cũ (bậc thấp, cần cấp 85) -> nâng thành đồ bộ tối thượng, ai cũng mặc được; giữ cường hóa
+  const upSet=it=>{if(!it||!it.set||!SETS[it.set]||(it.tier>=MAXTIER&&it.lvReq<=1))return it;const n=makeSetItem(it.slot,it.set,it.wtype||undefined);n.uid=it.uid;if(it.ref)n.ref=it.ref;return n;};
+  player.inv=player.inv.map(upSet);for(const k in player.eq)player.eq[k]=upSet(player.eq[k]);if(Array.isArray(player.stash))player.stash=player.stash.map(upSet);
   let mx=0;for(const it of player.inv.concat(Object.values(player.eq)))if(it&&it.uid>mx)mx=it.uid;uidN=mx+1;
   refreshLook();AU.music=s.music!==false;AU.sfx=s.sfx!==false;
   const mid=MAPS[s.map]?s.map:'trukhe';loadMap(mid,s.v===3?s.x:null,s.v===3?s.y:null);
