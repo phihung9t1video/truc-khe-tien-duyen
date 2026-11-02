@@ -1,7 +1,6 @@
 {
-  "version": "1.3.34",
-  "notes": "App Android: them nut An (an xuong nen, game van chay, bam thong bao de mo lai); nut Thu nho bao cach bat neu may chan cua so noi. Them Nhac rieng: chon file nhac tren may cho tung ban do (Cai dat).",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.34/www.zip",
-  "sha256": "46d41c7a0f4afd54fbc136bb1b9f66419d90160d105139f9b483594c5e5c35a2",
-  "apk": true
+  "version": "1.3.35",
+  "notes": "Nhac rieng: them phat nhac tu YouTube (dan link bai hat hoac danh sach phat cho tung ban do hoac moi ban do), khung phat nho keo duoc.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.35/www.zip",
+  "sha256": "ffda035a1c3fd28c614713e45bbc51e6da18626b1a8c41402435843a33eea9c9"
 }
