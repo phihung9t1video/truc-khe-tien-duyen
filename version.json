@@ -1,6 +1,6 @@
 {
-  "version": "1.3.38",
-  "notes": "Giam manh so tin nhan truc tuyen (Supabase vuot han muc): mot minh tren ban do chi bao vi tri thua, co nguoi khac moi gui day; gian tin chao, to doi, quai.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.38/www.zip",
-  "sha256": "1abc0b429f179e6df154ed9bad06ba59120aa81408ecf9bd26dc2965a21b9231"
+  "version": "1.3.39",
+  "notes": "Chuyen phan online thoi gian thuc (thay nhau, chat, to doi, quai) sang may chu Cloudflare mien phi; Supabase chi con giu tai khoan, luu nhan vat, bang hoi, xep hang.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.39/www.zip",
+  "sha256": "9dc1b36b1f986f9d1816df5918d5f460663b5be9de578547a3875e02f455d91d"
 }

@@ -16,12 +16,14 @@ function netLeave(room){netSend({topic:'realtime:'+room,event:'phx_leave',payloa
 function netCast(room,event,payload){netSend({topic:'realtime:'+room,event:'broadcast',payload:{type:'broadcast',event,payload}});}
 function netConnect(){
   if(!netEnabled()||NET.ws)return;netIdent();
-  const url=NET.cfg.url.replace(/^http/,'ws').replace(/\/$/,'')+'/realtime/v1/websocket?apikey='+encodeURIComponent(NET.cfg.key)+'&vsn=1.0.0';
+  // máy chủ chuyển tin riêng (Cloudflare) nếu có; không thì dùng Supabase Realtime
+  const url=NET.cfg.relay?NET.cfg.relay:NET.cfg.url.replace(/^http/,'ws').replace(/\/$/,'')+'/realtime/v1/websocket?apikey='+encodeURIComponent(NET.cfg.key)+'&vsn=1.0.0';
   NET.status='connecting';
   let ws;try{ws=new WebSocket(url);}catch(e){NET.status='off';NET.retryT=10;return;}
   NET.ws=ws;
-  ws.onopen=()=>{NET.status='on';NET.mapRoom=null;netJoin('tk_world');netSyncRoom();netHello();};
-  ws.onclose=()=>{NET.ws=null;NET.status='off';NET.others.clear();NET.retryT=8;};
+  ws.onopen=()=>{NET.status='on';NET.fails=0;NET.mapRoom=null;netJoin('tk_world');netSyncRoom();netHello();};
+  ws.onclose=()=>{const was=NET.status==='on';NET.ws=null;NET.status='off';NET.others.clear();NET.fails=was?0:(NET.fails||0)+1;NET.retryT=Math.min(120,8*Math.max(1,NET.fails));
+    if(NET.fails===3&&NET.cfg.relay&&typeof log==='function')log('Chưa kết nối được máy chủ online. Có thể máy chủ đã hết lượt miễn phí trong ngày, sẽ tự hoạt động lại sau 7 giờ sáng. Game vẫn chơi và lưu bình thường.','#ffb36b');};
   ws.onerror=()=>{};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}
     if(m.event!=='broadcast'||!m.payload)return;const ev=m.payload.event,p=m.payload.payload;if(!p)return;if(ev==='akick'){if(typeof accOnKick==='function')accOnKick(p);return;}if(p.id===NET.id)return;
