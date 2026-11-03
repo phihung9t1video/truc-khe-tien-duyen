@@ -1,6 +1,6 @@
 {
-  "version": "1.3.41",
-  "notes": "Cay co thu lon co bong ram va dom nang, nhan vat dung duoi tan duoc (tan mo di), than cay che truoc sau. Bong may troi dam va to hon.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.41/www.zip",
-  "sha256": "2df9e6d259e20ebbb770f57926650b1c8ebc06db7cc8355cdee6019a91858156"
+  "version": "1.3.42",
+  "notes": "Ban thu nghiem 3D (Three.js) cho Truc Khe Thon: bam nut 3D de bat. Keo de xoay camera, lan chuot hoac chum 2 ngon de phong to, nhap dat de di, nhap quai de danh.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.42/www.zip",
+  "sha256": "428fcfe8d54284b6001714bc412bfd3cf67677da80dd29ad962de2aa540c4eab"
 }
