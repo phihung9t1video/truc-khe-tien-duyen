@@ -4,7 +4,25 @@
 // Kéo chuột/ngón tay để xoay camera, lăn chuột/chụm 2 ngón để phóng to; nhấp đất để đi, nhấp quái để đánh.
 import * as THREE from './three.min.js';
 const V3={on:false,built:null,scene:null,renderer:null,cam:null,ground:null,objs:new Map(),pick:[],yaw:0.0,pitch:0.85,dist:16,tgt:new THREE.Vector3(),hf:null,water:null,herbs:[],portals:[],sun:null,ov:null,oc:null};
-const MAPS3D=['trukhe'];
+const MAPS3D={includes:id=>!!(typeof MAPS!=='undefined'&&MAPS[id])};
+// bầu trời / sương / ánh sáng theo vùng: [đỉnh trời, giữa, chân trời, sương gần, sương xa, đèn trời, đèn đất, cường độ, màu nắng, độ nắng]
+const SKY3D={spring:['#5ea6e8','#cfe6f7','#f4ead8',24,62,'#dfefff','#5a7a4a',1.05,'#fff0d6',2.2],
+ marsh:['#5a9ac8','#c8e0e8','#e8efe8',20,56,'#d8f0ff','#4a7a6a',1.0,'#f8f4e0',2.0],
+ snow:['#6a9ad8','#e0ecf8','#ffffff',22,60,'#f0f6ff','#8a98a8',1.2,'#ffffff',2.1],
+ desert:['#5a9ae0','#f0e0c0','#f8e8c8',26,66,'#fff4e0','#a8885a',1.1,'#fff0c8',2.6],
+ dark:['#141024','#2a2440','#3a3048',10,38,'#8a8ac0','#3a3048',0.85,'#a8b0ff',0.6],
+ heaven:['#8ab8f0','#fff4e0','#ffffff',24,64,'#fff8e8','#c8b890',1.3,'#fff2d0',2.3],
+ volcano:['#5a2a20','#c8603a','#f0a060',16,50,'#ffc8a0','#5a2a1a',0.9,'#ffb070',2.0],
+ sea:['#3a8ad8','#bfe4f4','#e8f6fa',24,64,'#e0f4ff','#3a6a8a',1.05,'#fff4e0',2.2],
+ star:['#0a0c28','#2a2a5a','#4a3a7a',16,52,'#b0b8ff','#2a2448',0.8,'#d0d0ff',1.2],
+ wild:['#6aa8e0','#e0ecd8','#f0ecd0',26,66,'#eef6e0','#7a7a4a',1.1,'#fff0d0',2.3],
+ blood:['#2a0a10','#5a1a24','#7a2a2a',12,42,'#e09a9a','#4a2028',0.85,'#ff9a8a',0.9],
+ thunder:['#3a3a6a','#9a9ac0','#c8c8e0',18,54,'#d8d8ff','#4a4a6a',0.9,'#e8e8ff',1.6],
+ jade:['#4aa8c8','#c8f0e0','#e8f8f0',22,60,'#e0fff0','#3a7a5a',1.05,'#f8fff0',2.1],
+ void:['#080818','#2a2048','#4a2a5a',12,44,'#b8a8e8','#302848',0.85,'#ffd890',1.0]};
+const PINK3D=()=>['spring','heaven','jade'].includes(CM.theme)?'#f2a6cc':shade(TH.tree||'#3a7a2e',0.2),PINE3D=()=>({desert:'#6a7a3a',snow:'#2e5a4a',volcano:'#4a3a2a',dark:'#2a3a3a',blood:'#4a2a2a',void:'#2a2a4a',wild:'#4a6a2a'})[CM.theme]||'#2e6a3a';
+const LM_ANIM={boat:1,flags:1,camel:1,ghostgate:1,goldstatue:1,lighthouse:1,yurt:1,obo:1,goldhall:1,waterfall:1,jadepool:1};
+const skyOf=()=>SKY3D[(typeof CM!=='undefined'&&CM.theme)]||SKY3D.spring;
 const want3D=()=>{try{return localStorage.getItem('tk_3d')==='1';}catch(e){return false;}};
 const hasGL=(()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch(e){return false;}})();
 const col=c=>new THREE.Color(c||'#888');
@@ -39,13 +57,13 @@ function merge(list){let n=0;const geos=list.map(([g,x,y,z,sx,sy,sz])=>{const q=
 const canopyGeo=seed=>merge([[lumpy(0.64,3,seed),0,0,0],[lumpy(0.5,2,seed+1),0.42,-0.12,0.1],[lumpy(0.48,2,seed+2),-0.4,-0.1,-0.12],[lumpy(0.42,2,seed+3),0.02,0.3,-0.25]]);
 const pineGeo=()=>merge([[new THREE.ConeGeometry(0.72,0.95,16,1),0,-0.45,0],[new THREE.ConeGeometry(0.58,0.85,16,1),0,0.05,0],[new THREE.ConeGeometry(0.42,0.75,16,1),0,0.5,0]]);
 function buildScene(){disposeScene();const S=new THREE.Scene();V3.scene=S;V3.objs.clear();V3.pick=[];V3.herbs=[];V3.portals=[];
-  const sky=col('#cfe6f7');S.fog=new THREE.Fog(sky,24,62);
-  const skyM=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{top:{value:col('#5ea6e8')},mid:{value:col('#cfe6f7')},bot:{value:col('#f4ead8')},sunDir:{value:new THREE.Vector3(-0.45,0.75,-0.35).normalize()}},
+  const SK=skyOf(),sky=col(SK[1]);S.fog=new THREE.Fog(sky,SK[3],SK[4]);
+  const skyM=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{top:{value:col(SK[0])},mid:{value:col(SK[1])},bot:{value:col(SK[2])},sunDir:{value:new THREE.Vector3(-0.45,0.75,-0.35).normalize()}},
     vertexShader:'varying vec3 vP;void main(){vP=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
     fragmentShader:'uniform vec3 top,mid,bot,sunDir;varying vec3 vP;void main(){float h=vP.y;vec3 c=h>0.0?mix(mid,top,pow(h,0.6)):mix(mid,bot,min(1.0,-h*3.0));float s=max(0.0,dot(vP,sunDir));c+=vec3(1.0,0.9,0.7)*(pow(s,64.0)*1.2+pow(s,6.0)*0.18);gl_FragColor=vec4(c,1.0);}'});
   const dome=new THREE.Mesh(new THREE.SphereGeometry(150,32,16),skyM);V3.dome=dome;S.add(dome);S.background=sky;
-  S.add(new THREE.HemisphereLight(0xdfefff,0x5a7a4a,1.05));
-  const sun=new THREE.DirectionalLight(0xfff0d6,2.2);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);const sc=sun.shadow.camera;sc.left=-28;sc.right=28;sc.top=28;sc.bottom=-28;sc.near=1;sc.far=90;sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.03;sun.shadow.radius=5;S.add(sun);S.add(sun.target);V3.sun=sun;
+  S.add(new THREE.HemisphereLight(col(SK[5]),col(SK[6]),SK[7]));
+  const sun=new THREE.DirectionalLight(col(SK[8]),SK[9]);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);const sc=sun.shadow.camera;sc.left=-28;sc.right=28;sc.top=28;sc.bottom=-28;sc.near=1;sc.far=90;sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.03;sun.shadow.radius=5;S.add(sun);S.add(sun.target);V3.sun=sun;
   buildHeights();
   // địa hình
   const W=MW+1,Hh=MH+1,pos=new Float32Array(W*Hh*3),cols=new Float32Array(W*Hh*3),idx=[];const gC=col(TH.grass),pC=col(TH.pathI||'#c8a878'),fC=col(TH.floorBase||'#b8b0a0'),rk=[col('#9a9284'),col('#c8c0b0')],snow=col('#ffffff'),sand=col('#d8c898'),dark=col('#2a2018'),tmp=new THREE.Color();
@@ -68,8 +86,8 @@ function buildScene(){disposeScene();const S=new THREE.Scene();V3.scene=S;V3.obj
   const round=trees.filter(t=>t[3]<0.45),pine=trees.filter(t=>t[3]>=0.45&&t[3]<0.8),pink=trees.filter(t=>t[3]>=0.8);
   inst(new THREE.CylinderGeometry(0.09,0.16,1,10),makeMat('#6a4424'),trees,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+0.5*t[2],t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,0,0);});
   const ico=canopyGeo(1.3);inst(ico,windify(makeMat(TH.tree||'#3a7a2e',{roughness:0.9}),0.06,-0.6),round,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.35*t[2],t[1]);o.scale.set(t[2],t[2]*0.95,t[2]);o.rotation.set(0,t[3]*6,0);});
-  inst(canopyGeo(4.1),windify(makeMat('#f2a6cc',{roughness:0.85}),0.06,-0.6),pink,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.3*t[2],t[1]);o.scale.set(t[2]*1.05,t[2]*0.9,t[2]*1.05);o.rotation.set(0,t[3]*6,0);});
-  inst(pineGeo(),windify(makeMat('#2e6a3a',{roughness:0.9}),0.045,-0.9),pine,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.45*t[2],t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,t[3]*6,0);});
+  inst(canopyGeo(4.1),windify(makeMat(PINK3D(),{roughness:0.85}),0.06,-0.6),pink,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.3*t[2],t[1]);o.scale.set(t[2]*1.05,t[2]*0.9,t[2]*1.05);o.rotation.set(0,t[3]*6,0);});
+  inst(pineGeo(),windify(makeMat(PINE3D(),{roughness:0.9}),0.045,-0.9),pine,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.45*t[2],t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,t[3]*6,0);});
   // cỏ
   {const blade=new THREE.BufferGeometry(),bp=[],bc=[],gcol=col(TH.grass),tipc=gcol.clone().offsetHSL(0.03,0.08,0.22),basec=gcol.clone().offsetHSL(0,0,-0.02);
    for(let k=0;k<5;k++){const a=k/5*Math.PI*2+0.3,dx=Math.cos(a)*0.07,dz=Math.sin(a)*0.07,lx=Math.cos(a+1.6)*0.018,lz=Math.sin(a+1.6)*0.018,hh=0.16+(k%3)*0.05,lean=0.06;
@@ -81,7 +99,7 @@ function buildScene(){disposeScene();const S=new THREE.Scene();V3.scene=S;V3.obj
   // cây cổ thụ
   for(const b of (typeof BIGTREES!=='undefined'?BIGTREES:[])){const x=b.x/T,z=b.y/T,k=b.r/60,h0=hAt(x,z),g=new THREE.Group();
     const tr=new THREE.Mesh(new THREE.CylinderGeometry(0.22*k,0.45*k,2.6*k,14),makeMat('#5a3a20'));tr.position.y=1.3*k;tr.castShadow=true;g.add(tr);
-    const leaf=windify(makeMat(b.v%4===1?'#eaa0c6':TH.tree||'#3a7a2e',{roughness:0.9}),0.03,2.4*k);for(const [dx,dy,dz,r] of [[0,3.1,0,1.7],[1.1,2.7,0.3,1.2],[-1.0,2.8,-0.4,1.25],[0.2,3.6,-0.6,1.1],[-0.3,2.6,0.9,1.1]]){const m=new THREE.Mesh(lumpy(r*k,3,dx*7+dz),leaf);m.position.set(dx*k,dy*k,dz*k);m.castShadow=true;m.receiveShadow=true;g.add(m);}
+    const leaf=windify(makeMat(b.v%4===1?PINK3D():TH.tree||'#3a7a2e',{roughness:0.9}),0.03,2.4*k);for(const [dx,dy,dz,r] of [[0,3.1,0,1.7],[1.1,2.7,0.3,1.2],[-1.0,2.8,-0.4,1.25],[0.2,3.6,-0.6,1.1],[-0.3,2.6,0.9,1.1]]){const m=new THREE.Mesh(lumpy(r*k,3,dx*7+dz),leaf);m.position.set(dx*k,dy*k,dz*k);m.castShadow=true;m.receiveShadow=true;g.add(m);}
     g.position.set(x,h0,z);S.add(g);}
   // đá
   const rocks=[];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(getT(x,y)===RO)rocks.push([x+0.5,y+0.5,0.35+rr()*0.25,rr()]);
@@ -186,6 +204,7 @@ function animModel(o,dt,moving,atk,hurt,dead,cast){const u=o.userData,A=u.acts;l
   if(want!==u.cur&&A[want]){const from=A[u.cur],to=A[want];to.reset();to.setEffectiveWeight(1);to.play();if(from&&from!==to)from.crossFadeTo(to,0.18,false);u.cur=want;}
   if(A.Running_A)A.Running_A.timeScale=1.15;u.mixer.update(dt);}
 function update3D(dt){UT.value=nowT;for(const o of V3.objs.values())o.userData.seen=false;
+  if(typeof LANDMARKS!=='undefined')LANDMARKS.forEach((l,i)=>{const o=objFor('lm_'+curMapId+'_'+i,()=>makeBB(460,400,230,380,4.5*l.s));const d=placeBB(o,l.x,l.y,dt);const anim=LM_ANIM[l.k],u=o.userData;if(!u.lmDone||anim&&d<26&&(u.fc=(u.fc||0)+1)%14===0){u.lmDone=true;withCtx(u.cv,()=>{ctx.clearRect(0,0,u.W,u.H);ctx.save();ctx.translate(u.ax,u.ay);lmDraw(Object.assign({},l,{x:0,y:0}));ctx.restore();});u.tex.needsUpdate=true;}});
   // người chơi (cả thú cưỡi, hào quang)
   const pk=SECT_MDL[player.sect],rideNow=(player.riding&&player.mount)||player.flying;
   if(!rideNow&&mdl(pk)){const o=objFor('player_m',()=>makeModel(pk,1,player.name,'#9fffb0'));place(o,player.x,player.y,player.moving,player.face,dt,0);animModel(o,dt,player.moving,player.atkAnim,player.hitFlash>0,player.dead,CASTER[player.sect]);}
@@ -262,9 +281,9 @@ function click3D(sx,sy){if(!started||player.dead)return;const rc=new THREE.Rayca
   for(const h of herbs)if(!h.dead&&Math.hypot(h.x-wx,h.y-wy)<28){navGoal=null;player.gather=h;player.target=null;player.npc=null;player.repath=0;return;}
   groundMove(wx,wy);}
 // ---------- nút bật/tắt ----------
-(()=>{const b=document.createElement('button');b.id='btn3D';b.textContent='3D';b.title='Chế độ 3D thử nghiệm (hiện chỉ có ở Trúc Khê Thôn)';$('menuBtns').insertBefore(b,$('btnSet'));
+(()=>{const b=document.createElement('button');b.id='btn3D';b.textContent='3D';b.title='Chế độ 3D thử nghiệm';$('menuBtns').insertBefore(b,$('btnSet'));
   const sync=()=>{b.style.background=want3D()?'linear-gradient(#5aa0e0,#2a5a9a)':'';b.style.color=want3D()?'#fff':'';};sync();
   b.onclick=()=>{if(!hasGL)return log('Máy này không hỗ trợ 3D (WebGL)','#ff9a8a');const on=!want3D();try{on?localStorage.setItem('tk_3d','1'):localStorage.removeItem('tk_3d');}catch(e){}sync();sfx('click');
-    log(on?(MAPS3D.includes(curMapId)?'Đã bật 3D thử nghiệm. Kéo để xoay camera, lăn chuột / chụm 2 ngón để phóng to.':'Đã bật 3D thử nghiệm: hiện chỉ có ở Trúc Khê Thôn, các bản đồ khác vẫn 2D.'):'Đã tắt 3D, về chế độ 2D','#8fd8ff');};})();
+    log(on?'Đã bật 3D thử nghiệm. Kéo để xoay camera, lăn chuột / chụm 2 ngón để phóng to.':'Đã tắt 3D, về chế độ 2D','#8fd8ff');};})();
 window.V3=V3;
 window.THREE=THREE;window.V3load=(u,cb)=>loader.load(u,cb);

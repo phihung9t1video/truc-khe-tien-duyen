@@ -1,6 +1,6 @@
 {
-  "version": "1.3.45",
-  "notes": "Ban do theo dia danh that Trung Quoc (Dai Ly, Nhi Hai, Phong Do, Nga Mi, Thai Son...), cong trinh dac trung tung vung, ban do the gioi dang du do co; thu 4 chan va don chem/dam/nhay bo chan that hon, het luot; hang nut menu len tren; tam khoa thu cuoi",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.45/www.zip",
-  "sha256": "6e123cfa9ecd39ed44c5f2cc24260fc7c2db027d74b99d0a8eff6ba80abc7fd7"
+  "version": "1.3.46",
+  "notes": "Che do 3D cho tat ca ban do: bau troi, suong, anh sang rieng tung vung (vung toi giu u am), mau cay theo vung, cong trinh dac trung hien trong 3D",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.46/www.zip",
+  "sha256": "a1d74f6dae1f35dc7e81a0b2b57ce771bf57b8b34871ac2d7d9f996ae6432c73"
 }
