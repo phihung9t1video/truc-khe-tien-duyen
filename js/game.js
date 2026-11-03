@@ -1,7 +1,8 @@
 'use strict';
 // ===================== TRẠNG THÁI =====================
 const MAXLV=199;
-const expNeed=l=>Math.round(40*Math.pow(l,1.7)*(1+Math.pow(Math.max(0,l-12),1.8)/40));
+// kinh nghiệm lên cấp: cấp càng cao càng gian nan (hệ số 1.4+(cấp/55)^1.35)
+const expNeed=l=>Math.round(40*Math.pow(l,1.7)*(1+Math.pow(Math.max(0,l-12),1.8)/40)*(1.4+Math.pow(l/55,1.35)));
 const emptyEq=()=>Object.fromEntries(EQ_KEYS.map(k=>[k,null]));
 let uidN=1;
 const player={sect:null};

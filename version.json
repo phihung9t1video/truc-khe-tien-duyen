@@ -1,6 +1,6 @@
 {
-  "version": "1.3.35",
-  "notes": "Nhac rieng: them phat nhac tu YouTube (dan link bai hat hoac danh sach phat cho tung ban do hoac moi ban do), khung phat nho keo duoc.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.35/www.zip",
-  "sha256": "ffda035a1c3fd28c614713e45bbc51e6da18626b1a8c41402435843a33eea9c9"
+  "version": "1.3.36",
+  "notes": "Len cap gian nan hon: kinh nghiem can de len cap tang 1,6 lan o cap thap, 3,3 lan o cap 90, 7 lan o cap 199.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.36/www.zip",
+  "sha256": "b44e4f2f1e56cbac902fda6782631eb289a8866a8c8807cc3ce5b285aefef37a"
 }
