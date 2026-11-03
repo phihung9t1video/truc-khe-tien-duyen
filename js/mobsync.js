@@ -27,7 +27,7 @@ function mobOnMsg(ev,p){if(p.map!==curMapId)return;
       m.netX=x;m.netY=y;}}}
 // mỗi khung hình (gọi từ netTick): gửi sát thương đã gom; chủ bãi gửi trạng thái quái
 function mobSyncTick(dt){if(NET.status!=='on'||!NET.mapRoom||!started)return;
-  MS.hitT-=dt;if(MS.hitT<=0){MS.hitT=0.2;const h=Object.entries(MS.hitQ).map(([i,v])=>[+i,Math.round(v)]);if(h.length){netCast(NET.mapRoom,'mhit',{id:NET.id,map:curMapId,h});MS.hitQ={};}}
+  MS.hitT-=dt;if(MS.hitT<=0){MS.hitT=0.4;const h=Object.entries(MS.hitQ).map(([i,v])=>[+i,Math.round(v)]);if(h.length){netCast(NET.mapRoom,'mhit',{id:NET.id,map:curMapId,h});MS.hitQ={};}}
   if(!NET.others.size||!mobIsHost())return;
-  MS.posT-=dt;if(MS.posT<=0){MS.posT=0.5;
+  MS.posT-=dt;if(MS.posT<=0){MS.posT=0.8;
     netCast(NET.mapRoom,'mpos',{id:NET.id,map:curMapId,a:mobs.filter(m=>m.i!=null).map(m=>[m.i,Math.round(m.x),Math.round(m.y),m.dead?-1:Math.round(m.hp/m.maxhp*1000),m.lv])});}}

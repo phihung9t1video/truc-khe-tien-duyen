@@ -38,7 +38,7 @@ function netConnect(){
     else if((ev==='wsp'||ev[0]==='f'||ev[0]==='t')&&typeof socialOnMsg==='function')socialOnMsg(ev,p);};}
 addEventListener('pagehide',()=>{try{if(NET.status==='on')netCast('tk_world','bye',{id:NET.id});}catch(e){}});
 function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId+(CM.inst?'_'+CM.inst:'');if(NET.mapRoom===room)return;
-  if(NET.mapRoom){netCast(NET.mapRoom,'bye',{id:NET.id});netLeave(NET.mapRoom);}NET.others.clear();NET.mapRoom=room;netJoin(room);NET.sendT=0;}
+  if(NET.mapRoom){netCast(NET.mapRoom,'bye',{id:NET.id});netLeave(NET.mapRoom);}NET.others.clear();NET.mapRoom=room;netJoin(room);NET.sendT=0;NET.posIdle=99;}
 function netHello(){if(!player.sect||!started)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId,sect:player.sect,gm:typeof isGM==='function'&&isGM()?1:0,pa:partyAutoOn()&&(!inParty()||isLeader())&&PARTY.members.length<PARTY_MAX?1:0,pt:inParty()?1:0});}
 function netAddChat(name,text,lv){NET.chat.push({name,text,lv,t:Date.now()});if(NET.chat.length>40)NET.chat.shift();if(typeof renderChat==='function')renderChat();}
 function netSendChat(text){text=text.replace(/\s+/g,' ').trim().slice(0,120);if(!text)return;
@@ -52,15 +52,16 @@ function netTick(dt){
   NET.hbT-=dt;if(NET.hbT<=0){NET.hbT=25;netSend({topic:'phoenix',event:'heartbeat',payload:{}});}
   if(!started||!player.sect)return;
   netSyncRoom();
-  NET.helloT-=dt;if(NET.helloT<=0){NET.helloT=10;netHello();}
-  NET.sendT-=dt;NET.posIdle=(NET.posIdle||0)+dt;if(NET.sendT<=0){NET.sendT=document.hidden?2:0.35;const w=player.eq.weapon,a=player.eq.armor;
+  NET.helloT-=dt;if(NET.helloT<=0){NET.helloT=document.hidden?180:90;netHello();}
+  NET.sendT-=dt;NET.posIdle=(NET.posIdle||0)+dt;// tiết kiệm tin nhắn: một mình trên bản đồ thì chỉ báo vị trí thưa (đủ để người mới vào thấy mình), có người khác mới gửi dày
+  const alone=!NET.others.size;if(NET.sendT<=0){NET.sendT=document.hidden?6:alone?3:0.6;const w=player.eq.weapon,a=player.eq.armor;
     const pk=[Math.round(player.x),Math.round(player.y),player.dir,player.face,player.moving?1:0,player.flying?1:0,player.atkAnim>0?1:0,player.dead?1:0,Math.round(player.hp/stats().maxhp*50),player.riding?1:0,player.combo||0,player.lv,player.stunT>0?1:0].join(',');
-    if(pk!==NET.lastPos||NET.posIdle>=3){NET.lastPos=pk;NET.posIdle=0;
+    if((pk!==NET.lastPos&&!alone)||NET.posIdle>=(alone?20:5)){NET.lastPos=pk;NET.posIdle=0;
     netCast(NET.mapRoom,'pos',{id:NET.id,name:player.name,sect:player.sect,gender:player.gender,lv:player.lv,x:Math.round(player.x),y:Math.round(player.y),dir:player.dir,face:player.face,sa:typeof setAuraLv==='function'?setAuraLv():0,pr:player.pvp&&player.pvp.r||1000,
       mv:player.moving?1:0,fl:player.flying?1:0,at:player.atkAnim>0?1:0,dead:player.dead?1:0,wr:w?w.rar:0,wt:w?w.tier:0,rf:wRef(),ar:a?a.rar:0,cs:player.combo||0,hf:Math.round(player.hp/stats().maxhp*100)/100,mh:stats().maxhp,df:stats().def,st:player.stunT>0?1:0,mt:player.riding?player.mount:0,pt:player.petOn&&player.pet?player.pet:0,ap:player.ap?[player.ap.h|0,player.ap.hc|0,player.ap.sk|0,player.ap.ey|0,player.ap.acc|0,player.ap.cl|0,player.ap.bd|0]:0,gm:typeof isGM==='function'&&isGM()?1:0});}}
-  for(const [k,o] of NET.others){if(nowT-o.seen>6){NET.others.delete(k);continue;}
+  for(const [k,o] of NET.others){if(nowT-o.seen>13){NET.others.delete(k);continue;}
     const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>400){o.x=o.tx;o.y=o.ty;}else{const s=Math.min(1,dt*8);o.x+=dx*s;o.y+=dy*s;}o.atk=o.at?(o.atk>0?o.atk-dt:0.25):0;}
-  for(const [k,o] of NET.world)if(nowT-o.seen>25)NET.world.delete(k);
+  for(const [k,o] of NET.world)if(nowT-o.seen>240)NET.world.delete(k);
   partyTick(dt);if(typeof mobSyncTick==='function')mobSyncTick(dt);
   NET.cloudT-=dt;if(NET.cloudT<=0){NET.cloudT=60;cloudSave(true);}}
 function drawOthers(list){if(!NET.others.size)return;
@@ -169,7 +170,7 @@ function partyShareIds(x,y){if(!inParty()||NET.status!=='on')return[NET.id];cons
 function netPartyKill(e,g,m){if(inParty()&&NET.status==='on')netCast('tk_world','pkill',{id:NET.id,exp:e,gold:g,type:m.type,map:curMapId,x:Math.round(m.x),y:Math.round(m.y)});}
 function netSendLoot(to,it){if(NET.status!=='on')return false;netCast('tk_world','ploot',{id:NET.id,name:player.name,to,item:it});const nm=(PARTY.members.find(x=>x.id===to)||{}).name||'đồng đội';log(`Chia ${it.name} cho ${nm}`,'#c8f0a0');return true;}
 function partyTick(dt){const now_=Date.now();if(PARTY.lastTick&&now_-PARTY.lastTick>8000){PARTY.lastSet=now_;for(const v of PARTY.st.values())v.seen=now_;PARTY.stT=0;PARTY.setT=0;}PARTY.lastTick=now_;if(!inParty())return;
-  PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=2;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0,x:Math.round(player.x),y:Math.round(player.y)});}
+  PARTY.stT-=dt;if(PARTY.stT<=0){PARTY.stT=5;const st=stats();netCast('tk_world','pst',{id:NET.id,name:player.name,lv:player.lv,hp:Math.round(player.hp/st.maxhp*100)/100,map:curMapId,sect:player.sect,dead:player.dead?1:0,x:Math.round(player.x),y:Math.round(player.y)});}
   if(isLeader()){PARTY.setT-=dt;
     const gone=PARTY.members.filter(m=>m.id!==NET.id&&(!PARTY.st.has(m.id)?false:Date.now()-PARTY.st.get(m.id).seen>300000));
     if(gone.length){PARTY.members=PARTY.members.filter(m=>!gone.includes(m));for(const g of gone)log(`${g.name} mất kết nối, rời tổ đội`,'#ffb36b');

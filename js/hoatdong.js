@@ -87,7 +87,7 @@ function wbOnDead(m){const n=wbNow(),i=wbLocHere(),k=n.key+i;if(WB.got[k])return
 // bảng xếp hạng sát thương (gửi qua phòng bản đồ)
 function wbTick(dt){if(!started)return;const n=wbNow();
   if(n.key!==WB.key||(n.active&&wbLocHere()>=0&&!mobs.some(m=>m.wb)&&!WB.got[n.key+wbLocHere()])||(!n.active&&mobs.some(m=>m.wb)))wbEnsure();
-  WB.sendT-=dt;const wb=mobs.find(m=>m.wb&&!m.dead);if(wb&&WB.dmg>0&&WB.sendT<=0&&NET.status==='on'&&NET.mapRoom){WB.sendT=3;netCast(NET.mapRoom,'xwb',{id:NET.id,name:player.name,d:Math.round(WB.dmg),map:curMapId});}
+  WB.sendT-=dt;const wb=mobs.find(m=>m.wb&&!m.dead);if(wb&&WB.dmg>0&&WB.sendT<=0&&NET.status==='on'&&NET.mapRoom){WB.sendT=6;netCast(NET.mapRoom,'xwb',{id:NET.id,name:player.name,d:Math.round(WB.dmg),map:curMapId});}
   wbBanner(n,wb);}
 function wbBanner(n,wb){let b=$('wbBanner');if(!b){b=document.createElement('div');b.id='wbBanner';$('hud').appendChild(b);}
   const soon=!n.active&&n.next<=300;if(!n.active&&!soon){b.hidden=true;return;}b.hidden=false;
