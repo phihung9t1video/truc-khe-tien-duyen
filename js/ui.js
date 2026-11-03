@@ -391,7 +391,7 @@ function drawNpc(n){drawShadow(n.x,n.y,12);const L=NPC_LOOK[n.look];drawChibi(L,
   const q=curQ();if(q&&q.giver===n.id){const done=qDone()||q.type==='talk';label(done?'?':'!',n.x,top-16+Math.sin(nowT*4)*2,done?'#7dff9a':'#ffd23f',22);}}
 function drawTree(tr,withEnt){const sk=Math.sin(nowT*1.3+tr.ph)*0.035,behind=withEnt&&Math.abs(player.x-tr.x)<24&&player.y<tr.y-4&&player.y>tr.y-60;
   ctx.save();ctx.translate(tr.x,tr.y);ctx.transform(1,0,sk,1,0,0);if(behind)ctx.globalAlpha=0.5;blit(tr.spr,0,0);ctx.restore();}
-const clouds=[{x:200,y:300,r:260},{x:1100,y:900,r:320},{x:1700,y:400,r:240},{x:600,y:1300,r:300}];
+const clouds=[{x:200,y:300,r:360},{x:1100,y:900,r:420},{x:1700,y:400,r:320},{x:600,y:1300,r:400},{x:2600,y:700,r:380},{x:3400,y:1800,r:440},{x:1500,y:2400,r:360},{x:3000,y:2900,r:400}];
 const parts2=[];for(let i=0;i<50;i++)parts2.push({x:Math.random()*2000,y:Math.random()*1200,vx:rnd(-20,-6),vy:rnd(14,34),rot:rnd(0,6),vr:rnd(-2,2),s:rnd(2,4.2),ph:rnd(0,6)});
 function drawWeather(dt,kind){
   for(const p of parts2){
@@ -433,7 +433,7 @@ function drawWorld(dt,cx,cy,withEnt){
   list.sort((a,b)=>a.y-b.y);for(const e of list)e.f();
   if(withEnt){for(const s of shots)drawShot(s);for(const s of eshots)drawShot(s);for(const f of fx)if(!(f.k==='fire'||f.k==='ice'||f.k==='r'&&f.w===2))drawFx(f);}
   if(typeof ambientWorld==='function')ambientWorld(dt,cx,cy,vw,vh,withEnt);
-  for(const c of clouds){c.x+=8*dt;if(c.x-c.r>MW*T)c.x=-c.r;const g=ctx.createRadialGradient(c.x,c.y,c.r*0.2,c.x,c.y,c.r);g.addColorStop(0,'rgba(10,20,40,.10)');g.addColorStop(1,'rgba(10,20,40,0)');ctx.fillStyle=g;ctx.fillRect(c.x-c.r,c.y-c.r,c.r*2,c.r*2);}
+  for(const c of clouds){c.x+=8*dt;if(c.x-c.r>MW*T)c.x=-c.r;const g=ctx.createRadialGradient(c.x,c.y,c.r*0.2,c.x,c.y,c.r);g.addColorStop(0,typeof isDarkMap==='function'&&isDarkMap()?'rgba(10,20,40,.10)':'rgba(10,20,40,.2)');g.addColorStop(1,'rgba(10,20,40,0)');ctx.fillStyle=g;ctx.fillRect(c.x-c.r,c.y-c.r,c.r*2,c.r*2);}
   ctx.setTransform(DPR,0,0,DPR,0,0);
   drawWeather(dt,withEnt&&inArenaNow()&&TH.weather!=='snow'?'ember':TH.weather);
   if(typeof ambientPost==='function')ambientPost(dt,cx,cy,withEnt);else{ctx.fillStyle=TH.tint;ctx.fillRect(0,0,VW,VH);ctx.drawImage(vignette,0,0,VW,VH);}}
