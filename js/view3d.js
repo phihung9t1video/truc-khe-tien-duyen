@@ -162,27 +162,56 @@ function bbDraw(o,fn,every){const u=o.userData;u.fc=(u.fc||0)+1;if(every>1&&u.fc
 function viewDir(o,face){const u=o.userData,vx=u.vx||0,vz=u.vz||0,cr=Math.cos(V3.yaw),sr=Math.sin(V3.yaw),right=vx*cr-vz*sr,fwd=-(vx*sr+vz*cr);
   if(Math.abs(vx)+Math.abs(vz)<1e-4)return{dir:u.dir||'down',face:u.face||face||1};const d=Math.abs(fwd)>Math.abs(right)*1.25?(fwd>0?'up':'down'):'side';u.dir=d;u.face=right>=0?1:-1;return{dir:d,face:u.face};}
 function placeBB(o,x,y,dt){const X=x/T,Z=y/T,u=o.userData;if(u.lx!=null){u.vx=X-u.lx;u.vz=Z-u.lz;}u.lx=X;u.lz=Z;o.position.set(X,hAt(X,Z),Z);const d=o.position.distanceTo(V3.cam.position);return d;}
+// ---------- mô hình 3D thật (KayKit, CC0): nhân vật, NPC, quái dạng người ----------
+const loader=new THREE.GLTFLoader();loader.setMeshoptDecoder(THREE.MeshoptDecoder);
+const MDL={},MDL_URL={mage:'js/m_mage.glb',rogue:'js/m_rogue.glb',knight:'js/m_knight.glb',barb:'js/m_barb.glb',skel:'js/m_skel.glb',skelw:'js/m_skelw.glb'};
+function mdl(k){if(!k||!MDL_URL[k])return null;const M=MDL[k];if(M)return M.ready?M:null;MDL[k]={ready:false};
+  loader.load(MDL_URL[k],g=>{const box=new THREE.Box3().setFromObject(g.scene),h=box.max.y-box.min.y;g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false;if(o.material){o.material.roughness=0.75;o.material.metalness=0;}}});Object.assign(MDL[k],{ready:true,scene:g.scene,anims:g.animations,h:h||2});},undefined,()=>{MDL[k].fail=true;});return null;}
+const SECT_MDL={kiem:'knight',hoa:'mage',thuy:'mage',duoc:'mage',the:'barb',am:'rogue'},CASTER={hoa:1,thuy:1,duoc:1};
+const npcMdl=l=>{l=l||'';return /smith|iron|forge/.test(l)?'barb':/elder|taoist|healer|doc|herb|monk|sage|immortal|fairy|shaman|daotong/.test(l)?'mage':/guard|general|warrior|captain|exorcist/.test(l)?'knight':'rogue';};
+const mobMdl=t=>{if(t.draw&&t.draw!=='human')return null;const l=t.look||'';if(/ghoul|ghost|demon|skel|undead|zombie|lich|chaos|flame|dark/.test(l))return t.boss?'skelw':'skel';return t.boss?'knight':/bandit|thief|rogue|assassin|wild/.test(l)?'rogue':'barb';};
+function makeModel(k,scale,name,ncol,pick){const M=MDL[k],g=new THREE.Group(),inst=THREE.SkeletonUtils.clone(M.scene),sc=scale||1;inst.scale.setScalar(1.55/M.h*sc);g.add(inst);
+  const mixer=new THREE.AnimationMixer(inst),acts={};for(const a of M.anims)acts[a.name]=mixer.clipAction(a);
+  for(const n of ['1H_Melee_Attack_Chop','Spellcast_Shoot','Hit_A','Death_A'])if(acts[n]){acts[n].setLoop(THREE.LoopOnce,1);acts[n].clampWhenFinished=true;}
+  if(acts.Idle){acts.Idle.play();acts.Idle.time=Math.random()*2;}
+  const sh=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:shadowTex,transparent:true,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=0.03;sh.scale.set(1.0*sc,0.65*sc,1);g.add(sh);
+  const hit=new THREE.Sprite(new THREE.SpriteMaterial({transparent:true,opacity:0,depthWrite:false}));hit.center.set(0.5,0);hit.scale.set(0.9*sc,1.7*sc,1);g.add(hit);
+  if(name){const lb=mkLabel(name,ncol);lb.position.y=1.85*sc;g.add(lb);}
+  Object.assign(g.userData,{model:true,mixer,acts,cur:'Idle',sp:hit,pick});return g;}
+function animModel(o,dt,moving,atk,hurt,dead,cast){const u=o.userData,A=u.acts;let want=dead?'Death_A':moving?'Running_A':'Idle';
+  if(!dead){if(atk>0&&!u.atkOn){u.atkOn=true;want=cast&&A.Spellcast_Shoot?'Spellcast_Shoot':'1H_Melee_Attack_Chop';u.lock=0.6;}else if(atk<=0)u.atkOn=false;
+    if(hurt&&!u.hurtOn&&!(u.lock>0)){u.hurtOn=true;want='Hit_A';u.lock=0.35;}else if(!hurt)u.hurtOn=false;}
+  u.lock=Math.max(0,(u.lock||0)-dt);if(u.lock>0&&(want==='Idle'||want==='Running_A'))want=u.cur;
+  if(want!==u.cur&&A[want]){const from=A[u.cur],to=A[want];to.reset();to.setEffectiveWeight(1);to.play();if(from&&from!==to)from.crossFadeTo(to,0.18,false);u.cur=want;}
+  if(A.Running_A)A.Running_A.timeScale=1.15;u.mixer.update(dt);}
 function update3D(dt){UT.value=nowT;for(const o of V3.objs.values())o.userData.seen=false;
   // người chơi (cả thú cưỡi, hào quang)
-  const p=objFor('player',()=>makeBB(170,190,85,170,1.1));placeBB(p,player.x,player.y,dt);p.visible=!player.dead||true;
+  const pk=SECT_MDL[player.sect],rideNow=(player.riding&&player.mount)||player.flying;
+  if(!rideNow&&mdl(pk)){const o=objFor('player_m',()=>makeModel(pk,1,player.name,'#9fffb0'));place(o,player.x,player.y,player.moving,player.face,dt,0);animModel(o,dt,player.moving,player.atkAnim,player.hitFlash>0,player.dead,CASTER[player.sect]);}
+  else{const p=objFor('player',()=>makeBB(170,190,85,170,1.1));placeBB(p,player.x,player.y,dt);
   {const v=viewDir(p,player.face),rideM=player.riding&&typeof MOUNTS!=='undefined'&&MOUNTS[player.mount],ry=rideM?(typeof mountRideY==='function'?mountRideY(rideM):-24):0,fy=player.flying?-16-Math.sin(nowT*3)*3:0;
    bbDraw(p,()=>{const al=typeof setAuraLv==='function'?setAuraLv():0;if(al)drawSetAura(0,0,fy,al,0);if(player.flying)drawFlySword(0,fy+1,v.face,playerW.type==='sword'?playerW.col:'#bfe0ff',playerW.glow||'#9fd3ff');
      if(rideM)drawSteed(player.mount,0,0,v.face,player.moving,0);if(player.dead){ctx.globalAlpha=0.5;}
      drawChibi(playerLook,0,fy+ry,1,rideM?'side':v.dir,v.face,player.moving&&!player.flying&&!rideM,player.atkAnim,player.hitFlash>0,Object.assign({},playerW,{style:player.combo||0}),0.3);
-     label(player.name,0,fy+ry-76,'#9fffb0',11);},1);}
+     label(player.name,0,fy+ry-76,'#9fffb0',11);},1);}}
   // thú nuôi
   if(typeof petDef==='function'&&petDef()&&player.petOn&&!player.dead){const q=objFor('pet',()=>makeBB(110,110,55,92,0.6));placeBB(q,PET.x,PET.y,dt);const v=viewDir(q,PET.face);bbDraw(q,()=>drawPetAt(player.pet,0,0,v.face,PET.moving,PET.atkAnim,null),1);}
   // NPC
-  for(const n of npcs){const o=objFor('npc_'+n.id,()=>makeBB(150,150,75,130,0.9,{npc:n}));const d=placeBB(o,n.x,n.y,dt);if(!V3.pick.includes(o))V3.pick.push(o);
+  for(const n of npcs){const k=npcMdl(n.look);if(mdl(k)){const o=objFor('npcm_'+n.id,()=>makeModel(k,1,n.name,'#ffe27a',{npc:n}));place(o,n.x,n.y,false,0,dt,0);animModel(o,dt,false,0,false,false,false);if(!V3.pick.includes(o))V3.pick.push(o);continue;}
+    const o=objFor('npc_'+n.id,()=>makeBB(150,150,75,130,0.9,{npc:n}));const d=placeBB(o,n.x,n.y,dt);if(!V3.pick.includes(o))V3.pick.push(o);
     bbDraw(o,()=>drawNpc(Object.assign({},n,{x:0,y:0})),d<18?2:6);}
   // quái
-  for(const m of mobs){if(m.isFoe)continue;const sc=m.t.scale||1;const o=objFor(m,()=>{const W=Math.round(150*Math.max(1,sc*0.9)),H=Math.round(150*Math.max(1,sc*0.9));return makeBB(W,H,W/2,H-20,0.8*sc,{mob:m});});
+  for(const m of mobs){if(m.isFoe)continue;const mk=mobMdl(m.t);if(mk&&mdl(mk)){const key='mm';let o=V3.objs.get(m);if(o&&!o.userData.model){V3.scene.remove(o);V3.objs.delete(m);}
+      o=objFor(m,()=>makeModel(mk,(m.t.scale||1)*(m.t.boss?1.25:1),m.t.boss?m.t.name:null,'#ff9a7a',{mob:m}));o.visible=!m.dead||m.fade>0;if(!o.visible)continue;place(o,m.x,m.y,m.moving&&!m.dead,m.face,dt,0);
+      animModel(o,dt,m.moving,m.atkAnim,m.hitFlash>0,m.dead,false);if(!V3.pick.includes(o))V3.pick.push(o);continue;}
+    const sc=m.t.scale||1;const o=objFor(m,()=>{const W=Math.round(150*Math.max(1,sc*0.9)),H=Math.round(150*Math.max(1,sc*0.9));return makeBB(W,H,W/2,H-20,0.8*sc,{mob:m});});
     o.visible=!m.dead||m.fade>0;if(!o.visible)continue;const dd=placeBB(o,m.x,m.y,dt);if(!V3.pick.includes(o))V3.pick.push(o);
     const v=viewDir(o,m.face);bbDraw(o,()=>{if(m.dead)ctx.globalAlpha=Math.max(0,m.fade/0.6);const mm=Object.assign(Object.create(m),{face:v.face,dir:v.dir});drawMonsterBody(mm,0,0,m.hitFlash>0);
       if(!m.dead&&m.hp<m.maxhp){const w=40;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(-w/2,-m.t.hh*sc-14,w,5);ctx.fillStyle='#e04a3a';ctx.fillRect(-w/2,-m.t.hh*sc-14,w*Math.max(0,m.hp/m.maxhp),5);}
       if(m.t.boss)label(m.t.name,0,-m.t.hh*sc-20,'#ff9a7a',11);},dd<22?1:4);}
   // người chơi khác
-  if(typeof NET!=='undefined')for(const ot of NET.others.values()){if(!ot.look)continue;const o=objFor('o_'+ot.id,()=>makeBB(170,190,85,170,1.1));placeBB(o,ot.x,ot.y,dt);const v=viewDir(o,ot.face);
+  if(typeof NET!=='undefined')for(const ot of NET.others.values()){if(!ot.look)continue;const ok=SECT_MDL[ot.sect];if(!ot.mt&&!ot.fl&&mdl(ok)){const o=objFor('om_'+ot.id,()=>makeModel(ok,1,ot.name,'#8fd8ff'));place(o,ot.x,ot.y,!!ot.mv,ot.face,dt,0);animModel(o,dt,!!ot.mv,ot.at?1:0,false,!!ot.dead,CASTER[ot.sect]);continue;}
+    const o=objFor('o_'+ot.id,()=>makeBB(170,190,85,170,1.1));placeBB(o,ot.x,ot.y,dt);const v=viewDir(o,ot.face);
     const rM=ot.mt&&typeof MOUNTS!=='undefined'&&MOUNTS[ot.mt],ry=rM?(typeof mountRideY==='function'?mountRideY(rM):-24):0;
     bbDraw(o,()=>{if(ot.sa&&typeof drawSetAura==='function')drawSetAura(0,0,0,Math.min(3,ot.sa|0),0);if(rM)drawSteed(ot.mt,0,0,v.face,!!ot.mv,ot.x*0.01);
       drawChibi(ot.look,0,ry,1,rM?'side':v.dir,v.face,!!ot.mv&&!rM,ot.atk||0,false,Object.assign({},ot.wv,{style:ot.cs||0}),ot.x*0.01);label(ot.name,0,ry-76,'#8fd8ff',11);},1);}

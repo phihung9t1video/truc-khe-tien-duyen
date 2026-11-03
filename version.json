@@ -1,6 +1,6 @@
 {
-  "version": "1.3.43",
-  "notes": "3D thu nghiem dep hon: tan cay tron mem, co dung dua theo gio, nuoc gon song, bau troi, anh sang dien anh; nhan vat, quai, thu cuoi, thu nuoi dung lai hinh ve 2D dep dung trong canh 3D (kieu HD-2D).",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.43/www.zip",
-  "sha256": "8ce77abee5de357522c8d75e7f286bfc5b27efade04421b61f72e203f208c16d"
+  "version": "1.3.44",
+  "notes": "3D thu nghiem: nhan vat, NPC, quai dang nguoi dung mo hinh 3D that (KayKit, CC0) co dong tac dung, chay, chem, niem phep, trung don, nga. Thu vat tam dung hinh 2D.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.44/www.zip",
+  "sha256": "16d177b6e7d52c49d06c47f038d4f62276ed36191acb01452e0981ac6ee71ff1"
 }
