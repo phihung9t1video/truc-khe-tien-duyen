@@ -34,9 +34,10 @@ function netConnect(){
     else if(ev[0]==='p')partyOnMsg(ev,p);
     else if(ev[0]==='d'&&typeof duelOnMsg==='function')duelOnMsg(ev,p);
     else if((ev==='mpos'||ev==='mhit')&&typeof mobOnMsg==='function')mobOnMsg(ev,p);
+    else if(ev[0]==='x'&&typeof xOnMsg==='function')xOnMsg(ev,p,m.topic);
     else if((ev==='wsp'||ev[0]==='f'||ev[0]==='t')&&typeof socialOnMsg==='function')socialOnMsg(ev,p);};}
 addEventListener('pagehide',()=>{try{if(NET.status==='on')netCast('tk_world','bye',{id:NET.id});}catch(e){}});
-function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId;if(NET.mapRoom===room)return;
+function netSyncRoom(){if(NET.status!=='on')return;const room='tk_map_'+curMapId+(CM.inst?'_'+CM.inst:'');if(NET.mapRoom===room)return;
   if(NET.mapRoom){netCast(NET.mapRoom,'bye',{id:NET.id});netLeave(NET.mapRoom);}NET.others.clear();NET.mapRoom=room;netJoin(room);NET.sendT=0;}
 function netHello(){if(!player.sect||!started)return;netCast('tk_world','hello',{id:NET.id,name:player.name,lv:player.lv,map:curMapId,sect:player.sect,gm:typeof isGM==='function'&&isGM()?1:0,pa:partyAutoOn()&&(!inParty()||isLeader())&&PARTY.members.length<PARTY_MAX?1:0,pt:inParty()?1:0});}
 function netAddChat(name,text,lv){NET.chat.push({name,text,lv,t:Date.now()});if(NET.chat.length>40)NET.chat.shift();if(typeof renderChat==='function')renderChat();}
@@ -55,7 +56,7 @@ function netTick(dt){
   NET.sendT-=dt;NET.posIdle=(NET.posIdle||0)+dt;if(NET.sendT<=0){NET.sendT=document.hidden?2:0.35;const w=player.eq.weapon,a=player.eq.armor;
     const pk=[Math.round(player.x),Math.round(player.y),player.dir,player.face,player.moving?1:0,player.flying?1:0,player.atkAnim>0?1:0,player.dead?1:0,Math.round(player.hp/stats().maxhp*50),player.riding?1:0,player.combo||0,player.lv,player.stunT>0?1:0].join(',');
     if(pk!==NET.lastPos||NET.posIdle>=3){NET.lastPos=pk;NET.posIdle=0;
-    netCast(NET.mapRoom,'pos',{id:NET.id,name:player.name,sect:player.sect,gender:player.gender,lv:player.lv,x:Math.round(player.x),y:Math.round(player.y),dir:player.dir,face:player.face,sa:typeof setAuraLv==='function'?setAuraLv():0,
+    netCast(NET.mapRoom,'pos',{id:NET.id,name:player.name,sect:player.sect,gender:player.gender,lv:player.lv,x:Math.round(player.x),y:Math.round(player.y),dir:player.dir,face:player.face,sa:typeof setAuraLv==='function'?setAuraLv():0,pr:player.pvp&&player.pvp.r||1000,
       mv:player.moving?1:0,fl:player.flying?1:0,at:player.atkAnim>0?1:0,dead:player.dead?1:0,wr:w?w.rar:0,wt:w?w.tier:0,rf:wRef(),ar:a?a.rar:0,cs:player.combo||0,hf:Math.round(player.hp/stats().maxhp*100)/100,mh:stats().maxhp,df:stats().def,st:player.stunT>0?1:0,mt:player.riding?player.mount:0,pt:player.petOn&&player.pet?player.pet:0,ap:player.ap?[player.ap.h|0,player.ap.hc|0,player.ap.sk|0,player.ap.ey|0,player.ap.acc|0,player.ap.cl|0,player.ap.bd|0]:0,gm:typeof isGM==='function'&&isGM()?1:0});}}
   for(const [k,o] of NET.others){if(nowT-o.seen>6){NET.others.delete(k);continue;}
     const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>400){o.x=o.tx;o.y=o.ty;}else{const s=Math.min(1,dt*8);o.x+=dx*s;o.y+=dy*s;}o.atk=o.at?(o.atk>0?o.atk-dt:0.25):0;}

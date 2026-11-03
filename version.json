@@ -1,6 +1,6 @@
 {
-  "version": "1.3.36",
-  "notes": "Len cap gian nan hon: kinh nghiem can de len cap tang 1,6 lan o cap thap, 3,3 lan o cap 90, 7 lan o cap 199.",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.36/www.zip",
-  "sha256": "b44e4f2f1e56cbac902fda6782631eb289a8866a8c8807cc3ce5b285aefef37a"
+  "version": "1.3.37",
+  "notes": "Them nut Hoat dong: Nhiem vu hang ngay, Trum the gioi (3 gio/lan), Pho ban to doi, Loi dai xep hang theo mua, Bang hoi. Them nut Nghe: cau ca, khai khoang, hai duoc, luyen dan, may mac, ren duc.",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.37/www.zip",
+  "sha256": "e10baf60b68cd3fd27d711181b8a5c6bfb9d1189435d80ecca72fa36c377c2e8"
 }

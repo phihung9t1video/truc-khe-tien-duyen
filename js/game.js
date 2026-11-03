@@ -22,7 +22,7 @@ function resetRuntime(){Object.assign(player,{path:[],target:null,npc:null,pend:
   combatT:0,cds:[0,0,0,0,0,0],potCd:0,hitFlash:0,dir:'down',face:1,buffs:[],flying:false,navFly:false,slowT:0,stunT:0});}
 function newPlayer(name,gender,sect){
   Object.assign(player,{name,gender,sect,lv:1,exp:0,gold:30,hpPot:6,mpPot:6,inv:[],eq:emptyEq(),
-    flyUnlocked:false,qi:0,qc:0,qNote:-1,kills:0,pvp:{w:0,l:0,d:0},friends:[],mount:null,mounts:[],mountOn:true,expBuffs:[],stash:[],autoSellRar:-1,luck:0,reviveC:0,ap:null,tp:0,pet:null,pets:[],petOn:true,petExp:{},cn:null,td:null,map:'trukhe'});
+    flyUnlocked:false,qi:0,qc:0,qNote:-1,kills:0,pvp:{w:0,l:0,d:0},friends:[],mount:null,mounts:[],mountOn:true,expBuffs:[],stash:[],autoSellRar:-1,luck:0,reviveC:0,ap:null,tp:0,pet:null,pets:[],petOn:true,petExp:{},cn:null,td:null,daily:null,guild:null,prof:null,map:'trukhe'});
   resetRuntime();
   player.eq.weapon=makeItem('weapon',0,0,SECTS[sect].wtype);
   player.eq.armor=makeItem('armor',0,0);
@@ -379,6 +379,7 @@ function autoThink(dt){autoT-=dt;if(autoT>0)return;autoT=0.2;const st=stats(),sk
       if(needsTarget(s)&&d<=s.range){castSkill(i);break;}
       if(s.kind==='buff'&&d<200&&!player.buffs.some(b=>b.id===s.buff.id)){castSkill(i);break;}}
     return;}
+  if(CM.pb){let b=null,bd=1e9;for(const m of mobs){if(m.dead||m.isFoe)continue;const d=dist(m,player);if(d<bd){bd=d;b=m;}}if(b){player.target=b;player.repath=0;}return;}
   if(player.autoMode==='here'){let A=player.autoAnchor;if(!A||A.map!==curMapId){A=player.autoAnchor={map:curMapId,x:player.x,y:player.y};}
     const m=autoPickNear(A);if(m){player.target=m;player.repath=0;return;}
     const Z=A.zone&&CM.zones[A.zone],hx=Z?Z.x*T+16:A.x,hy=Z?Z.y*T+16:A.y;
@@ -530,12 +531,12 @@ function update(dt){nowT+=dt;
 // ===================== LƯU / TẢI =====================
 let SKEY='trukhe_tienduyen_v2'; // đổi theo tài khoản khi đăng nhập (accounts.js)
 function save(){if(!player.sect)return;try{localStorage.setItem(SKEY,JSON.stringify({v:3,name:player.name,gender:player.gender,sect:player.sect,lv:player.lv,exp:player.exp,gold:player.gold,
-  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,expBuffs:player.expBuffs,stash:player.stash,autoSellRar:player.autoSellRar,luck:player.luck,reviveC:player.reviveC,ddT:player.ddT,ap:player.ap,tp:player.tp,gmSet:player.gmSet,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,cn:player.cn,td:player.td,
-  map:curMapId,wv:2,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx,ts:Date.now()}));}catch(e){}}
+  hpPot:player.hpPot,mpPot:player.mpPot,inv:player.inv,eq:player.eq,flyUnlocked:player.flyUnlocked,qi:player.qi,qc:player.qc,qNote:player.qNote,kills:player.kills,pvp:player.pvp,friends:player.friends,mount:player.mount,mounts:player.mounts,mountOn:player.mountOn,expBuffs:player.expBuffs,stash:player.stash,autoSellRar:player.autoSellRar,luck:player.luck,reviveC:player.reviveC,ddT:player.ddT,ap:player.ap,tp:player.tp,gmSet:player.gmSet,pet:player.pet,pets:player.pets,petOn:player.petOn,petExp:player.petExp,cn:player.cn,td:player.td,daily:player.daily,guild:player.guild,prof:player.prof,
+  map:CM.pb?CM.pb.back:curMapId,wv:CM.pb?0:2,x:player.x,y:player.y,music:AU.music,sfx:AU.sfx,ts:Date.now()}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SKEY));return s&&(s.v===2||s.v===3)&&SECTS[s.sect]?s:null;}catch(e){return null;}}
 function applySave(s){
   Object.assign(player,{name:s.name,gender:s.gender,sect:s.sect,lv:s.lv,exp:s.exp,gold:s.gold,hpPot:s.hpPot,mpPot:s.mpPot,inv:s.inv||[],
-    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,expBuffs:(Array.isArray(s.expBuffs)?s.expBuffs:[]).concat(s.exp2T>0?[{m:1,t:s.exp2T}]:[],s.exp3T>0?[{m:2,t:s.exp3T}]:[]),stash:Array.isArray(s.stash)?s.stash:[],autoSellRar:s.autoSellRar??-1,luck:s.luck||0,reviveC:s.reviveC||0,ddT:s.ddT||0,ap:s.ap||null,tp:s.tp||0,gmSet:s.gmSet||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{},cn:s.cn||null,td:s.td||null});
+    eq:Object.assign(emptyEq(),s.eq,s.eq&&s.eq.jade?{amulet:s.eq.jade}:{}),flyUnlocked:!!s.flyUnlocked,qi:s.qi||0,qc:s.qc||0,qNote:s.qNote??-1,kills:s.kills||0,pvp:s.pvp||{w:0,l:0,d:0},friends:Array.isArray(s.friends)?s.friends:[],mount:s.mount||null,mounts:Array.isArray(s.mounts)?s.mounts:[],mountOn:s.mountOn!==false,expBuffs:(Array.isArray(s.expBuffs)?s.expBuffs:[]).concat(s.exp2T>0?[{m:1,t:s.exp2T}]:[],s.exp3T>0?[{m:2,t:s.exp3T}]:[]),stash:Array.isArray(s.stash)?s.stash:[],autoSellRar:s.autoSellRar??-1,luck:s.luck||0,reviveC:s.reviveC||0,ddT:s.ddT||0,ap:s.ap||null,tp:s.tp||0,gmSet:s.gmSet||0,pet:s.pet||null,pets:Array.isArray(s.pets)?s.pets:[],petOn:s.petOn!==false,petExp:s.petExp||{},cn:s.cn||null,td:s.td||null,daily:s.daily||null,guild:s.guild||null,prof:s.prof||null});
   resetRuntime();
   delete player.eq.jade;delete player.refine;
   if(s.refine&&player.eq.weapon&&!player.eq.weapon.ref)player.eq.weapon.ref=s.refine; // bản cũ: cường hóa gắn với nhân vật -> chuyển vào vũ khí đang cầm
