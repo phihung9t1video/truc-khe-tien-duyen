@@ -165,7 +165,8 @@ function placeBB(o,x,y,dt){const X=x/T,Z=y/T,u=o.userData;if(u.lx!=null){u.vx=X-
 // ---------- mô hình 3D thật (KayKit, CC0): nhân vật, NPC, quái dạng người ----------
 const loader=new THREE.GLTFLoader();loader.setMeshoptDecoder(THREE.MeshoptDecoder);
 const MDL={},MDL_URL={mage:'js/m_mage.glb',rogue:'js/m_rogue.glb',knight:'js/m_knight.glb',barb:'js/m_barb.glb',skel:'js/m_skel.glb',skelw:'js/m_skelw.glb'};
-function mdl(k){if(!k||!MDL_URL[k])return null;const M=MDL[k];if(M)return M.ready?M:null;MDL[k]={ready:false};
+function mdl(k){if(!window.V3_MODELS||!k||!MDL_URL[k])return null; // HD-2D: tắt mô hình KayKit, mọi nhân vật vẽ 2D
+const M=MDL[k];if(M)return M.ready?M:null;MDL[k]={ready:false};
   loader.load(MDL_URL[k],g=>{const box=new THREE.Box3().setFromObject(g.scene),h=box.max.y-box.min.y;g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false;if(o.material){o.material.roughness=0.75;o.material.metalness=0;}}});Object.assign(MDL[k],{ready:true,scene:g.scene,anims:g.animations,h:h||2});},undefined,()=>{MDL[k].fail=true;});return null;}
 const SECT_MDL={kiem:'knight',hoa:'mage',thuy:'mage',duoc:'mage',the:'barb',am:'rogue'},CASTER={hoa:1,thuy:1,duoc:1};
 const npcMdl=l=>{l=l||'';return /smith|iron|forge/.test(l)?'barb':/elder|taoist|healer|doc|herb|monk|sage|immortal|fairy|shaman|daotong/.test(l)?'mage':/guard|general|warrior|captain|exorcist/.test(l)?'knight':'rogue';};
@@ -191,7 +192,7 @@ function update3D(dt){UT.value=nowT;for(const o of V3.objs.values())o.userData.s
   else{const p=objFor('player',()=>makeBB(170,190,85,170,1.1));placeBB(p,player.x,player.y,dt);
   {const v=viewDir(p,player.face),rideM=player.riding&&typeof MOUNTS!=='undefined'&&MOUNTS[player.mount],ry=rideM?(typeof mountRideY==='function'?mountRideY(rideM):-24):0,fy=player.flying?-16-Math.sin(nowT*3)*3:0;
    bbDraw(p,()=>{const al=typeof setAuraLv==='function'?setAuraLv():0;if(al)drawSetAura(0,0,fy,al,0);if(player.flying)drawFlySword(0,fy+1,v.face,playerW.type==='sword'?playerW.col:'#bfe0ff',playerW.glow||'#9fd3ff');
-     if(rideM)drawSteed(player.mount,0,0,v.face,player.moving,0);if(player.dead){ctx.globalAlpha=0.5;}
+     STEED_FORE=!!rideM&&v.dir!=='side';if(rideM)drawSteed(player.mount,0,0,v.face,player.moving,0);if(player.dead){ctx.globalAlpha=0.5;}
      drawChibi(playerLook,0,fy+ry,1,rideM?'side':v.dir,v.face,player.moving&&!player.flying&&!rideM,player.atkAnim,player.hitFlash>0,Object.assign({},playerW,{style:player.combo||0}),0.3);
      label(player.name,0,fy+ry-76,'#9fffb0',11);},1);}}
   // thú nuôi
@@ -266,3 +267,4 @@ function click3D(sx,sy){if(!started||player.dead)return;const rc=new THREE.Rayca
   b.onclick=()=>{if(!hasGL)return log('Máy này không hỗ trợ 3D (WebGL)','#ff9a8a');const on=!want3D();try{on?localStorage.setItem('tk_3d','1'):localStorage.removeItem('tk_3d');}catch(e){}sync();sfx('click');
     log(on?(MAPS3D.includes(curMapId)?'Đã bật 3D thử nghiệm. Kéo để xoay camera, lăn chuột / chụm 2 ngón để phóng to.':'Đã bật 3D thử nghiệm: hiện chỉ có ở Trúc Khê Thôn, các bản đồ khác vẫn 2D.'):'Đã tắt 3D, về chế độ 2D','#8fd8ff');};})();
 window.V3=V3;
+window.THREE=THREE;window.V3load=(u,cb)=>loader.load(u,cb);

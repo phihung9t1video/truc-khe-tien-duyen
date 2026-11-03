@@ -1,6 +1,6 @@
 'use strict';
 // ===================== VÙNG TIÊN GIỚI (60–90) =====================
-// Ba bản đồ mới nối tiếp Lăng Tiêu Tiên Cảnh, mỗi bản đồ có trùm riêng; thêm bậc trang bị 11–13 và độ hiếm Thần thoại.
+// Ba bản đồ mới nối tiếp Nga Mi Kim Đỉnh, mỗi bản đồ có trùm riêng; thêm bậc trang bị 11–13 và độ hiếm Thần thoại.
 TIER_PRE.push('Hỗn Nguyên','Tinh Hà','Hồng Mông');
 TIER_LV.push(62,72,82);
 RARITY.push({n:'Thần thoại',c:'#ff5a8a',m:2.3,b:4});
@@ -37,15 +37,15 @@ const cloneMap=(src,o)=>{const S=JSON.parse(JSON.stringify(MAPS[src]));const zk=
   const npcs=S.npcs.map((n,i)=>Object.assign(n,o.npcs[i]));S.gen.seed=o.seed;
   return Object.assign(S,{name:o.name,lvText:o.lvText,minLv:o.minLv,theme:o.theme,wx:o.wx,wy:o.wy,safeName:o.safeName,zones,npcs,herbs:{name:o.herb,zones:S.herbs.zones},
     regions:S.regions.map((r,i)=>Object.assign(r,{n:o.regions[i]})),portals:o.portals});};
-MAPS.hoadiem=cloneMap('lacnhat',{name:'Hỏa Diệm Sơn',lvText:'60–70',minLv:60,theme:'volcano',wx:0.78,wy:0.38,seed:61616,safeName:'Viêm Hỏa Trấn',herb:'Hỏa Liên',
+MAPS.hoadiem=cloneMap('lacnhat',{name:'Hỏa Diệm Sơn',lvText:'60–70',minLv:60,theme:'volcano',wx:0.78,wy:0.38,seed:61616,safeName:'Thổ Lỗ Phồn Thành',herb:'Hỏa Liên',
   mobs:['hoalang','dungxa','hoama','viemma'],regions:['Hỏa Lang Nhai','Dung Nham Cốc','Hỏa Ma Doanh','Viêm Ma Điện','Nham Tương Hồ'],
   npcs:[{id:'firemonk',name:'Viêm Sơn Đại Sư',look:'taoist'},{id:'firehealer',name:'Băng Tâm Y Nữ',look:'oasisdoc'},{id:'firesmith',name:'Hỏa Luyện Tượng',look:'darksmith'}],
   portals:[{x:6.5,y:25,to:'langtieu',tx:52.5,ty:26.5,minLv:1},{x:60,y:26.5,to:'longcung',tx:9,ty:24.5,minLv:70}]});
-MAPS.longcung=cloneMap('vanmong',{name:'Bích Hải Long Cung',lvText:'70–80',minLv:70,theme:'sea',wx:0.9,wy:0.64,seed:71717,safeName:'Thủy Tinh Cung',herb:'San Hô Linh',
+MAPS.longcung=cloneMap('vanmong',{name:'Bồng Lai Đông Hải',lvText:'70–80',minLv:70,theme:'sea',wx:0.9,wy:0.64,seed:71717,safeName:'Bồng Lai Các',herb:'San Hô Linh',
   mobs:['giaolong','vebinh','haiyeu','longvuong'],regions:['Giao Long Đàm','Vệ Binh Doanh','Hải Yêu Trại','Long Vương Điện','San Hô Đàm'],
   npcs:[{id:'seasage',name:'Quy Thừa Tướng',look:'fisher'},{id:'seahealer',name:'Bạng Tiên Tử',look:'fairy'},{id:'seasmith',name:'Long Cung Thiết Tượng',look:'ironsmith'}],
   portals:[{x:5.5,y:24.5,to:'hoadiem',tx:57.5,ty:26.5,minLv:1},{x:32.5,y:3.5,to:'tinhha',tx:32.5,ty:42.5,minLv:80}]});
-MAPS.tinhha=cloneMap('langtieu',{name:'Cửu Thiên Tinh Hà',lvText:'80–90',minLv:80,theme:'star',wx:0.84,wy:0.13,seed:81818,safeName:'Tinh Thần Điện',herb:'Tinh Thần Hoa',
+MAPS.tinhha=cloneMap('langtieu',{name:'Thái Sơn',lvText:'80–90',minLv:80,theme:'star',wx:0.84,wy:0.13,seed:81818,safeName:'Đại Miếu',herb:'Tinh Thần Hoa',
   mobs:['tinhlinh','tinhho','thienma','hondon'],regions:['Tinh Linh Nhai','Tinh Hồ Uyển','Thiên Ma Doanh','Hỗn Độn Đài','Tinh Hải'],
   npcs:[{id:'starsage',name:'Tử Vi Tinh Quân',look:'immortal'},{id:'starhealer',name:'Chức Nữ',look:'fairy'},{id:'starsmith',name:'Thiên Xảo Tinh Tượng',look:'celestialsmith'}],
   portals:[{x:29.5,y:43.5,to:'longcung',tx:32.5,ty:6.5,minLv:1}]});
@@ -55,22 +55,22 @@ for(const [id,x] of Object.entries({trukhe:0.08,vanmong:0.22,thienson:0.36,lacnh
 for(const id in MAPS)for(const n of MAPS[id].npcs)NPC_INDEX[n.id]=Object.assign({map:id},n);
 
 QUESTS.push(
-  {map:'hoadiem',title:'Hỏa Diệm Sơn',giver:'firemonk',type:'talk',n:1,short:'Qua Truyền Tống Trận phía đông Lăng Tiêu, gặp Viêm Sơn Đại Sư',
-    desc:'Sau khi Đọa Tiên ngã xuống, ma khí tràn xuống Hỏa Diệm Sơn. Truyền Tống Trận ở cuối đường phía đông Lăng Tiêu Tiên Cảnh, cần cấp 60.',reward:{exp:300000,gold:10000,hp:20,mp:20}},
+  {map:'hoadiem',title:'Hỏa Diệm Sơn',giver:'firemonk',type:'talk',n:1,short:'Qua Truyền Tống Trận phía tây bắc Nga Mi, gặp Viêm Sơn Đại Sư',
+    desc:'Sau khi Đọa Tiên ngã xuống, ma khí tràn xuống Hỏa Diệm Sơn. Truyền Tống Trận ở cuối đường phía tây bắc Nga Mi Kim Đỉnh, cần cấp 60.',reward:{exp:300000,gold:10000,hp:20,mp:20}},
   {map:'hoadiem',title:'Hỏa Lang Cuồng Bạo',giver:'firemonk',type:'kill',target:'hoalang',n:20,short:'Hạ Hỏa Lang ở đồi phía nam',desc:'Bầy Hỏa Lang bị ma khí thiêu đốt, tấn công dân trấn. Hạ 20 con.',reward:{exp:500000,gold:12000,hp:15}},
   {map:'hoadiem',title:'Hỏa Liên Giải Nhiệt',giver:'firehealer',type:'gather',n:6,short:'Hái Hỏa Liên',desc:'Ta cần 6 đóa Hỏa Liên mọc giữa dung nham để chữa bỏng cho dân trấn.',reward:{exp:520000,gold:12500,mp:20}},
   {map:'hoadiem',title:'Dung Nham Xà',giver:'firemonk',type:'kill',target:'dungxa',n:20,short:'Hạ Dung Nham Xà ở thung lũng đông nam',desc:'Rắn dung nham phun lửa từ khe đá. Hạ 20 con.',reward:{exp:620000,gold:14000,hp:15,item:{slot:'boots',tier:10,rar:2}}},
   {map:'hoadiem',title:'Hỏa Ma Binh',giver:'firemonk',type:'kill',target:'hoama',n:22,short:'Hạ Hỏa Ma Binh ở doanh trại phía bắc',desc:'Viêm Ma Vương luyện ra một đạo Hỏa Ma Binh. Hạ 22 tên.',reward:{exp:720000,gold:15000,hp:15}},
   {map:'hoadiem',title:'Viêm Ma Lệnh',giver:'firesmith',type:'drop',target:'hoama',n:6,item:'Viêm ma lệnh',chance:0.4,short:'Đoạt Viêm ma lệnh',desc:'Đoạt 6 tấm Viêm ma lệnh, lão rèn cho thiếu hiệp một thần binh Hỗn Nguyên.',reward:{exp:700000,gold:15000,item:{slot:'weapon',tier:10,rar:2}}},
   {map:'hoadiem',title:'Viêm Ma Vương',giver:'firemonk',type:'kill',target:'viemma',n:1,short:'Hạ Viêm Ma Vương',desc:'Viêm Ma Vương ngự trong Viêm Ma Điện phía đông bắc, phóng hỏa cầu và gọi Hỏa Ma Binh. Nên đạt cấp 70 trở lên!',reward:{exp:1200000,gold:40000,hp:30,item:{slot:'armor',tier:10,rar:3}}},
-  {map:'longcung',title:'Bích Hải Long Cung',giver:'seasage',type:'talk',n:1,short:'Qua Truyền Tống Trận phía đông Hỏa Diệm Sơn, gặp Quy Thừa Tướng',desc:'Long Cung dưới đáy biển bị Hắc Long Vương chiếm. Truyền Tống Trận ở cuối đường phía đông Hỏa Diệm Sơn, cần cấp 70.',reward:{exp:600000,gold:15000,hp:20,mp:20}},
+  {map:'longcung',title:'Bồng Lai Đông Hải',giver:'seasage',type:'talk',n:1,short:'Qua Truyền Tống Trận phía đông Hỏa Diệm Sơn, gặp Quy Thừa Tướng',desc:'Long Cung dưới đáy biển bị Hắc Long Vương chiếm. Truyền Tống Trận ở cuối đường phía đông Hỏa Diệm Sơn, cần cấp 70.',reward:{exp:600000,gold:15000,hp:20,mp:20}},
   {map:'longcung',title:'Giao Long Quấy Nhiễu',giver:'seasage',type:'kill',target:'giaolong',n:20,short:'Hạ Giao Long ở đầm phía nam',desc:'Giao Long theo Hắc Long Vương làm loạn. Hạ 20 con.',reward:{exp:900000,gold:17000,hp:15}},
   {map:'longcung',title:'San Hô Linh',giver:'seahealer',type:'gather',n:6,short:'Hái San Hô Linh',desc:'Ta cần 6 nhánh San Hô Linh để luyện ngọc trai hộ thân.',reward:{exp:950000,gold:17500,mp:20}},
   {map:'longcung',title:'Vệ Binh Phản Chủ',giver:'seasage',type:'kill',target:'vebinh',n:22,short:'Hạ Long Cung Vệ Binh',desc:'Một đạo vệ binh đã phản theo Hắc Long Vương. Hạ 22 tên.',reward:{exp:1100000,gold:19000,hp:15,item:{slot:'helmet',tier:11,rar:2}}},
   {map:'longcung',title:'Hải Yêu Ca',giver:'seasage',type:'kill',target:'haiyeu',n:22,short:'Hạ Hải Yêu ở trại phía đông nam',desc:'Hải Yêu hát mê hoặc người qua đường rồi bắn băng tiễn. Hạ 22 con.',reward:{exp:1250000,gold:20000,hp:15}},
   {map:'longcung',title:'Long Lân',giver:'seasmith',type:'drop',target:'vebinh',n:6,item:'Long lân',chance:0.4,short:'Đoạt Long lân từ vệ binh',desc:'Đoạt 6 mảnh Long lân, lão rèn một thần binh Tinh Hà.',reward:{exp:1200000,gold:20000,item:{slot:'weapon',tier:11,rar:2}}},
   {map:'longcung',title:'Hắc Long Vương',giver:'seasage',type:'kill',target:'longvuong',n:1,short:'Hạ Hắc Long Vương',desc:'Hắc Long Vương cuộn mình trong Long Vương Điện, phun băng khí đóng băng cả biển. Nên đạt cấp 80 trở lên!',reward:{exp:2000000,gold:60000,hp:30,item:{slot:'necklace',tier:11,rar:3}}},
-  {map:'tinhha',title:'Cửu Thiên Tinh Hà',giver:'starsage',type:'talk',n:1,short:'Qua Truyền Tống Trận phía bắc Long Cung, gặp Tử Vi Tinh Quân',desc:'Hỗn Độn Ma Thần thức tỉnh nơi tận cùng tinh hà. Truyền Tống Trận ở cuối đường phía bắc Long Cung, cần cấp 80.',reward:{exp:1000000,gold:20000,hp:20,mp:20}},
+  {map:'tinhha',title:'Thái Sơn',giver:'starsage',type:'talk',n:1,short:'Qua Truyền Tống Trận phía bắc Long Cung, gặp Tử Vi Tinh Quân',desc:'Hỗn Độn Ma Thần thức tỉnh nơi tận cùng tinh hà. Truyền Tống Trận ở cuối đường phía bắc Long Cung, cần cấp 80.',reward:{exp:1000000,gold:20000,hp:20,mp:20}},
   {map:'tinhha',title:'Tinh Linh Lạc Lối',giver:'starsage',type:'kill',target:'tinhlinh',n:22,short:'Hạ Tinh Linh ở Tinh Linh Nhai',desc:'Tinh Linh bị hỗn độn nhiễm, bắn ám quang từ xa. Hạ 22 con.',reward:{exp:1500000,gold:22000,hp:15}},
   {map:'tinhha',title:'Tinh Thần Hoa',giver:'starhealer',type:'gather',n:6,short:'Hái Tinh Thần Hoa',desc:'Ta cần 6 đóa Tinh Thần Hoa để dệt lại dải ngân hà bị xé rách.',reward:{exp:1550000,gold:22500,mp:20}},
   {map:'tinhha',title:'Tinh Hồ Bốn Đuôi',giver:'starsage',type:'kill',target:'tinhho',n:22,short:'Hạ Tinh Hồ ở Tinh Hồ Uyển',desc:'Tinh Hồ nhanh như sao băng. Hạ 22 con.',reward:{exp:1800000,gold:25000,hp:15,item:{slot:'gloves',tier:12,rar:2}}},

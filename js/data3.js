@@ -1,6 +1,6 @@
 'use strict';
 // ===================== THẦN GIỚI (cấp 90 → 199) =====================
-// 5 bản đồ lớn nối tiếp Cửu Thiên Tinh Hà. Quái, trùm, nhiệm vụ được sinh theo công thức để độ khó tăng đều theo cấp.
+// 5 bản đồ lớn nối tiếp Thái Sơn. Quái, trùm, nhiệm vụ được sinh theo công thức để độ khó tăng đều theo cấp.
 // Thêm 5 bậc trang bị (cấp 100, 120, 140, 160, 180).
 TIER_PRE.push('Thái Cổ','Huyết Hải','Lôi Âm','Thần Mộc','Thiên Đế');
 TIER_LV.push(100,120,140,160,180);
@@ -21,27 +21,27 @@ function mobAt(name,lv0,lv1,o){const L=lv0,f=o.k||1;
 function bossAt(name,lv,o){const b=mobAt(name,lv,lv,o);return Object.assign(b,{hp:b.hp*12,atk:Math.round(b.atk*1.15),def:Math.round(b.def*1.1),exp:Math.round(expAt(lv)*0.06),gold:[lv*120,lv*160],
   aggro:220,range:60,cd:1.15,boss:true,hpP:1,mpP:1,loot:1,scale:o.scale||1.7});}
 Object.assign(MT,{
-  // Thái Cổ Hoang Nguyên 90–110
+  // Hô Luân Thảo Nguyên 90–110
   tc_lang:mobAt('Hoang Cổ Cự Lang',92,96,{tier:13,k:.85,ka:.95,hh:34,hw:26,x:{draw:'wolf',col:'#a8803a',scale:1.3,el:'tho'}}),
   tc_thu:mobAt('Thạch Giáp Cự Thú',98,102,{tier:13,hh:36,hw:28,x:{draw:'boar',scale:1.35,el:'tho'}}),
   tc_binh:mobAt('Hoang Tộc Chiến Binh',104,108,{tier:13,k:1.1,x:{draw:'human',look:'wildwarrior',el:'kim'}}),
   tc_vuong:bossAt('Thái Cổ Lang Thần',110,{tier:13,hh:80,hw:46,scale:2.6,x:{draw:'wolf',col:'#e8c060',bskill:'slam',add:'tc_lang',el:'tho'}}),
-  // Huyết Hải Ma Vực 110–130
+  // Trương Dịch Đan Hà 110–130
   hh_xa:mobAt('Huyết Hải Xà',112,116,{tier:14,k:.9,hh:32,hw:26,x:{draw:'snake',col:'#c8202a',scale:1.3,el:'thuy'}}),
   hh_ho:mobAt('Huyết Ảnh Yêu Hồ',118,122,{tier:14,spd:122,hh:34,hw:24,x:{draw:'fox',col:'#a8102a',tails:5,el:'hoa'}}),
   hh_tuong:mobAt('Huyết Ma Tướng',124,128,{tier:14,k:1.1,x:{draw:'human',look:'demongeneral',el:'am'}}),
   hh_to:bossAt('Huyết Hải Ma Tổ',130,{tier:14,hh:104,hw:26,scale:1.8,x:{draw:'human',look:'flamelord',bskill:'fire',bshot:'efire',add:'hh_tuong',el:'am'}}),
-  // Lôi Âm Thiên Cung 130–150
+  // Võ Đang Sơn 130–150
   la_linh:mobAt('Lôi Linh',132,136,{tier:15,k:.85,range:170,cd:1.45,spd:82,hh:44,hw:18,aggro:150,x:{draw:'spirit',col:'#ffe060',ranged:true,shot:'egold',el:'kim'}}),
   la_ho:mobAt('Lôi Điện Thú',138,142,{tier:15,spd:118,hh:34,hw:24,x:{draw:'wolf',col:'#8ab8ff',scale:1.25,el:'kim'}}),
   la_ve:mobAt('Lôi Thần Vệ',144,148,{tier:15,k:1.1,x:{draw:'human',look:'guard',el:'kim'}}),
   la_ton:bossAt('Lôi Âm Thiên Tôn',150,{tier:15,hh:104,hw:26,scale:1.8,x:{draw:'human',look:'thundergod',bskill:'ice',bshot:'egold',add:'la_ve',el:'kim'}}),
-  // Thần Mộc Thánh Địa 150–175
+  // Cửu Trại Câu 150–175
   tm_linh:mobAt('Mộc Linh',153,158,{tier:16,k:.85,range:170,cd:1.45,spd:82,hh:44,hw:18,aggro:150,x:{draw:'spirit',col:'#7aff9a',ranged:true,shot:'eice',el:'moc'}}),
   tm_ho:mobAt('Thần Mộc Linh Hồ',160,166,{tier:16,spd:122,hh:34,hw:24,x:{draw:'fox',col:'#5ad07a',tails:7,el:'moc'}}),
   tm_phap:mobAt('Thụ Yêu Hộ Pháp',168,173,{tier:16,k:1.1,x:{draw:'human',look:'ghoul',el:'moc'}}),
   tm_hoang:bossAt('Thần Mộc Yêu Hoàng',175,{tier:16,hh:48,hw:46,scale:3,x:{draw:'snake',col:'#2a8a4a',bskill:'ice',add:'tm_ho',el:'moc'}}),
-  // Hỗn Nguyên Thần Giới 175–199
+  // Côn Lôn Sơn 175–199
   hn_linh:mobAt('Hỗn Nguyên Tinh Linh',178,184,{tier:17,k:.85,range:175,cd:1.4,spd:85,hh:44,hw:18,aggro:150,x:{draw:'spirit',col:'#e0b8ff',ranged:true,shot:'edark',el:'am'}}),
   hn_lang:mobAt('Thần Giới Thiên Lang',186,191,{tier:17,spd:120,hh:36,hw:26,x:{draw:'wolf',col:'#fff4d0',scale:1.35,el:'kim'}}),
   hn_tuong:mobAt('Hỗn Nguyên Thần Tướng',192,197,{tier:17,k:1.1,x:{draw:'human',look:'chaosgod',el:'hoa'}}),
@@ -49,28 +49,28 @@ Object.assign(MT,{
 });
 // bản đồ: dựng từ bố cục cũ (cỡ thường), rồi phóng to 1,5 lần như các vùng lớn
 const NEWMAPS=[
-  {id:'thaico',src:'lacnhat',name:'Thái Cổ Hoang Nguyên',lvText:'90–110',minLv:90,theme:'wild',wx:0.6,wy:0.06,seed:91919,safeName:'Hoang Cổ Bộ Lạc',herb:'Thái Cổ Linh Thảo',
+  {id:'thaico',src:'lacnhat',name:'Hô Luân Thảo Nguyên',lvText:'90–110',minLv:90,theme:'wild',wx:0.6,wy:0.06,seed:91919,safeName:'Mục Dân Bộ Lạc',herb:'Thái Cổ Linh Thảo',
     mobs:['tc_lang','tc_thu','tc_binh','tc_vuong'],regions:['Cự Lang Nguyên','Thạch Thú Cốc','Hoang Tộc Doanh','Lang Thần Tế Đàn','Cổ Hồ'],
     npcs:[{id:'tc_npc1',name:'Hoang Cổ Tù Trưởng',look:'caravan'},{id:'tc_npc2',name:'Bộ Lạc Vu Y',look:'shaman'},{id:'tc_npc3',name:'Thạch Khí Tượng',look:'swordsmith'}],
     back:[6.5,25,9.5,25.5],fwd:[60,26.5,57.5,26.5]},
-  {id:'huyethai',src:'uminh',name:'Huyết Hải Ma Vực',lvText:'110–130',minLv:110,theme:'blood',wx:0.45,wy:0.08,seed:11111,safeName:'Trấn Ma Quan',herb:'Huyết Liên',
+  {id:'huyethai',src:'uminh',name:'Trương Dịch Đan Hà',lvText:'110–130',minLv:110,theme:'blood',wx:0.45,wy:0.08,seed:11111,safeName:'Trương Dịch Thành',herb:'Huyết Liên',
     mobs:['hh_xa','hh_ho','hh_tuong','hh_to'],regions:['Huyết Xà Đàm','Huyết Hồ Lâm','Ma Tướng Doanh','Ma Tổ Điện','Huyết Trì'],
     npcs:[{id:'hh_npc1',name:'Trấn Ma Tướng Quân',look:'exorcist'},{id:'hh_npc2',name:'Huyết Y Tiên',look:'herbalist'},{id:'hh_npc3',name:'Ma Khí Tượng',look:'darksmith'}],
     back:[7.5,43.5,10.5,43.5],fwd:[56.5,40.5,53.5,40.5]},
-  {id:'loiam',src:'thienson',name:'Lôi Âm Thiên Cung',lvText:'130–150',minLv:130,theme:'thunder',wx:0.3,wy:0.1,seed:13131,safeName:'Lôi Âm Tự',herb:'Lôi Tinh Thảo',
+  {id:'loiam',src:'thienson',name:'Võ Đang Sơn',lvText:'130–150',minLv:130,theme:'thunder',wx:0.3,wy:0.1,seed:13131,safeName:'Ngọc Hư Cung',herb:'Lôi Tinh Thảo',
     mobs:['la_ho','la_linh','la_ve','la_ton'],regions:['Lôi Thú Cốc','Lôi Linh Nguyên','Thần Vệ Doanh','Thiên Tôn Điện','Lôi Trì'],
     npcs:[{id:'la_npc1',name:'Lôi Âm Đại Sư',look:'taoist'},{id:'la_npc2',name:'Lôi Âm Tiểu Tăng',look:'daotong'},{id:'la_npc3',name:'Lôi Hỏa Tượng',look:'ironsmith'}],
     back:[29.5,43.5,32.5,42.5],fwd:[3.5,30.5,6.5,30.5]},
-  {id:'thanmoc',src:'vanmong',name:'Thần Mộc Thánh Địa',lvText:'150–175',minLv:150,theme:'jade',wx:0.15,wy:0.14,seed:15151,safeName:'Thánh Mộc Thôn',herb:'Thần Mộc Quả',
+  {id:'thanmoc',src:'vanmong',name:'Cửu Trại Câu',lvText:'150–175',minLv:150,theme:'jade',wx:0.15,wy:0.14,seed:15151,safeName:'Tạng Trại',herb:'Thần Mộc Quả',
     mobs:['tm_linh','tm_ho','tm_phap','tm_hoang'],regions:['Mộc Linh Đàm','Linh Hồ Lâm','Hộ Pháp Doanh','Yêu Hoàng Điện','Thánh Thủy'],
     npcs:[{id:'tm_npc1',name:'Thần Mộc Trưởng Lão',look:'elder'},{id:'tm_npc2',name:'Bách Hoa Tiên Cô',look:'fairy'},{id:'tm_npc3',name:'Mộc Linh Tượng',look:'merchant'}],
     back:[5.5,24.5,9,24.5],fwd:[32.5,3.5,32.5,6.5]},
-  {id:'honnguyen',src:'lacnhat',name:'Hỗn Nguyên Thần Giới',lvText:'175–199',minLv:175,theme:'void',wx:0.08,wy:0.36,seed:19919,safeName:'Thần Giới Môn',herb:'Hỗn Nguyên Thần Hoa',
+  {id:'honnguyen',src:'lacnhat',name:'Côn Lôn Sơn',lvText:'175–199',minLv:175,theme:'void',wx:0.08,wy:0.36,seed:19919,safeName:'Côn Lôn Sơn Khẩu',herb:'Hỗn Nguyên Thần Hoa',
     mobs:['hn_linh','hn_lang','hn_tuong','hn_de'],regions:['Tinh Linh Nhai','Thiên Lang Nguyên','Thần Tướng Doanh','Thiên Đế Đài','Hỗn Nguyên Hải'],
     npcs:[{id:'hn_npc1',name:'Hỗn Nguyên Thánh Nhân',look:'immortal'},{id:'hn_npc2',name:'Thần Giới Tiên Nữ',look:'fairy'},{id:'hn_npc3',name:'Thần Khí Tượng',look:'celestialsmith'}],
     back:[6.5,25,9.5,25.5],fwd:null}
 ];
-// Cửu Thiên Tinh Hà có cổng mới sang Thái Cổ (tọa độ đã ở cỡ lớn)
+// Thái Sơn có cổng mới sang Thái Cổ (tọa độ đã ở cỡ lớn)
 MAPS.tinhha.portals.push({x:83.5,y:40,to:'thaico',tx:NEWMAPS[0].back[2],ty:NEWMAPS[0].back[3],minLv:90});
 // cổng: mọi tọa độ đích của bản đồ mới để ở cỡ gốc; scaleMap tự phóng to đúng một lần khi phóng bản đồ đích.
 // Riêng cổng quay về Tinh Hà (đã là cỡ lớn, không phóng nữa) thì để sẵn tọa độ lớn.

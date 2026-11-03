@@ -220,7 +220,7 @@ function drawChibi(L,x,y,s,dir,face,moving,atk,flash,W,sd){
   ctx.save();ctx.translate(x,y);ctx.scale(side&&face<0?-s:s,s);
   if(flash)ctx.filter='brightness(2.2)';
   ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=OL;ctx.lineWidth=0.85;
-  const ph=t*10+sd*7,sw=moving?Math.sin(ph):0,bob=moving?Math.abs(Math.cos(ph)):0,b=moving?-bob*1.4:Math.sin(t*2.2+sd*5)*0.45;
+  const ph=(typeof GAITPH==='number'?GAITPH:t*10+sd*7),sw=moving?Math.sin(ph)*1.15:0,bob=moving?Math.abs(Math.cos(ph)):0,b=moving?-bob*1.4:Math.sin(t*2.2+sd*5)*0.45;
   if(moving&&side)ctx.rotate(0.07);
   const hs=Math.sin(t*(moving?9:2.2)+sd*3)*(moving?1.5:0.45),tr=side&&moving?-2.2:0;
   let aF,aB;

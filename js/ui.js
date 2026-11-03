@@ -227,9 +227,9 @@ function openDlg(title,html,btns){$('dlgT').textContent=title;$('dlgX').innerHTM
 function closeDlg(){$('dlg').hidden=true;}
 const GREET={...Object.fromEntries(Object.keys(MAPS).map(id=>['tele_'+id,'Trận pháp truyền tống của ta nối liền mọi thành trấn. Chỉ cần chút lộ phí, thiếu hiệp đi đâu cũng tới ngay.'])),elder:'Trúc Khê Thôn tuy nhỏ nhưng là chốn bình yên. Gần đây thú dữ và sơn tặc quấy nhiễu, mong thiếu hiệp ra tay tương trợ.',
   healer:'Thiếu hiệp bị thương ư? Để ta xem nào. Ta cũng có bán linh dược đây.',smith:'Muốn binh khí sắc bén hơn thì tìm lão! Lão còn thu mua đồ cũ.',
-  fisher:'Đầm Vân Mộng mênh mông, cá tôm nhiều nhưng yêu quái cũng chẳng ít. Thiếu hiệp từ xa tới, hãy giúp lão một tay.',herbalist:'Sen ở đầm này có linh tính, chữa được bách độc. Thiếu hiệp cần thuốc cứ hỏi ta.',
-  merchant:'Hàng của ta đi khắp đầm lầy! Binh khí cần cường hóa, đồ cũ cần bán, cứ để ta lo.',taoist:'Vô lượng thiên tôn. Ma khí trên Thiên Sơn ngày một nặng, bần đạo đang đợi người hữu duyên.',
-  daotong:'Sư phụ dặn phải tiếp đón khách hành hương chu đáo. Huynh cần đan dược không?',ironsmith:'Thép luyện bằng hàn băng Thiên Sơn là thứ thép tốt nhất thiên hạ!'};
+  fisher:'Nhĩ Hải mênh mông, cá tôm nhiều nhưng yêu quái cũng chẳng ít. Thiếu hiệp từ xa tới, hãy giúp lão một tay.',herbalist:'Sen ở đầm này có linh tính, chữa được bách độc. Thiếu hiệp cần thuốc cứ hỏi ta.',
+  merchant:'Hàng của ta đi khắp đầm lầy! Binh khí cần cường hóa, đồ cũ cần bán, cứ để ta lo.',taoist:'Vô lượng thiên tôn. Ma khí trên Ngọc Long Tuyết Sơn ngày một nặng, bần đạo đang đợi người hữu duyên.',
+  daotong:'Sư phụ dặn phải tiếp đón khách hành hương chu đáo. Huynh cần đan dược không?',ironsmith:'Thép luyện bằng hàn băng Ngọc Long là thứ thép tốt nhất thiên hạ!'};
 function openNpc(n){const q=curQ();player.face=n.x>=player.x?1:-1;
   if(q&&q.type==='talk'&&q.giver===n.id&&player.qc<1){player.qc=1;}
   if(auto&&q&&q.giver===n.id&&qDone()){claimQuest();return;}

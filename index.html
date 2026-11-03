@@ -36,10 +36,10 @@ button{font-family:inherit}
 .mp i{background:linear-gradient(#7cc0ff,#2050b8)}
 .bar span{position:absolute;inset:0;text-align:center;font-size:10.5px;line-height:14px;text-shadow:0 1px 2px #000}
 #pgold{font-size:11.5px;margin-top:4px;color:#ffd977}
-#buffs{position:absolute;left:50%;top:8px;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
+#buffs{position:static;order:99;margin-left:auto;transform:none;display:flex;gap:6px;z-index:5}
 .buff{min-width:52px;padding:3px 4px 2px;border-radius:9px;border:1px solid var(--gold2);background:rgba(10,6,4,.72);display:flex;flex-direction:column;align-items:center;gap:1px;font-size:20px;position:relative;box-shadow:0 2px 6px rgba(0,0,0,.5)}.buff i{font-style:normal;line-height:30px;height:30px;text-shadow:0 0 8px currentColor}.buff .itile{width:30px;height:30px}.buff em{font-style:normal;font-size:9.5px;color:#e8d6a8;white-space:nowrap;line-height:11px}.buff span{position:static!important;font-size:11px;color:#fff;font-weight:bold;line-height:12px}
 .buff span{position:absolute;bottom:-1px;right:2px;font-size:9px;color:#fff;text-shadow:0 0 2px #000}
-#tframe{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:320px;padding:6px 12px;text-align:center}
+#tframe{position:absolute;left:50%;top:52px;transform:translateX(-50%);width:320px;padding:6px 12px;text-align:center}
 #tname{font-weight:bold;font-size:13px}
 #tport{position:absolute;left:6px;top:6px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold2);background:radial-gradient(#3e5f80,#121a26);cursor:pointer}
 #tframe[data-other]:not([data-other=""]){padding-left:58px;min-height:52px;cursor:context-menu}
@@ -67,15 +67,15 @@ button{font-family:inherit}
 #trMyGold{width:120px;padding:4px 6px;background:rgba(0,0,0,.5);border:1px solid var(--gold2);border-radius:5px;color:#fff;user-select:text}
 #trBtns{display:flex;gap:8px;margin-top:8px}#trBtns .btn{margin:0}#trState{margin-top:6px;font-size:12.5px;color:#ccc}
 #tstatus{font-size:11px;color:#9fe8ff;min-height:13px}
-#region{position:absolute;left:50%;top:84px;transform:translateX(-50%);font-size:30px;font-weight:bold;color:#ffe9a8;text-shadow:0 2px 6px #000,0 0 14px rgba(255,200,100,.45);transition:opacity .8s;white-space:nowrap;letter-spacing:2px}
+#region{position:absolute;left:50%;top:124px;transform:translateX(-50%);font-size:30px;font-weight:bold;color:#ffe9a8;text-shadow:0 2px 6px #000,0 0 14px rgba(255,200,100,.45);transition:opacity .8s;white-space:nowrap;letter-spacing:2px}
 #topright{position:absolute;right:10px;top:10px;width:224px}
 #miniwrap{padding:6px;position:relative}
 #mini{display:block;width:210px;height:158px;cursor:pointer;border-radius:6px}
 #miniBig{position:absolute;right:10px;top:10px;width:26px;height:26px;border-radius:6px;border:1px solid var(--gold2);background:rgba(20,14,26,.85);color:#ffe9b0;cursor:pointer;font-size:14px;padding:0}
 #miniBig:hover{border-color:var(--gold)}
 #miniName{text-align:center;font-size:12px;color:#ffe9b0;margin-top:3px}
-#menuBtns{display:flex;gap:3px;margin-top:6px}
-#menuBtns button{flex:1;padding:6px 0;font-size:11.5px;background:linear-gradient(#3e2e48,#241a2c);color:#ffe9b0;border:1px solid var(--gold2);border-radius:6px;cursor:pointer}
+#menuBtns{position:absolute;top:10px;left:352px;right:246px;display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:flex-start;gap:4px;margin:0;z-index:6}
+#menuBtns button{flex:0 1 auto;min-width:58px;padding:6px 10px;box-shadow:0 2px 6px rgba(0,0,0,.45);font-size:11.5px;background:linear-gradient(#3e2e48,#241a2c);color:#ffe9b0;border:1px solid var(--gold2);border-radius:6px;cursor:pointer}
 #menuBtns button:hover{border-color:var(--gold)}
 #quest{margin-top:8px;padding:8px 10px;line-height:1.5;cursor:pointer}
 #quest:hover{border-color:var(--gold);box-shadow:0 0 12px rgba(232,198,106,.3)}
@@ -215,9 +215,9 @@ button{font-family:inherit}
 @media (max-height:560px){
   #pframe{width:250px;padding:5px 8px 6px 60px;min-height:62px}#partyBox{top:80px;width:190px;font-size:11px}#sectInfo{font-size:10.5px;line-height:1.35;padding:4px 7px}#eqDetail{font-size:11px}#portrait{width:46px;height:46px;left:7px;top:8px}#plvBadge{left:38px;top:44px}
   #pname{font-size:13px}.bar{height:12px;margin-top:2px}.bar span{font-size:9px;line-height:11px}#pgold{font-size:10px}
-  #topright{width:180px}#mini{width:168px;height:126px}#menuBtns button{font-size:10px;padding:4px 0}#quest{font-size:11px;padding:5px 7px;line-height:1.35}
+  #topright{width:180px}#mini{width:168px;height:126px}#menuBtns{top:6px;left:268px;right:196px;gap:3px}#menuBtns button{font-size:10px;padding:3px 6px;min-width:40px}#quest{font-size:11px;padding:5px 7px;line-height:1.35}
   #hotbar{bottom:14px;gap:3px;padding:4px}.slot{width:46px;height:46px}.slot b{font-size:18px;line-height:20px}.slot small{display:none}.slot.wide{width:66px;font-size:10px}.slot.wide span{font-size:9px}
-  .slot .cdt{font-size:11px}#log{display:none}#chatBox{bottom:74px;width:280px;font-size:11px}#chatLog{max-height:64px}#region{font-size:20px;top:56px}#tframe{width:240px;top:6px}
+  .slot .cdt{font-size:11px}#log{display:none}#chatBox{bottom:74px;width:280px;font-size:11px}#chatLog{max-height:64px}#region{font-size:20px;top:92px}#tframe{width:240px;top:40px}
   .modal{max-height:96vh;transform:translate(-50%,-50%) scale(.82)}
   .title{font-size:38px}.subtitle{font-size:10px;margin:0 0 8px;letter-spacing:4px}#startMenu{width:330px;padding:10px}#startMenu .btn{padding:7px;font-size:14px}
   #create{width:96vw;padding:8px 12px;max-height:94vh;overflow:auto}#create h3{font-size:17px;margin:0 0 2px}.crow{margin:4px 0}.crow label{width:64px}#cName{padding:4px 8px;font-size:13px}.tog{padding:4px 14px}
@@ -236,7 +236,6 @@ button{font-family:inherit}
     <div class="bar mp"><i id="mpb"></i><span id="mpt"></span></div>
     <div id="pgold"></div>
   </div>
-  <div id="buffs"></div>
   <div id="partyBox" class="panel" hidden></div>
   <div id="duelBar" hidden></div>
   <div id="pmenu" hidden></div>
@@ -244,9 +243,9 @@ button{font-family:inherit}
   <div id="region" class="serif"></div>
   <div id="topright">
     <div id="miniwrap" class="panel"><canvas id="mini" width="192" height="144" title="Nhấp để đi tới đó"></canvas><button id="miniBig" title="Xem toàn bộ bản đồ (M)">⛶</button><div id="miniName"></div></div>
-    <div id="menuBtns"><button id="btnChar">Nhân vật</button><button id="btnBag">Túi đồ</button><button id="btnMap">Bản đồ</button><button id="btnShop">Cửa hàng</button><button id="btnFriends">Bạn bè</button><button id="btnTop">Xếp hạng</button><button id="btnSet">Cài đặt</button><button id="btnHelp">?</button></div>
     <div id="quest" class="panel"></div>
   </div>
+  <div id="menuBtns"><button id="btnChar">Nhân vật</button><button id="btnBag">Túi đồ</button><button id="btnMap">Bản đồ</button><button id="btnShop">Cửa hàng</button><button id="btnFriends">Bạn bè</button><button id="btnTop">Xếp hạng</button><button id="btnSet">Cài đặt</button><button id="btnHelp">?</button><div id="buffs"></div></div>
   <div id="hotbar" class="panel"></div>
   <div id="expbar"><i id="expb"></i><span id="expt"></span></div>
   <div id="log"></div>
@@ -337,40 +336,44 @@ button{font-family:inherit}
 <div id="rotate">Hãy xoay ngang điện thoại để chơi<br>⟳</div>
 <div id="tip" class="panel" hidden></div>
 
-<script src="js/version.js?v=1.3.44"></script>
-<script src="js/data.js?v=1.3.44"></script>
-<script src="js/data2.js?v=1.3.44"></script>
-<script src="js/data3.js?v=1.3.44"></script>
-<script src="js/icons.js?v=1.3.44"></script>
-<script src="js/core.js?v=1.3.44"></script>
-<script src="js/art.js?v=1.3.44"></script>
-<script src="js/audio.js?v=1.3.44"></script>
-<script src="js/game.js?v=1.3.44"></script>
-<script src="js/online-config.js?v=1.3.44"></script>
-<script src="js/online.js?v=1.3.44"></script>
-<script src="js/mobsync.js?v=1.3.44"></script>
-<script src="js/pvp.js?v=1.3.44"></script>
-<script src="js/update.js?v=1.3.44"></script>
-<script src="js/ui.js?v=1.3.44"></script>
-<script src="js/ambient.js?v=1.3.44"></script>
-<script src="js/tilt.js?v=1.3.44"></script>
-<script src="js/social.js?v=1.3.44"></script>
-<script src="js/stash.js?v=1.3.44"></script>
-<script src="js/dock.js?v=1.3.44"></script>
-<script src="js/shop.js?v=1.3.44"></script>
-<script src="js/pets.js?v=1.3.44"></script>
-<script src="js/beasts.js?v=1.3.44"></script>
-<script src="js/beasts2.js?v=1.3.44"></script>
-<script src="js/tuluyen.js?v=1.3.44"></script>
-<script src="js/mobile.js?v=1.3.44"></script>
-<script src="js/mymusic.js?v=1.3.44"></script>
-<script src="js/hoatdong.js?v=1.3.44"></script>
-<script src="js/banghoi.js?v=1.3.44"></script>
-<script src="js/nghe.js?v=1.3.44"></script>
-<script src="js/hdui.js?v=1.3.44"></script>
-<script src="js/bigtree.js?v=1.3.44"></script>
-<script src="js/view3d.js?v=1.3.44" type="module"></script>
-<script src="js/appearance.js?v=1.3.44"></script>
-<script src="js/accounts.js?v=1.3.44"></script>
+<script src="js/version.js?v=1.3.45"></script>
+<script src="js/data.js?v=1.3.45"></script>
+<script src="js/data2.js?v=1.3.45"></script>
+<script src="js/data3.js?v=1.3.45"></script>
+<script src="js/icons.js?v=1.3.45"></script>
+<script src="js/core.js?v=1.3.45"></script>
+<script src="js/art.js?v=1.3.45"></script>
+<script src="js/audio.js?v=1.3.45"></script>
+<script src="js/game.js?v=1.3.45"></script>
+<script src="js/online-config.js?v=1.3.45"></script>
+<script src="js/online.js?v=1.3.45"></script>
+<script src="js/mobsync.js?v=1.3.45"></script>
+<script src="js/pvp.js?v=1.3.45"></script>
+<script src="js/update.js?v=1.3.45"></script>
+<script src="js/ui.js?v=1.3.45"></script>
+<script src="js/ambient.js?v=1.3.45"></script>
+<script src="js/tilt.js?v=1.3.45"></script>
+<script src="js/social.js?v=1.3.45"></script>
+<script src="js/stash.js?v=1.3.45"></script>
+<script src="js/dock.js?v=1.3.45"></script>
+<script src="js/shop.js?v=1.3.45"></script>
+<script src="js/pets.js?v=1.3.45"></script>
+<script src="js/beasts.js?v=1.3.45"></script>
+<script src="js/beasts2.js?v=1.3.45"></script>
+<script src="js/tuluyen.js?v=1.3.45"></script>
+<script src="js/mobile.js?v=1.3.45"></script>
+<script src="js/mymusic.js?v=1.3.45"></script>
+<script src="js/hoatdong.js?v=1.3.45"></script>
+<script src="js/banghoi.js?v=1.3.45"></script>
+<script src="js/nghe.js?v=1.3.45"></script>
+<script src="js/hdui.js?v=1.3.45"></script>
+<script src="js/bigtree.js?v=1.3.45"></script>
+<script src="js/anim.js?v=1.3.45"></script>
+<script src="js/diadanh.js?v=1.3.45"></script>
+<script src="js/worldmap.js?v=1.3.45"></script>
+<script src="js/landmark.js?v=1.3.45"></script>
+<script src="js/view3d.js?v=1.3.45" type="module"></script>
+<script src="js/appearance.js?v=1.3.45"></script>
+<script src="js/accounts.js?v=1.3.45"></script>
 </body>
 </html>
