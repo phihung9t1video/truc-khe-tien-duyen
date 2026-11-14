@@ -20,7 +20,7 @@ const SKY3D={spring:['#5ea6e8','#cfe6f7','#f4ead8',24,62,'#dfefff','#5a7a4a',1.0
  thunder:['#3a3a6a','#9a9ac0','#c8c8e0',18,54,'#d8d8ff','#4a4a6a',0.9,'#e8e8ff',1.6],
  jade:['#4aa8c8','#c8f0e0','#e8f8f0',22,60,'#e0fff0','#3a7a5a',1.05,'#f8fff0',2.1],
  void:['#080818','#2a2048','#4a2a5a',12,44,'#b8a8e8','#302848',0.85,'#ffd890',1.0]};
-const PINK3D=()=>['spring','heaven','jade'].includes(CM.theme)?'#f2a6cc':shade(TH.tree||'#3a7a2e',0.2),PINE3D=()=>({desert:'#6a7a3a',snow:'#2e5a4a',volcano:'#4a3a2a',dark:'#2a3a3a',blood:'#4a2a2a',void:'#2a2a4a',wild:'#4a6a2a'})[CM.theme]||'#2e6a3a';
+const PINK3D=()=>['spring','heaven','jade'].includes(CM.theme)?'#f2a6cc':shade(TH.tree||'#3a7a2e',0.2),PINE3D=()=>({desert:'#6a7a3a',snow:'#2e5a4a',volcano:'#4a3a2a',dark:'#2a3a3a',blood:'#4a2a2a',void:'#2a2a4a',wild:'#4a6a2a'})[CM.theme]||'#3c7c48';
 const LM_ANIM={boat:1,flags:1,camel:1,ghostgate:1,goldstatue:1,lighthouse:1,yurt:1,obo:1,goldhall:1,waterfall:1,jadepool:1};
 const skyOf=()=>SKY3D[(typeof CM!=='undefined'&&CM.theme)]||SKY3D.spring;
 const want3D=()=>{try{return localStorage.getItem('tk_3d')==='1';}catch(e){return false;}};
@@ -55,6 +55,25 @@ function merge(list){let n=0;const geos=list.map(([g,x,y,z,sx,sy,sz])=>{const q=
   const pos=new Float32Array(n*3),nor=new Float32Array(n*3);let o=0;for(const q of geos){pos.set(q.attributes.position.array,o*3);nor.set(q.attributes.normal.array,o*3);o+=q.attributes.position.count;q.dispose();}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('normal',new THREE.BufferAttribute(nor,3));return g;}
 const canopyGeo=seed=>merge([[lumpy(0.64,3,seed),0,0,0],[lumpy(0.5,2,seed+1),0.42,-0.12,0.1],[lumpy(0.48,2,seed+2),-0.4,-0.1,-0.12],[lumpy(0.42,2,seed+3),0.02,0.3,-0.25]]);
+// ---- cây thật hơn: màu theo đỉnh (sáng trên, tối dưới / bên trong), mép tán lởm chởm ----
+function colorize(g,fn){const p=g.attributes.position,c=new Float32Array(p.count*3),v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const r=fn(v);c[i*3]=r[0];c[i*3+1]=r[1];c[i*3+2]=r[2];}g.setAttribute('color',new THREE.BufferAttribute(c,3));return g;}
+function mergeC(list){let n=0;const geos=list.map(([g,x,y,z,sx,sy,sz])=>{const q=(g.index?g.toNonIndexed():g).clone();q.scale(sx||1,sy||sx||1,sz||sx||1);q.translate(x,y,z);n+=q.attributes.position.count;return q;});
+  const pos=new Float32Array(n*3),nor=new Float32Array(n*3),cl=new Float32Array(n*3);let o=0;for(const q of geos){pos.set(q.attributes.position.array,o*3);nor.set(q.attributes.normal.array,o*3);if(q.attributes.color)cl.set(q.attributes.color.array,o*3);else cl.fill(1,o*3,(o+q.attributes.position.count)*3);o+=q.attributes.position.count;q.dispose();}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('normal',new THREE.BufferAttribute(nor,3));g.setAttribute('color',new THREE.BufferAttribute(cl,3));return g;}
+function leafGeo(seed){let k=seed;const R=()=>(k=(k*16807)%2147483647)/2147483647;const parts=[[lumpy(0.62,3,seed),0,0.55,0]];
+  for(let i=0;i<6;i++){const a=i/6*6.283+R()*0.6,d=0.38+R()*0.14;parts.push([lumpy(0.36+R()*0.14,2,seed+i+1),Math.cos(a)*d,0.25+R()*0.45,Math.sin(a)*d]);}
+  parts.push([lumpy(0.4,2,seed+9),0.05,1.0,0.02]);
+  const g=mergeC(parts.map(p=>{const q=p[0];colorize(q,v=>{const n=0.92+0.16*Math.sin(v.x*9+seed)*Math.cos(v.z*8+v.y*5);const up=Math.max(0,v.y/0.64);const b=(0.74+0.55*Math.min(1,(up+1)/2))*n;return[b*0.97,b,b*0.9];});return p;}));
+  // tô tối phần thấp của cả tán (bóng râm bên trong)
+  const p=g.attributes.position,c=g.attributes.color;for(let i=0;i<p.count;i++){const y=p.getY(i),r=Math.hypot(p.getX(i),p.getZ(i)),f=Math.min(1.05,0.7+y*0.32)*(0.85+Math.min(0.2,r*0.25));c.setXYZ(i,c.getX(i)*f,c.getY(i)*f,c.getZ(i)*f);}return g;}
+function trunkGeo(){const t=new THREE.CylinderGeometry(0.075,0.17,1.25,9,4);const p=t.attributes.position;for(let i=0;i<p.count;i++){const y=p.getY(i),fl=y<-0.45?1+(-0.45-y)*1.6:1;p.setXYZ(i,p.getX(i)*fl+Math.sin(y*6)*0.012,y,p.getZ(i)*fl);}t.translate(0,0.62,0);t.computeVertexNormals();
+  const br=(ang,tilt,len,y)=>{const b=new THREE.CylinderGeometry(0.025,0.05,len,6);b.translate(0,len/2,0);b.rotateZ(tilt);b.rotateY(ang);b.translate(0,y,0);return b;};
+  const tc=v=>{const n=0.85+0.15*Math.sin(v.y*23+v.x*40);return[0.42*n,0.29*n,0.18*n];};
+  return mergeC([t,br(0.4,0.8,0.45,0.95),br(2.6,0.9,0.4,1.0),br(4.4,0.75,0.38,0.85)].map(q=>[colorize(q,tc),0,0,0]));}
+function pineGeo2(snow){const parts=[];const T=5;for(let i=0;i<T;i++){const u=i/(T-1),r=0.78-u*0.5,h=0.62-u*0.12,y=0.15+i*0.36;const c=new THREE.ConeGeometry(r,h,24,2,true);const p=c.attributes.position;
+    for(let j=0;j<p.count;j++){const yy=p.getY(j);if(yy<-h/2+0.01){const ang=Math.atan2(p.getZ(j),p.getX(j)),jag=1+0.18*Math.sin(ang*7+i*2.1)+0.08*Math.sin(ang*13);p.setX(j,p.getX(j)*jag);p.setZ(j,p.getZ(j)*jag);p.setY(j,yy-0.07*Math.abs(Math.sin(ang*7+i)));}}
+    c.computeVertexNormals();colorize(c,v=>{const t=(v.y+h/2)/h;let b=0.8+0.5*t;if(snow&&t>0.55)return[1.25,1.28,1.32];return[b*0.95,b,b*0.92];});parts.push([c,0,y,0]);}
+  return mergeC(parts);}
 const pineGeo=()=>merge([[new THREE.ConeGeometry(0.72,0.95,16,1),0,-0.45,0],[new THREE.ConeGeometry(0.58,0.85,16,1),0,0.05,0],[new THREE.ConeGeometry(0.42,0.75,16,1),0,0.5,0]]);
 function buildScene(){disposeScene();const S=new THREE.Scene();V3.scene=S;V3.objs.clear();V3.pick=[];V3.herbs=[];V3.portals=[];
   const SK=skyOf(),sky=col(SK[1]);S.fog=new THREE.Fog(sky,SK[3],SK[4]);
@@ -81,21 +100,28 @@ function buildScene(){disposeScene();const S=new THREE.Scene();V3.scene=S;V3.obj
   // cầu gỗ
   const plank=makeMat('#a06c3a');for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(getT(x,y)===BR){const m=new THREE.Mesh(new THREE.BoxGeometry(1.02,0.12,1.02),plank);m.position.set(x+0.5,-0.08,y+0.5);m.receiveShadow=true;m.castShadow=true;S.add(m);}
   // cây (dùng instancing cho nhẹ)
-  const trees=[];let s=CM.gen.seed*3+1;const rr=()=>(s=(s*16807)%2147483647)/2147483647;for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(getT(x,y)===TR)trees.push([x+0.5+(rr()-.5)*.4,y+0.5+(rr()-.5)*.4,0.75+rr()*0.5,rr()]);
-  const inst=(geo,mat,list,f)=>{if(!list.length)return;const m=new THREE.InstancedMesh(geo,mat,list.length);const o=new THREE.Object3D();list.forEach((t,i)=>{f(o,t);o.updateMatrix();m.setMatrixAt(i,o.matrix);});m.castShadow=true;m.receiveShadow=true;S.add(m);};
-  const round=trees.filter(t=>t[3]<0.45),pine=trees.filter(t=>t[3]>=0.45&&t[3]<0.8),pink=trees.filter(t=>t[3]>=0.8);
-  inst(new THREE.CylinderGeometry(0.09,0.16,1,10),makeMat('#6a4424'),trees,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+0.5*t[2],t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,0,0);});
-  const ico=canopyGeo(1.3);inst(ico,windify(makeMat(TH.tree||'#3a7a2e',{roughness:0.9}),0.06,-0.6),round,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.35*t[2],t[1]);o.scale.set(t[2],t[2]*0.95,t[2]);o.rotation.set(0,t[3]*6,0);});
-  inst(canopyGeo(4.1),windify(makeMat(PINK3D(),{roughness:0.85}),0.06,-0.6),pink,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.3*t[2],t[1]);o.scale.set(t[2]*1.05,t[2]*0.9,t[2]*1.05);o.rotation.set(0,t[3]*6,0);});
-  inst(pineGeo(),windify(makeMat(PINE3D(),{roughness:0.9}),0.045,-0.9),pine,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.45*t[2],t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,t[3]*6,0);});
-  // cỏ
-  {const blade=new THREE.BufferGeometry(),bp=[],bc=[],gcol=col(TH.grass),tipc=gcol.clone().offsetHSL(0.03,0.08,0.22),basec=gcol.clone().offsetHSL(0,0,-0.02);
-   for(let k=0;k<5;k++){const a=k/5*Math.PI*2+0.3,dx=Math.cos(a)*0.07,dz=Math.sin(a)*0.07,lx=Math.cos(a+1.6)*0.018,lz=Math.sin(a+1.6)*0.018,hh=0.16+(k%3)*0.05,lean=0.06;
+  // ---- thực vật theo ô vùng 16×16: ô ngoài tầm nhìn bị bỏ qua, ô xa thì tắt hẳn (cỏ chỉ hiện gần) ----
+  const trees=[];let s=CM.gen.seed*3+1;const rr=()=>(s=(s*16807)%2147483647)/2147483647;for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(getT(x,y)===TR)trees.push([x+0.5+(rr()-.5)*.4,y+0.5+(rr()-.5)*.4,0.75+rr()*0.5,rr(),rr()]);
+  V3.veg=[];const VCH=16,byChunk=list=>{const m=new Map();for(const t of list){const k=Math.floor(t[0]/VCH)+','+Math.floor(t[1]/VCH);let a=m.get(k);if(!a)m.set(k,a=[]);a.push(t);}return m;};
+  const instC=(geo,mat,list,f,o2)=>{o2=o2||{};for(const [k,arr] of byChunk(list)){const m=new THREE.InstancedMesh(geo,mat,arr.length),o=new THREE.Object3D(),c=new THREE.Color();
+      arr.forEach((t,i)=>{f(o,t);o.updateMatrix();m.setMatrixAt(i,o.matrix);if(o2.tint){o2.tint(c,t);m.setColorAt(i,c);}});m.castShadow=!!o2.shadow;m.receiveShadow=true;m.computeBoundingSphere();
+      const [cx,cz]=k.split(',').map(Number);m.userData.vc={x:(cx+0.5)*VCH,z:(cz+0.5)*VCH,far:o2.far||72};S.add(m);V3.veg.push(m);}};
+  const inst=(geo,mat,list,f)=>instC(geo,mat,list,f,{shadow:true});
+  const leafTint=(c,t)=>{const v=0.82+t[4]*0.32;c.setRGB(v*(0.96+t[3]*0.08),v,v*(0.9+t[4]*0.12));};
+  const round=trees.filter(t=>t[3]<0.45),pine=trees.filter(t=>t[3]>=0.45&&t[3]<0.8),pink=trees.filter(t=>t[3]>=0.8),snowy=['snow','heaven','void'].includes(CM.theme);
+  instC(trunkGeo(),makeMat('#ffffff',{vertexColors:true}),trees.filter(t=>t[3]<0.45||t[3]>=0.8),(o,t)=>{o.position.set(t[0],hAt(t[0],t[1]),t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,t[4]*6.28,0);},{shadow:true});
+  instC(new THREE.CylinderGeometry(0.06,0.11,0.9,7).translate(0,0.45,0),makeMat('#4a3220'),pine,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1]),t[1]);o.scale.set(t[2],t[2],t[2]);o.rotation.set(0,0,0);},{shadow:true});
+  instC(leafGeo(11),windify(makeMat(TH.tree||'#3a7a2e',{roughness:0.88,vertexColors:true}),0.05,0.6),round,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.05*t[2],t[1]);o.scale.set(t[2],t[2]*(0.9+t[4]*0.2),t[2]);o.rotation.set(0,t[4]*6.28,0);},{shadow:true,tint:leafTint});
+  instC(leafGeo(29),windify(makeMat(PINK3D(),{roughness:0.82,vertexColors:true}),0.05,0.6),pink,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+1.05*t[2],t[1]);o.scale.set(t[2]*1.08,t[2]*0.92,t[2]*1.08);o.rotation.set(0,t[4]*6.28,0);},{shadow:true,tint:leafTint});
+  instC(pineGeo2(snowy),windify(makeMat(PINE3D(),{roughness:0.9,vertexColors:true}),0.035,0.6),pine,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1])+0.55*t[2],t[1]);o.scale.set(t[2]*(0.9+t[4]*0.2),t[2]*(1+t[4]*0.25),t[2]*(0.9+t[4]*0.2));o.rotation.set(0,t[4]*6.28,0);},{shadow:true,tint:leafTint});
+  // cỏ: 3 khóm / ô đất, chỉ hiện trong bán kính ~26 ô
+  {const blade=new THREE.BufferGeometry(),bp=[],bc=[],gcol=col(TH.grass),tipc=gcol.clone().offsetHSL(0.03,0.08,0.22),basec=gcol.clone().offsetHSL(0,0,-0.06);
+   for(let k=0;k<6;k++){const a=k/6*Math.PI*2+0.3,dx=Math.cos(a)*0.07,dz=Math.sin(a)*0.07,lx=Math.cos(a+1.6)*0.018,lz=Math.sin(a+1.6)*0.018,hh=0.16+(k%3)*0.06,lean=0.07;
      bp.push(dx-lx,0,dz-lz, dx+lx,0,dz+lz, dx*1.8+Math.cos(a)*lean,hh,dz*1.8+Math.sin(a)*lean);bc.push(basec.r,basec.g,basec.b,basec.r,basec.g,basec.b,tipc.r,tipc.g,tipc.b);}
    blade.setAttribute('position',new THREE.Float32BufferAttribute(bp,3));blade.setAttribute('color',new THREE.Float32BufferAttribute(bc,3));blade.computeVertexNormals();
    const gm=windify(new THREE.MeshStandardMaterial({vertexColors:true,side:THREE.DoubleSide,roughness:1}),0.35,0);const spots=[];
-   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const t=getT(x,y);if(t!==G)continue;for(let k=0;k<5;k++)spots.push([x+rr(),y+rr(),0.6+rr()*0.7,rr()]);}
-   const gi=new THREE.InstancedMesh(blade,gm,spots.length),o=new THREE.Object3D();spots.forEach((t,i)=>{o.position.set(t[0],hAt(t[0],t[1]),t[1]);o.rotation.set(0,t[3]*6.28,0);o.scale.set(t[2],t[2],t[2]);o.updateMatrix();gi.setMatrixAt(i,o.matrix);});gi.receiveShadow=true;S.add(gi);}
+   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const t=getT(x,y);if(t!==G)continue;for(let k=0;k<3;k++)spots.push([x+rr(),y+rr(),0.6+rr()*0.7,rr(),rr()]);}
+   instC(blade,gm,spots,(o,t)=>{o.position.set(t[0],hAt(t[0],t[1]),t[1]);o.rotation.set(0,t[3]*6.28,0);o.scale.set(t[2],t[2],t[2]);},{far:26});}
   // cây cổ thụ
   for(const b of (typeof BIGTREES!=='undefined'?BIGTREES:[])){const x=b.x/T,z=b.y/T,k=b.r/60,h0=hAt(x,z),g=new THREE.Group();
     const tr=new THREE.Mesh(new THREE.CylinderGeometry(0.22*k,0.45*k,2.6*k,14),makeMat('#5a3a20'));tr.position.y=1.3*k;tr.castShadow=true;g.add(tr);
@@ -203,12 +229,12 @@ function animModel(o,dt,moving,atk,hurt,dead,cast){const u=o.userData,A=u.acts;l
   u.lock=Math.max(0,(u.lock||0)-dt);if(u.lock>0&&(want==='Idle'||want==='Running_A'))want=u.cur;
   if(want!==u.cur&&A[want]){const from=A[u.cur],to=A[want];to.reset();to.setEffectiveWeight(1);to.play();if(from&&from!==to)from.crossFadeTo(to,0.18,false);u.cur=want;}
   if(A.Running_A)A.Running_A.timeScale=1.15;u.mixer.update(dt);}
-function update3D(dt){UT.value=nowT;for(const o of V3.objs.values())o.userData.seen=false;
+function update3D(dt){UT.value=nowT;if(V3.veg&&(V3.vf=(V3.vf||0)+1)%10===1){const px=player.x/T,pz=player.y/T;for(const m of V3.veg){const v=m.userData.vc;m.visible=Math.hypot(v.x-px,v.z-pz)<v.far;}}for(const o of V3.objs.values())o.userData.seen=false;
   if(typeof LANDMARKS!=='undefined')LANDMARKS.forEach((l,i)=>{const o=objFor('lm_'+curMapId+'_'+i,()=>makeBB(460,400,230,380,4.5*l.s));const d=placeBB(o,l.x,l.y,dt);const anim=LM_ANIM[l.k],u=o.userData;if(!u.lmDone||anim&&d<26&&(u.fc=(u.fc||0)+1)%14===0){u.lmDone=true;withCtx(u.cv,()=>{ctx.clearRect(0,0,u.W,u.H);ctx.save();ctx.translate(u.ax,u.ay);lmDraw(Object.assign({},l,{x:0,y:0}));ctx.restore();});u.tex.needsUpdate=true;}});
   // người chơi (cả thú cưỡi, hào quang)
   const pk=SECT_MDL[player.sect],rideNow=(player.riding&&player.mount)||player.flying;
   if(!rideNow&&mdl(pk)){const o=objFor('player_m',()=>makeModel(pk,1,player.name,'#9fffb0'));place(o,player.x,player.y,player.moving,player.face,dt,0);animModel(o,dt,player.moving,player.atkAnim,player.hitFlash>0,player.dead,CASTER[player.sect]);}
-  else{const p=objFor('player',()=>makeBB(170,190,85,170,1.1));placeBB(p,player.x,player.y,dt);
+  else{const p=objFor('player',()=>makeBB(170,190,85,170,1.1));placeBB(p,player.x,player.y,dt);p.userData.sp.position.y=(window.leapY?leapY():0)/BB_PX;
   {const v=viewDir(p,player.face),rideM=player.riding&&typeof MOUNTS!=='undefined'&&MOUNTS[player.mount],ry=rideM?(typeof mountRideY==='function'?mountRideY(rideM):-24):0,fy=player.flying?-16-Math.sin(nowT*3)*3:0;
    bbDraw(p,()=>{const al=typeof setAuraLv==='function'?setAuraLv():0;if(al)drawSetAura(0,0,fy,al,0);if(player.flying)drawFlySword(0,fy+1,v.face,playerW.type==='sword'?playerW.col:'#bfe0ff',playerW.glow||'#9fd3ff');
      STEED_FORE=!!rideM&&v.dir!=='side';if(rideM)drawSteed(player.mount,0,0,v.face,player.moving,0);if(player.dead){ctx.globalAlpha=0.5;}

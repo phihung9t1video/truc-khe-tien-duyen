@@ -413,7 +413,7 @@ function drawWeather(dt,kind){
 function drawWorld(dt,cx,cy,withEnt){
   const vw=VW/Z,vh=VH/Z;let sx=0,sy=0;if(withEnt&&shakeT>0){sx=rnd(-4,4);sy=rnd(-4,4);}
   ctx.setTransform(Z*DPR,0,0,Z*DPR,Math.round((-cx+sx)*Z*DPR),Math.round((-cy+sy)*Z*DPR));
-  ctx.imageSmoothingEnabled=true;ctx.drawImage(mapCv,0,0,MW*T,MH*T);
+  ctx.imageSmoothingEnabled=true;drawGroundChunks(cx,cy,vw,vh);
   const tx0=Math.max(0,Math.floor(cx/T)),ty0=Math.max(0,Math.floor(cy/T)),tx1=Math.min(MW-1,Math.ceil((cx+vw)/T)),ty1=Math.min(MH-1,Math.ceil((cy+vh)/T));
   ctx.strokeStyle='rgba(225,240,255,.5)';ctx.lineWidth=1.2;ctx.lineCap='round';
   for(let y=ty0;y<=ty1;y++)for(let x=tx0;x<=tx1;x++){if(getT(x,y)!==WA)continue;const ph=(nowT*0.8+x*0.37+y*0.71)%1,px=x*T+6+((x*7+y*13)%14),py=y*T+8+((x*11+y*5)%14)-ph*4;

@@ -126,3 +126,38 @@ var MOUNT_LOCK=true;
 if(MOUNT_LOCK){const _ur=updateRiding;updateRiding=function(){_ur();player.riding=false;};
   const _bhML=buildHotbar;buildHotbar=function(){_bhML();const b=$('mountBtn');if(b)b.style.display='none';};
   const _rsML=renderShop;renderShop=function(){if(shopTab==='mount')shopTab='item';const t=$('shTab_mount');if(t)t.style.display='none';return _rsML.apply(this,arguments);};}
+// ---------- GIẢM LAG: không vẽ quái nằm ngoài vùng nhìn thấy ----------
+var VIEWR={cx:0,cy:0,vw:2000,vh:1200};
+{const _dwV=drawWorld;drawWorld=function(dt,cx,cy,withEnt){VIEWR.cx=cx;VIEWR.cy=cy;VIEWR.vw=VW/Z;VIEWR.vh=VH/Z;return _dwV.apply(this,arguments);};
+ const _dmV=drawMob;drawMob=function(m){const v=VIEWR,mx=v.vw*0.45+120,my=v.vh*0.55+160;if(m.x<v.cx-mx||m.x>v.cx+v.vw+mx||m.y<v.cy-my||m.y>v.cy+v.vh+my)return;return _dmV(m);};}
+// ---------- CHIÊU THỨC CÓ BAY / NHẢY ----------
+// player.leap={t0,dur,h,back,kind}; leapY() trả độ cao hiện tại (px). Bóng vẫn ở mặt đất, nhỏ dần khi bay cao.
+const LEAP_KIND={aoeSelf:['slam',0.55,48,0],quake:['slam',0.7,64,0],taunt:['slam',0.5,30,0],
+  rain:['fly',1.25,74,0],phoenix:['fly',1.2,70,0],dragon:['fly',1.2,70,0],field:['fly',1.0,56,0],multi:['fly',0.9,40,0],
+  wave:['hop',0.38,20,-14],proj:['hop',0.34,16,-10],aoeTarget:['hop',0.42,24,-12],
+  dash:['glide',0.35,18,0],buff:['float',0.9,26,0],groupBuff:['float',1.0,30,0],heal:['float',0.8,22,0],groupHeal:['float',1.0,30,0]};
+const _castLP=castSkill;castSkill=function(i){const sk=skillList()[i];const r=_castLP.apply(this,arguments);
+  const L=sk&&LEAP_KIND[sk.kind];if(L&&!player.dead)player.leap={t0:nowT,kind:L[0],dur:L[1],h:L[2],back:L[3],col:sk.col||'#fff',landed:false};return r;};
+function leapY(){const L=player.leap;if(!L)return 0;const p=(nowT-L.t0)/L.dur;
+  if(p>=1){if(!L.landed){L.landed=true;if(L.kind==='slam'){shakeT=Math.max(shakeT||0,0.22);if(typeof addRing==='function')addRing(player.x,player.y-4,90+L.h,L.col,0.4);
+        for(let k=0;k<14;k++){const a=k/14*6.283;fx.push({k:'p',x:player.x+Math.cos(a)*20,y:player.y+Math.sin(a)*8,vx:Math.cos(a)*90,vy:Math.sin(a)*40-30,col:'#c8b090',t:0,life:0.5,sz:2.4});}}}
+    player.leap=null;return 0;}
+  let y;if(L.kind==='slam')y=p<0.55?Math.sin(p/0.55*Math.PI/2)*L.h:L.h*(1-Math.pow((p-0.55)/0.45,2));
+  else if(L.kind==='fly'){const up=Math.min(1,p/0.3),dn=p>0.75?(p-0.75)/0.25:0;y=L.h*(1-Math.pow(1-up,2))*(1-dn*dn)+Math.sin(nowT*6)*3*(1-dn);}
+  else if(L.kind==='float')y=L.h*Math.sin(p*Math.PI)+Math.sin(nowT*7)*2*Math.sin(p*Math.PI);
+  else y=L.h*Math.sin(p*Math.PI);
+  // vệt sáng khi bay / lướt
+  if((L.kind==='fly'||L.kind==='glide'||L.kind==='float')&&Math.random()<0.55)fx.push({k:'p',x:player.x+(Math.random()-0.5)*16,y:player.y-y-20-Math.random()*24,vx:-player.face*40*(L.kind==='glide'?3:1),vy:20,col:Math.random()<0.5?L.col:'#ffffff',t:0,life:0.45,sz:2});
+  return Math.max(0,y);}
+function leapBack(){const L=player.leap;if(!L||!L.back)return 0;const p=Math.min(1,(nowT-L.t0)/L.dur);return L.back*Math.sin(p*Math.PI)*player.face;}
+window.leapY=leapY;window.leapBack=leapBack;
+{let LIFT=0,BK=0,inP=false;const _dpLP=drawPlayer;drawPlayer=function(){LIFT=leapY();BK=leapBack();if(!LIFT&&!BK)return _dpLP.apply(this,arguments);
+   inP=true;ctx.save();ctx.translate(BK,-LIFT);try{return _dpLP.apply(this,arguments);}finally{ctx.restore();inP=false;}};
+ const _dsLP=drawShadow;drawShadow=function(x,y,r,a){if(inP&&Math.abs(x-player.x)<3&&Math.abs(y-player.y)<3){ctx.save();ctx.translate(-BK,LIFT);try{return _dsLP(x,y,r*Math.max(0.45,1-LIFT/140),a);}finally{ctx.restore();}}return _dsLP.apply(this,arguments);};}
+
+// cổng truyền tống / điểm đến rơi vào ô không đứng được (núi, nước, vực) -> dời về ô đứng được gần nhất
+function snapStand(x,y){if(canStand(x*T,y*T))return null;for(let r=1;r<14;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const nx=x+dx,ny=y+dy;if(nx<2||ny<2||nx>MW-3||ny>MH-3)continue;if(canStand(nx*T,ny*T))return[nx,ny];}return null;}
+{const _gmSN=genMap;genMap=function(def){const r=_gmSN.apply(this,arguments);const id=Object.keys(MAPS).find(k=>MAPS[k]===def);
+  for(const p of def.portals){const q=snapStand(p.x,p.y);if(q){p.x=q[0];p.y=q[1];}}
+  if(id)for(const o in MAPS)for(const p of MAPS[o].portals)if(p.to===id&&p.tx!=null){const q=snapStand(p.tx,p.ty);if(q){p.tx=q[0];p.ty=q[1];}}
+  return r;};}

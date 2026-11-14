@@ -1,6 +1,6 @@
 {
-  "version": "1.3.46",
-  "notes": "Che do 3D cho tat ca ban do: bau troi, suong, anh sang rieng tung vung (vung toi giu u am), mau cay theo vung, cong trinh dac trung hien trong 3D",
-  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.46/www.zip",
-  "sha256": "a1d74f6dae1f35dc7e81a0b2b57ce771bf57b8b34871ac2d7d9f996ae6432c73"
+  "version": "1.3.47",
+  "notes": "Ban do rong gap 4 lan (lang giu nguyen), giam lag manh (2D va 3D), cay 3D dep va that hon, chieu thuc co bay va nhay; nhan vat cu duoc dua ve lang cua ban do dang dung",
+  "zip": "https://github.com/phihung9t1video/truc-khe-tien-duyen/releases/download/v1.3.47/www.zip",
+  "sha256": "3dbd0684a6f28f010ae285a2114770a5a50c459b58c045cf468b51eafc8a9540"
 }
